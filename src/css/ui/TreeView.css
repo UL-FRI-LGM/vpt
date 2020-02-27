@@ -1,0 +1,13 @@
+ul, #TreeView {
+    list-style-type: square;
+}
+
+#TreeView {
+    margin: 0;
+    padding: 0;
+}
+
+.TreeNode::before {
+    color: black;
+    display: block;
+}
