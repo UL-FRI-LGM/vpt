@@ -1,0 +1,19 @@
+// #package uispecs
+
+// #section TreeViewDialog
+
+{
+  "type": "panel",
+  "children": [
+    {
+      "type": "button",
+      "bind": "createTreeButton",
+      "label": "Create Tree"
+    },
+    {
+      "type": "treeView",
+      "label": "Tree"
+    }
+
+  ]
+}
