@@ -42,7 +42,7 @@ static get CLASS_FROM_TYPE() {
         'tabs'          : Tabs,
         'textbox'       : Textbox,
         'vector'        : VectorSpinner,
-        'treeView'        : TreeView,
+        'treeView'      : TreeView,
     };
 }
 
