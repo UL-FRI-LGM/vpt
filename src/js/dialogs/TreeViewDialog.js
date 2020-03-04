@@ -88,45 +88,18 @@ _handleCreateTreeButton = function() {
         className: 'json-key',
         content: node.key,
       });
-
       node.value = getSumOfChildValues(node);
-      /*if (node.parent !== null) {
-        if(values[node.key]!== undefined){
-          node.value = values[node.key];
-        }
-        else{
-          node.value = getSumOfChildValues(node);
-        }
-      }*/
 
-      /*const div2 =createElement('div', {
-        className: 'slider'
+      const div_Lock =createElement('div', {
+        className:  'treeLock'
       });
-      const handleChange = node.sliderChange.bind(node);
-      div2.addEventListener('click', handleChange);
-      div2.setAttribute('max',node.value);
-      div2.setAttribute('min',0);
-      div2.setAttribute('value',0);
-      div2.setAttribute('step',1);
-      const div3 = createElement('div', {
-        className: 'container'
-      });
-      div3.setAttribute('data-bind',"container");
-      const div4 =createElement('div', {
-        className: 'track'
-      });
-      const div5 =createElement('div', {
-        className: 'button'
-      });
-      div5.setAttribute('data-bind',"button");
-      div5.setAttribute('style',"margin-left: 50%;");
-      div3.appendChild(div4);
-      div3.appendChild(div5);
-      div2.appendChild(div3);
-      
-
-      */
       const div2 =createElement('div', {
+        className: 'lock unlocked'
+      });
+      const handleLockChange = node.LockChange.bind(node);
+      div2.addEventListener('click', handleLockChange);
+      div_Lock.appendChild(div2);
+      const div_slider=createElement('div', {
         className: 'treeSlider'
       });
       const div3 =createElement('input', {
@@ -139,15 +112,15 @@ _handleCreateTreeButton = function() {
       div3.setAttribute('min',0);
       div3.setAttribute('value',node.value);
       div3.setAttribute('step',1);
-      div2.appendChild(div3);
+      div_slider.appendChild(div3);
 
       let lineChildren;
       if (node.key === null) {
-        lineChildren = [caretElem, typeElem,div2]
+        lineChildren = [caretElem,typeElem,div_slider,div_Lock]
       } else if (node.parent.type === 'array') {
-        lineChildren = [caretElem, indexElem,div2]
+        lineChildren = [caretElem,indexElem,div_slider,div_Lock]
       } else {
-        lineChildren = [caretElem, keyElem,div2]
+        lineChildren = [caretElem,keyElem,div_slider,div_Lock]
       }
     
       const lineElem = createElement('div', {
@@ -160,7 +133,6 @@ _handleCreateTreeButton = function() {
       }
       return lineElem;
     }
-    
     
     /**
      * @param {Object} node
@@ -175,43 +147,16 @@ _handleCreateTreeButton = function() {
         className: 'json-key',
         content: node.key
       });
-     /* const div2 =createElement('div', {
-        className: 'slider'
+      const div_Lock =createElement('div', {
+        className:  'treeLock'
       });
-      const handleChange = node.sliderChange.bind(node);
-      div2.addEventListener('click', handleChange);
-      div2.setAttribute('max',node.value);
-      div2.setAttribute('min',0);
-      div2.setAttribute('value',0);
-      div2.setAttribute('step',1);
-
-      const div3 = createElement('div', {
-        className: 'container'
-      });
-      div3.setAttribute('data-bind',"container");
-      const div4 =createElement('div', {
-        className: 'track'
-      });
-      const div5 =createElement('div', {
-        className: 'button'
-      });
-      div5.setAttribute('data-bind',"button");
-      div5.setAttribute('style',"margin-left: 50%;");
-      div3.appendChild(div4);
-      div3.appendChild(div5);
-      div2.appendChild(div3);
-            <div class="checkbox">
-    <div class="handle" data-bind="handle"></div>
-</div>*/
-
-      
-      /*div5.setAttribute('type','checkbox');
-      div5.setAttribute('checked','checked');
-      div4.appendChild(div5);
-      */
-      //div4.setAttribute('data-tt-type','lock');
-      //div4.setAttribute('data-tt-size','mini');
       const div2 =createElement('div', {
+        className: 'lock unlocked'
+      });
+      const handleLockChange = node.LockChange.bind(node);
+      div2.addEventListener('click', handleLockChange);
+      div_Lock.appendChild(div2);
+      const div_slider =createElement('div', {
         className: 'treeSlider'
       });
       const div3 =createElement('input', {
@@ -225,11 +170,11 @@ _handleCreateTreeButton = function() {
       div3.setAttribute('value',node.value);
       div3.setAttribute('step',1);
       //div2.appendChild(div4);
-      div2.appendChild(div3);
+      div_slider.appendChild(div3);
       const lineElem = createElement('div', {
         className: 'line',
         //children: [caretElem, keyElem, separatorElement, valueElement,div2]
-        children: [caretElem, keyElem,div2]
+        children: [caretElem, keyElem,div_slider,div_Lock]
       });
     
       if (node.depth > 0) {
@@ -298,9 +243,6 @@ _handleCreateTreeButton = function() {
             this.setCaretIconDown();
           }
         },
-        CheckboxChange : function(){
-            console.log('hi');
-        },
         sliderChange: function() {
           var maxValue = getSliderCurrentValue(this);
           var currentValue= getSliderCurrentValue(this);
@@ -320,10 +262,44 @@ _handleCreateTreeButton = function() {
               decreaseChildrenSliderValue(this,diff*-1);
             }
           }
+        },
+        LockChange:function(){
+          var element = getLockElement(this);
+          if(element.className==='lock unlocked')
+          {
+            element.className='lock';
+            lockedChildren(this);
+          }
+          else
+          {
+            element.className='lock unlocked';
+            unlockedParents(this.parent);
+            
+          }
         }
       }
     }
-  
+    function unlockedParents(node) { 
+      if(node!==null)
+      {
+          var element = getLockElement(node);
+          element.className='lock unlocked';
+          unlockedParents(node.parent);
+      }
+  }
+    function lockedChildren(node) { 
+        if(node.children!==null)
+        {
+          node.children.forEach((item) => {
+            var element = getLockElement(item);
+            element.className='lock';
+            lockedChildren(item);
+          });
+        }
+    }
+    function getLockElement(node) {
+      return node.elem.children[3].children[0];
+  }
       /**
        * 
        * @param {Object} obj
@@ -391,17 +367,21 @@ _handleCreateTreeButton = function() {
            /**
      * Return slider value
      * @param {Object} obj
-     * @return {number}
+     * @return {Object}
      */ 
+    function getSlider(obj) {
+      return (obj.elem.children[2].children[0]);
+    }
     function getSliderCurrentValue(obj) {
-      return parseInt(obj.elem.children[2].children[0].value);
+  
+      return parseInt(getSlider(obj).value);
     }
                /**
      * set slider value
      * @param {Object} obj
      */ 
     function setSliderValue(obj,newValue) {
-      obj.elem.children[2].children[0].value = newValue;
+      getSlider(obj).value = newValue;
     }
                /**
      * Return slider max value
@@ -409,7 +389,7 @@ _handleCreateTreeButton = function() {
      * @return {number}
      */ 
     function getSliderMaxValue(obj) {
-      return parseInt(obj.elem.children[2].children[0].max);
+      return parseInt(getSlider(obj).max);
     }
            /**
      * Return value
