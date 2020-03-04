@@ -17,6 +17,8 @@ _handleCreateTreeButton = function() {
     .then((res)=> { return res.text();})
     .then((data) => { jsonView.format(data, '.root'); })
     .catch((err) => {  console.log(err); })
+    //this._object.children[0].disabled=true;
+   // console.log(this._object.children[0]);
 
 }
 }
