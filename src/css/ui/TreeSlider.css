@@ -35,3 +35,7 @@
     background: white;
     cursor: pointer;
   }
+  .theSlider:disabled::-webkit-slider-thumb,
+.theSlider[disabled]::-webkit-slider-thumb{
+  background: #737475;
+}

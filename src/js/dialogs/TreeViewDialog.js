@@ -268,11 +268,15 @@ _handleCreateTreeButton = function() {
           if(element.className==='lock unlocked')
           {
             element.className='lock';
+            var element2 = getSlider(this);
+            element2.disabled=true;
             lockedChildren(this);
           }
           else
           {
             element.className='lock unlocked';
+            var element2 = getSlider(this);
+            element2.disabled=false;
             unlockedParents(this.parent);
             
           }
@@ -284,6 +288,8 @@ _handleCreateTreeButton = function() {
       {
           var element = getLockElement(node);
           element.className='lock unlocked';
+          var element2 = getSlider(node);
+          element2.disabled=false;
           unlockedParents(node.parent);
       }
   }
@@ -293,6 +299,8 @@ _handleCreateTreeButton = function() {
           node.children.forEach((item) => {
             var element = getLockElement(item);
             element.className='lock';
+            var element2 = getSlider(item);
+            element2.disabled=true;
             lockedChildren(item);
           });
         }
