@@ -11,8 +11,22 @@
       "label": "Create Tree"
     },
     {
-      "type": "treeView",
-      "label": "Tree"
+      "type": "accordion",
+      "label": "Element Tree",
+      "children": [
+        {
+          "type": "treeView",
+          "label": "Tree"
+        }]
+    },
+    {
+      "type": "accordion",
+      "label": "Property Tree",
+      "children": [
+        {
+          "type": "treeView",
+          "label": "Tree"
+        }]
     }
 
   ]

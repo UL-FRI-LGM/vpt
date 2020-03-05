@@ -13,13 +13,12 @@ constructor(options) {
 }
 
 _handleCreateTreeButton = function() {
+  
    fetch('data_schema.json')
     .then((res)=> { return res.text();})
-    .then((data) => { jsonView.format(data, '.root'); })
+    .then((data) => { 
+      jsonView.format(data, '.root'); })
     .catch((err) => {  console.log(err); })
-    //this._object.children[0].disabled=true;
-   // console.log(this._object.children[0]);
-
 }
 }
 (function() {
@@ -171,11 +170,9 @@ _handleCreateTreeButton = function() {
       div3.setAttribute('min',0);
       div3.setAttribute('value',node.value);
       div3.setAttribute('step',1);
-      //div2.appendChild(div4);
       div_slider.appendChild(div3);
       const lineElem = createElement('div', {
         className: 'line',
-        //children: [caretElem, keyElem, separatorElement, valueElement,div2]
         children: [caretElem, keyElem,div_slider,div_Lock]
       });
     
@@ -246,29 +243,34 @@ _handleCreateTreeButton = function() {
           }
         },
         sliderChange: function() {
-          var maxValue = getSliderCurrentValue(this);
-          var currentValue= getSliderCurrentValue(this);
-          updateParentsSliderValue(this.parent);
-          if(this.children!==null)
+          var el=getSlider(this);
+          if(el.disabled!==true)
           {
-            var sumOfChildren=0;
-            this.children.forEach((item) => {
-              sumOfChildren=sumOfChildren + getSliderCurrentValue(item);
-            });
-            var diff=currentValue-sumOfChildren;
-            if(diff>0){
-              increaseChildrenSliderValue(this,diff);
-            }
-            else
+            var maxValue = getSliderCurrentValue(this);
+            var currValue= getSliderCurrentValue(this);
+            updateParentsSliderValue(this.parent);
+            if(this.children!==null)
             {
-              decreaseChildrenSliderValue(this,diff*-1);
+              var preValue=0;
+              this.children.forEach((item) => {
+                preValue=preValue + getSliderCurrentValue(item);
+              });
+              var diff=currValue-preValue;
+              if(diff>0){
+                increaseChildrenSliderValue(this,diff,preValue);
+              }
+              else
+              {
+                decreaseChildrenSliderValue(this,diff*-1,preValue);
+              }
             }
           }
         },
         LockChange:function(){
-          var element = getLockElement(this);
-          if(element.className==='lock unlocked')
+          
+          if(isUnLocked(this))
           {
+            var element = getLockElement(this);
             element.className='lock';
             var element2 = getSlider(this);
             element2.disabled=true;
@@ -276,6 +278,7 @@ _handleCreateTreeButton = function() {
           }
           else
           {
+            var element = getLockElement(this);
             element.className='lock unlocked';
             var element2 = getSlider(this);
             element2.disabled=false;
@@ -294,6 +297,13 @@ _handleCreateTreeButton = function() {
           element2.disabled=false;
           unlockedParents(node.parent);
       }
+  }
+  function isUnLocked(node) { 
+    var element = getLockElement(node);
+    if(element.className==='lock unlocked')
+        return true;
+    else
+        return false;
   }
     function lockedChildren(node) { 
         if(node.children!==null)
@@ -325,19 +335,20 @@ _handleCreateTreeButton = function() {
         updateParentsSliderValue(node.parent);
       }
   
-      function decreaseChildrenSliderValue(node,counter) {
+      function decreaseChildrenSliderValue(node,counter,preValue) {
         if(node.children!==null)
          {
           while(counter>0)
           {
             var i = Math.floor(Math.random() * node.children.length); 
             var v= getSliderCurrentValue(node.children[i]);
-            if (v!==0)
+            if (v!==0 )//&& isUnLocked(node.children[i]) )
             {
               setSliderValue(node.children[i],v-1);
               decreaseChildrenSliderValue(node.children[i],1);
               counter=counter-1;
             }
+
           }
         }
       }
@@ -348,7 +359,7 @@ _handleCreateTreeButton = function() {
           {
             var i = Math.floor(Math.random() * node.children.length);
             var v= getSliderCurrentValue(node.children[i]);
-            if (v!==getSliderMaxValue(node.children[i]))
+            if (v!==getSliderMaxValue(node.children[i]) )//&& isUnLocked(node.children[i]))
             {
               setSliderValue(node.children[i],v+1);
               increaseChildrenSliderValue(node.children[i],1);
@@ -505,10 +516,10 @@ _handleCreateTreeButton = function() {
      * @param {Object} tree
      * @param {String} targetElem
      */
-    function render(tree, targetElem) {
+    function render(tree, targetElem,i) {
       let rootElem;
       if (targetElem) {
-        rootElem = document.querySelector(targetElem);
+        rootElem = document.querySelectorAll(targetElem);
       } else {
         rootElem = document.body;
       }
@@ -517,7 +528,7 @@ _handleCreateTreeButton = function() {
         if (!node.expanded) {
           node.hideChildren();
         }
-        rootElem.appendChild(node.elem);
+        rootElem[i].appendChild(node.elem);
       });
     }
     
@@ -534,9 +545,12 @@ _handleCreateTreeButton = function() {
         let parsedData = jsonData;
         if (typeof jsonData === 'string' || jsonData instanceof String) parsedData = JSON.parse(jsonData);
         var numParticles=parsedData['general']['particles'];
-        const tree = createTree(parsedData['stats']['global'],numParticles);
-        render(tree, targetElem);
-        //console.log(tree);
+        
+        const tree = createTree(parsedData['stats']['elements'],numParticles);
+        render(tree, targetElem,0);
+
+        const tree2 = createTree(parsedData['stats']['global'],numParticles);
+        render(tree2, targetElem,1);
       }
     }
     })();

@@ -9,6 +9,8 @@
     --unlocked-color: #2196f3; 
 }
 .treeLock {
+  margin-right: 8px;
+  margin-left: 1px;
   display: flex;
   align-items: center;
   justify-content: center;
