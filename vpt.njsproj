@@ -20,6 +20,10 @@
     <Content Include="packer.json" />
     <Content Include="README.md" />
     <Content Include="data-generator\README.txt" />
+    <Content Include="src\css\jsonview.css" />
+    <Content Include="src\css\ui\DTreeView.css" />
+    <Content Include="src\css\ui\TreeLock.css" />
+    <Content Include="src\css\ui\TreeSlider.css" />
     <Content Include="src\glsl\average.glsl" />
     <Content Include="src\glsl\drawTransferFunction.glsl" />
     <Content Include="src\glsl\mixins\btrand.glsl" />
@@ -49,6 +53,7 @@
     <Content Include="src\glsl\tonemappers\ExposureToneMapper.glsl" />
     <Content Include="src\glsl\tonemappers\RangeToneMapper.glsl" />
     <Content Include="src\glsl\tonemappers\ReinhardToneMapper.glsl" />
+    <Content Include="src\html\ui\DTreeView.html" />
     <Content Include="src\index.html" />
     <Content Include="data-generator\data\data-160b-128x128x128-150part.json" />
     <Content Include="data-generator\data\data-32b-128x128x128-150part.json" />
@@ -71,6 +76,7 @@
     <Content Include="src\images\logo.svg" />
     <Content Include="src\js\Application.js" />
     <Content Include="src\js\Camera.js" />
+    <Content Include="src\js\dialogs\TreeViewDialog.js" />
     <Content Include="src\js\DoubleBuffer.js" />
     <Content Include="src\js\Draggable.js" />
     <Content Include="src\js\EventEmitter.js" />
@@ -81,11 +87,13 @@
     <Content Include="src\js\SingleBuffer.js" />
     <Content Include="src\js\Ticker.js" />
     <Content Include="src\js\TransferFunctionWidget.js" />
+    <Content Include="src\js\ui\DTreeView.js" />
     <Content Include="src\js\Volume.js" />
     <Content Include="src\js\WebGL.js" />
     <Content Include="src\uispecs\EnvmapLoadDialog.json" />
     <Content Include="src\uispecs\MainDialog.json" />
     <Content Include="src\uispecs\RenderingContextDialog.json" />
+    <Content Include="src\uispecs\TreeViewDialog.json" />
     <Content Include="src\uispecs\VolumeLoadDialog.json" />
     <Content Include="src\css\ui\Accordion.css" />
     <Content Include="src\css\ui\Button.css" />
