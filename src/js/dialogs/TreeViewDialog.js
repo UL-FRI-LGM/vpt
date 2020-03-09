@@ -25,11 +25,11 @@ _handleCreateTreeButton = function() {
     'use strict';
     /**
      * Create html element
-     * @param {String} type html element 
+     * @param {String} storageType html element 
      * @param {Object} config
      */
-    function  createElement(type, config) {
-      const htmlElement = document.createElement(type);
+    function  createElement(storageType, config) {
+      const htmlElement = document.createElement(storageType);
     
       if (config === undefined) {
         return htmlElement;
@@ -77,20 +77,18 @@ _handleCreateTreeButton = function() {
     
       const indexElem = createElement('div', {
         className: 'json-index',
-        content: node.key,
+        content: node.property,
       });
     
       const typeElem = createElement('div', {
         className: 'json-type',
-        content: "Scene",
+        content: 'Global',
       });
     
-      const keyElem = createElement('div', {
-        className: 'json-key',
-        content: node.key,
+      const propertyElem = createElement('div', {
+        className: 'json-property',
+        content: node.property,
       });
-      node.value = getSumOfChildValues(node);
-
       const div_Lock =createElement('div', {
         className:  'treeLock'
       });
@@ -116,12 +114,26 @@ _handleCreateTreeButton = function() {
       div_slider.appendChild(div3);
 
       let lineChildren;
-      if (node.key === null) {
-        lineChildren = [caretElem,typeElem,div_slider,div_Lock]
-      } else if (node.parent.type === 'array') {
-        lineChildren = [caretElem,indexElem,div_slider,div_Lock]
+      if( node.isroot==true)
+      {
+        lineChildren = [caretElem,typeElem]
+      }
+      else if(node.isPropertyTree)
+      {
+        if (node.property === null) {
+          lineChildren = [caretElem,typeElem,div_slider]
+        } else if (node.parent.storageType === 'array') {
+          lineChildren = [caretElem,indexElem];//,div_slider]
+        } else {
+          lineChildren = [caretElem,propertyElem];//,div_slider]
+        }
+      }
+      else if (node.property === null) {
+        lineChildren = [caretElem,typeElem];//,div_slider,div_Lock]
+      } else if (node.depth == 1) {//else if (node.parent.storageType === 'array') {
+        lineChildren = [caretElem,indexElem,div_slider];//,div_Lock]
       } else {
-        lineChildren = [caretElem,keyElem,div_slider,div_Lock]
+        lineChildren = [caretElem,propertyElem];//,div_slider,div_Lock]
       }
     
       const lineElem = createElement('div', {
@@ -144,9 +156,9 @@ _handleCreateTreeButton = function() {
         className: 'empty-icon',
       });
     
-      const keyElem = createElement('div', {
-        className: 'json-key',
-        content: node.key
+      const propertyElem = createElement('div', {
+        className: 'json-property',
+        content: node.property
       });
       const div_Lock =createElement('div', {
         className:  'treeLock'
@@ -171,10 +183,19 @@ _handleCreateTreeButton = function() {
       div3.setAttribute('value',node.value);
       div3.setAttribute('step',1);
       div_slider.appendChild(div3);
+      var arr;
+      if(node.isPropertyTree)
+      {
+        arr=[caretElem, propertyElem,div_slider];
+      }
+     else{
+        arr=[caretElem, propertyElem,div_slider,div_Lock];
+     }
       const lineElem = createElement('div', {
         className: 'line',
-        children: [caretElem, keyElem,div_slider,div_Lock]
+        children: arr
       });
+     
     
       if (node.depth > 0) {
         lineElem.style = 'margin-left: ' + node.depth * 20 + 'px;';
@@ -190,15 +211,17 @@ _handleCreateTreeButton = function() {
      */
     function createNode() {
       return {
-        key: null,
+        property: null,
         parent: null,
         value: null,
+        maxValue: null,
         expanded: false,
-        type: null,
+        storageType: null,
         children: null,
         elem: null,
         depth: 0,
-    
+        control:null,
+        HIcontrol:[],
         setCaretIconRight() {
           const icon = this.elem.querySelector('.fas');
           icon.classList.replace('fa-caret-down', 'fa-caret-right');
@@ -246,16 +269,37 @@ _handleCreateTreeButton = function() {
           var el=getSlider(this);
           if(el.disabled!==true)
           {
-            var maxValue = getSliderCurrentValue(this);
-            var currValue= getSliderCurrentValue(this);
-            updateParentsSliderValue(this.parent);
-            if(this.children!==null)
+            var prevValue=this.value;
+            var currValue=getSliderCurrentValue(this);
+            this.value = currValue;
+            var ratio= (this.value/this.maxValue)*100;
+            if(this.isPropertyTree && this.HIcontrol!=[])
             {
-              var preValue=0;
-              this.children.forEach((item) => {
-                preValue=preValue + getSliderCurrentValue(item);
+              this.HIcontrol.forEach((item) => {
+                if(isUnLocked(item)===true)
+                {
+                  var newValue=Math.floor(ratio*(item.maxValue/100));
+                  setSliderValue(item,newValue);
+                }
               });
-              var diff=currValue-preValue;
+            }
+            else if(this.control!=null)
+            {
+              var sum=0;
+              //console.log(this);
+              //console.log(this.conrol.HIcontrol);
+              
+              this.control.HIcontrol.forEach((item) => {
+                sum=sum+item.value;
+              });
+              setSliderValue(this.conrol,sum);
+            }
+
+            //updateParentsSliderValue(this.parent);
+
+            /*if(this.children!==null)
+            {
+              var diff=currValue-prevValue;
               if(diff>0){
                 increaseChildrenSliderValue(this,diff,preValue);
               }
@@ -263,7 +307,7 @@ _handleCreateTreeButton = function() {
               {
                 decreaseChildrenSliderValue(this,diff*-1,preValue);
               }
-            }
+            }*/
           }
         },
         LockChange:function(){
@@ -325,14 +369,16 @@ _handleCreateTreeButton = function() {
        * @param {Object} obj
        */ 
       function updateParentsSliderValue(node) {
-        if(node===null)
-          return ;
-        var sum=0;
-        node.children.forEach((item) => {
-          sum=sum + getSliderCurrentValue(item);
-        });
-        setSliderValue(node,sum);
-        updateParentsSliderValue(node.parent);
+        if(node.isroot===false)
+        {
+          var sum=0;
+          node.children.forEach((item) => {
+            sum=sum + item.value;
+          });
+          setSliderValue(node,sum);
+          updateParentsSliderValue(node.parent);
+        }
+        
       }
   
       function decreaseChildrenSliderValue(node,counter,preValue) {
@@ -369,21 +415,6 @@ _handleCreateTreeButton = function() {
         }
       }
 
-    /**
-     * 
-     * @param {Object} obj
-     */ 
-    function updateParentsSliderValue(node) {
-      if(node===null)
-        return ;
-      var sum=0;
-      node.children.forEach((item) => {
-        sum=sum + getSliderCurrentValue(item);
-      });
-      setSliderValue(node,sum);
-      updateParentsSliderValue(node.parent);
-    }
-
   
            /**
      * Return slider value
@@ -403,6 +434,7 @@ _handleCreateTreeButton = function() {
      */ 
     function setSliderValue(obj,newValue) {
       getSlider(obj).value = newValue;
+      obj.value=newValue;
     }
                /**
      * Return slider max value
@@ -431,7 +463,7 @@ _handleCreateTreeButton = function() {
      */
     function getLength(obj) {
       let length = 0;
-      for (let key in obj) {
+      for (let property in obj) {
         length += 1;
       };
       return length;
@@ -439,17 +471,17 @@ _handleCreateTreeButton = function() {
     
     
     /**
-     * Return variable type
+     * Return variable storageType
      * @param {*} val
      */
     function getType(val) {
-      let type = typeof val;
+      let storageType = typeof val;
       if (Array.isArray(val)) {
-        type = 'array';
+        storageType = 'array';
       } else if (val === null) {
-        type = 'null';
+        storageType = 'null';
       }
-      return type;
+      return storageType;
     }
     
     
@@ -458,22 +490,27 @@ _handleCreateTreeButton = function() {
      * @param {Object} obj parsed json object
      * @param {Object} parent of object tree
      */
-    function traverseObject(obj, parent) {
-      for (let key in obj) {
+    function traverseObject(obj, parent,isPropertyTree) {
+      for (let property in obj) {
         const child = createNode();
+        child.isPropertyTree=isPropertyTree;
         child.parent = parent;
-        child.key = key;
-        child.type = getType(obj[key]);
+        child.property = property;
+        child.storageType = getType(obj[property]);
         child.depth = parent.depth + 1;
         child.expanded = false;
-    
-        if (typeof obj[key] === 'object') {
+        child.isroot=false
+        if (typeof obj[property] === 'object') {
           child.children = [];
           parent.children.push(child);
-          traverseObject(obj[key], child);
+          traverseObject(obj[property], child,isPropertyTree);
+          //child.value = obj[property];
+          child.value = getSumOfChildValues(child);
+          child.maxValue = child.value;
           child.elem = createExpandedElement(child);
         } else {
-          child.value = obj[key];
+          child.value = obj[property];
+          child.maxValue = child.value;
           child.elem = createNotExpandedElement(child);
           parent.children.push(child);
         }
@@ -485,13 +522,16 @@ _handleCreateTreeButton = function() {
      * @param {Object} obj Json object
      * @return {Object}
      */
-    function createTree(obj,numParticles) {
+    function createTree(obj,numParticles,isPropertyTree) {
       const tree = createNode();
-      tree.type = getType(obj);
+      tree.storageType = getType(obj);
+      tree.isPropertyTree=isPropertyTree;
       tree.value = numParticles;
+      tree.maxValue = numParticles;
       tree.children = [];
       tree.expanded = true;
-      traverseObject(obj, tree);
+      tree.isroot=true;
+      traverseObject(obj, tree,isPropertyTree);
       tree.elem = createExpandedElement(tree);
       return tree;
     }
@@ -534,24 +574,126 @@ _handleCreateTreeButton = function() {
     
 
     
-    /* Export jsonView object */
-    window.jsonView = {
-      /**
-       * Render JSON into DOM container
-       * @param {String} jsonData
-       * @param {String} targetElem
-       */
-      format: function(jsonData, targetElem) {
-        let parsedData = jsonData;
-        if (typeof jsonData === 'string' || jsonData instanceof String) parsedData = JSON.parse(jsonData);
-        var numParticles=parsedData['general']['particles'];
-        
-        const tree = createTree(parsedData['stats']['elements'],numParticles);
-        render(tree, targetElem,0);
-
-        const tree2 = createTree(parsedData['stats']['global'],numParticles);
-        render(tree2, targetElem,1);
-      }
-    }
-    })();
+ /* Export jsonView object */
+ window.jsonView = {
+  /**
+   * Render JSON into DOM container
+   * @param {String} jsonData
+   * @param {String} targetElem
+   */
+  format: function(jsonData, targetElem) {
+    let parsedData = jsonData;
+    if (typeof jsonData === 'string' || jsonData instanceof String) parsedData = JSON.parse(jsonData);
+    var numParticles=parsedData['general']['particles'];
     
+    //const properties=createPropertyArray(parsedData['stats']['global']);
+    //console.log(Properties);
+ 
+   
+    const tree = createTree(parsedData['stats']['elements'],numParticles,false);
+    render(tree, targetElem,0);
+    const propertyTree = createTree(parsedData['stats']['global'],numParticles,true);
+    render(propertyTree, targetElem,1);
+    connectTrees(tree,propertyTree);
+    console.log(tree);
+
+  }
+}
+function connectTrees(HItree,node)
+{
+    if (node !== null) {
+      searchANDLink(HItree,node,node.property);
+      if(node.children!=null)
+      {
+        node.children.forEach((child) => {
+          connectTrees(HItree,child);
+        });
+      }
+
+    }
+}
+function searchANDLink(HInode,node,property)
+{
+    
+      if (HInode !== null) {
+       
+          if(HInode.property==property)
+          {
+            //console.log(Hnode.property);
+            HInode.control=node;
+            node.HIcontrol.push(HInode);
+          }
+          else
+           {
+             if (HInode.children !== null)
+             {
+              HInode.children.forEach((child) => {
+                searchANDLink(child,node,property);
+              });
+
+             }
+              
+          }
+      }
+  
+}
+      /**
+ * Create root of a tree
+ * @param {Object} obj Json object
+ *@return {Object}
+ 
+function createPropertyArray(obj) {
+  var arrayProperties=[];
+  var i = 0;
+  for (let p in obj) {
+    let property = new Property(p,i++);
+    property.types=readPropertyValues(obj[p]);
+    //property.value=??
+    //property.minValue=??
+    arrayProperties.push(property);
+  }
+  return arrayProperties;
+
+}
+function readPropertyValues(obj) {
+  var arrayTypes=[];
+  for (let type in obj) 
+  {
+      let pv=new PropertyValue(type,obj[type]);
+      arrayTypes.push(pv);
+  }
+  return arrayTypes;
+}*/
+})();
+
+/***************
+
+class Property  {
+constructor(name,id) {
+this.name = name;//string
+this.id=id;//int
+this.types=[]; //PropertyValue
+this.control=null; //html elem
+this.HIcontrol=[];//html elem
+//this.value=??
+//this.maxValue=0;
+//this.minValue=0;
+}
+}
+class PropertyValue  {
+constructor(name,value) {
+this.name = name;//string
+this.value=value;//int
+}
+}
+//let user = new User("John");
+//user.getName();
+
+class HNode  {
+constructor(property,value) {
+this.subNode = [];//string
+this.property=property;//int
+this.elem=[]; //html elem
+}
+}*/
+

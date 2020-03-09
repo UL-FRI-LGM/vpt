@@ -16,7 +16,8 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/terier/vpt#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "react-sortable-tree-theme-file-explorer": "^2.0.0"
   },
   "engines": {
     "node": "12.x"

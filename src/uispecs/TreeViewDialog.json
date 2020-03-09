@@ -12,7 +12,7 @@
     },
     {
       "type": "accordion",
-      "label": "Element Tree",
+      "label": "Elements View Controller",
       "children": [
         {
           "type": "treeView",
@@ -21,7 +21,7 @@
     },
     {
       "type": "accordion",
-      "label": "Property Tree",
+      "label": "Properties View Controller",
       "children": [
         {
           "type": "treeView",

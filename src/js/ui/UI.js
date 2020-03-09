@@ -19,7 +19,6 @@
 // #include Textbox.js
 // #include VectorSpinner.js
 // #include TreeView.js
-
 class UI {
 
 static get CLASS_FROM_TYPE() {
