@@ -19,6 +19,7 @@
 // #include Textbox.js
 // #include VectorSpinner.js
 // #include TreeView.js
+// #include DTreeView.js
 class UI {
 
 static get CLASS_FROM_TYPE() {
@@ -42,6 +43,7 @@ static get CLASS_FROM_TYPE() {
         'textbox'       : Textbox,
         'vector'        : VectorSpinner,
         'treeView'      : TreeView,
+        'DtreeView'      : DTreeView,
     };
 }
 

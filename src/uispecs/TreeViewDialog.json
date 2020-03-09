@@ -12,6 +12,15 @@
     },
     {
       "type": "accordion",
+      "label": "DTree View Controller",
+      "children": [
+        {
+          "type": "DtreeView",
+          "label": "DTree"
+        }]
+    },
+    {
+      "type": "accordion",
       "label": "Elements View Controller",
       "children": [
         {
