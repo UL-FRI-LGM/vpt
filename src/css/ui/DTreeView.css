@@ -1,19 +1,19 @@
 /* #package css/main */
 
-/*
-.container
+
+.DtreeView > .container
     {
         max-width: 400px;
         margin: auto;
     }
-    .tag-container
+    .DtreeView > .tag-container
     {
         display: inline-block;
         clear: both;
         width: 100%;
         margin-top: 20px;
     }
-    .doc-item
+    .DtreeView >  .doc-item
     {
         margin: 5px;
         padding-right: 0.3em;
@@ -24,13 +24,12 @@
         border: 1px solid black;
         cursor: default;
     }
-    .item-trash
+    .DtreeView > .item-trash
     {
         font-size: 48px;
         float: right;
     }
-    .item-trash-dropover
+    .DtreeView > .item-trash-dropover
     {
         color: red;
     }
-    */
