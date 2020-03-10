@@ -5,3 +5,4 @@ settings
 .vs/
 bin/
 obj/
+build-data-generator-Qt_5_14_0_msvc2017_64-Debug/
