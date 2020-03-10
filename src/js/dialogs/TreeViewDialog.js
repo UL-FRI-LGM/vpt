@@ -13,114 +13,267 @@ constructor(options) {
 
     this._handleReadJSONButton=this._handleReadJSONButton.bind(this);
     this._binds.ReadJSONButton.addEventListener('click', this._handleReadJSONButton);
+
+    fetch("data_schema.json").then(response => response.json()).then(data_schema=>{
+      var json =data_schema['stats']['global'];
+      nbProperty=0;
+      for (var x in json) {
+          let p=new Property(x,nbProperty);  
+          var d={text: "",id:"", expanded: true,iconCls: "fa fa-folder"};
+          d.text=x;
+          d.id=nbProperty;
+          nbProperty++;
+          propertyList.push(d);
+   
+          for (var y in json[x]) {
+              let pp=new PropValue(y,json[x][y])
+              p.types.push(pp);
+          }
+          propertyArr.push(p);
+      }
+      console.log(propertyArr);
+   });
+   fetch("data_schema.json").then(response => response.json()).then(data_schema=>{
+      var json =data_schema['stats']['elements'];
+      nbElement=0;
+      for (var x in json) {
+          let e=new Element(nbElement);  
+          nbElement++;
+          for (var y in json[x]) {
+              let pp=new PropValue(y,json[x][y])
+              e.properties.push(pp);
+          }
+          ElementArr.push(e);
+      }
+      console.log(ElementArr);
+   });
 }
 _handleReadJSONButton = function() {
-  var data= [
-    {
-                text: "Type", 
-                expanded: true, 
-                iconCls: "fa fa-folder", 
+  jQuery(function ($) {
+    $("#treeview").shieldTreeView({
+        dragDrop: true,
+        dragDropScope: "treeview-dd-scope",
+        dataSource: propertyList,
+        events: {
+            droppableOver: function(e) {
+                if (!e.valid) {
+                    // if an invalid draggable item is over a tree item,
+                    // re-validate it - i.e. if it is a doc-item, allow the drop
+                    if ($(e.draggable).hasClass('doc-item')) {
+                        e.valid = true;
+                    }
+                }
             },
-            {
-                text: "Orientation", 
-                expanded: true, 
-                iconCls: "fa fa-folder", 
-            },
-            {
-                text: "Size", 
-                expanded: true, 
-                iconCls: "fa fa-folder", 
-            }
-    ];
-jQuery(function ($) {
-$("#treeview").shieldTreeView({
-    dragDrop: true,
-    dragDropScope: "treeview-dd-scope",
-    dataSource: data,
-    events: {
-        droppableOver: function(e) {
-            if (!e.valid) {
-                // if an invalid draggable item is over a tree item,
-                // re-validate it - i.e. if it is a doc-item, allow the drop
-                if ($(e.draggable).hasClass('doc-item')) {
-                    e.valid = true;
+            drop: function (e) {
+                var valid = e.valid;
+                if (!valid) {
+                    // if not valid, it means something different than a tree node
+                    // is being dropped - in this case, check for a doc item and 
+                    // set valid to true if so
+                    if ($(e.draggable).hasClass('doc-item')) {
+                        valid = true;
+                    }
+                }
+                if (valid) {
+                    if (e.sourceNode) {
+                        // dropping a treeview node - move it
+                        this.append(e.sourceNode, e.targetNode);
+                    }
+                    else {
+                        // dragging a doc item - insert a new one
+                        // and remove the dragged element
+                        this.append({ text: $(e.draggable).html() }, e.targetNode);
+                        $(e.draggable).remove();
+                    }
+                    // disable the animation
+                    e.skipAnimation = true;
                 }
             }
+        }
+    });
+    // setup drag and drop handlers for the elements outside the treeview
+    $(".doc-item").shieldDraggable({
+        scope: "treeview-dd-scope",
+        helper: function() { 
+            return $(this.element).clone().appendTo(document.body);
         },
-        drop: function (e) {
-            var valid = e.valid;
-            if (!valid) {
-                // if not valid, it means something different than a tree node
-                // is being dropped - in this case, check for a doc item and 
-                // set valid to true if so
-                if ($(e.draggable).hasClass('doc-item')) {
-                    valid = true;
-                }
+        events: {
+            stop: function (e) {
+                // always cancel the movement of the item;
+                // if a drop over a valid target ocurred, we will handle that 
+                // in the respective drop handler
+                e.preventDefault();
             }
-            if (valid) {
-                if (e.sourceNode) {
-                    // dropping a treeview node - move it
-                    this.append(e.sourceNode, e.targetNode);
+        }
+    });
+    // handle drop on the trash can
+    $(".item-trash").shieldDroppable({
+        scope: "treeview-dd-scope",
+        hoverCls: "item-trash-dropover",
+        tolerance: "touch",
+        events: {
+            drop: function (e) {
+                if ($(e.draggable).hasClass('sui-treeview-item-text')) {
+                    // dropped a treeview item - delete it
+                    $("#treeview").swidget("TreeView").remove($(e.draggable).closest('.sui-treeview-item'));
                 }
                 else {
-                    // dragging a doc item - insert a new one
-                    // and remove the dragged element
-                    this.append({ text: $(e.draggable).html() }, e.targetNode);
+                    // dropped a doc-item, just delete it from the DOM
                     $(e.draggable).remove();
                 }
-                // disable the animation
+                // disable animation of the droppable, so that it
+                // does not get animated if cancelled
                 e.skipAnimation = true;
             }
         }
-    }
+    });
 });
-// setup drag and drop handlers for the elements outside the treeview
-$(".doc-item").shieldDraggable({
-    scope: "treeview-dd-scope",
-    helper: function() { 
-        return $(this.element).clone().appendTo(document.body);
-    },
-    events: {
-        stop: function (e) {
-            // always cancel the movement of the item;
-            // if a drop over a valid target ocurred, we will handle that 
-            // in the respective drop handler
-            e.preventDefault();
-        }
-    }
-});
-// handle drop on the trash can
-$(".item-trash").shieldDroppable({
-    scope: "treeview-dd-scope",
-    hoverCls: "item-trash-dropover",
-    tolerance: "touch",
-    events: {
-        drop: function (e) {
-            if ($(e.draggable).hasClass('sui-treeview-item-text')) {
-                // dropped a treeview item - delete it
-                $("#treeview").swidget("TreeView").remove($(e.draggable).closest('.sui-treeview-item'));
-            }
-            else {
-                // dropped a doc-item, just delete it from the DOM
-                $(e.draggable).remove();
-            }
-            // disable animation of the droppable, so that it
-            // does not get animated if cancelled
-            e.skipAnimation = true;
-        }
-    }
-});
-});
+
 }
 _handleCreateTreeButton = function() {
-  
-   fetch('data_schema.json')
+  var element = document.querySelector(".sui-treeview-list");
+  element.id="Dtreeview"
+  //console.log(element);
+
+  var nav = getNav($('#Dtreeview'));
+  function getNav($ul) {
+      return $ul.children('li').map(function () {
+          var $this = $(this), obj = $this.data(), $ul = $this.children('ul');
+          if ($ul.length) {
+              obj.child = getNav($ul)
+          }
+          return obj;
+      }).get()
+  }
+ //console.log(nav);
+ jsonHArr=createJSON(nav,jsonHArr);
+ //console.log(jsonHArr);
+ //console.log(JSON.parse(jsonHArr));
+ jsonView.format(jsonHArr, '.root');
+   /*fetch(jsonHArr)
     .then((res)=> { return res.text();})
     .then((data) => { 
       jsonView.format(data, '.root'); })
-    .catch((err) => {  console.log(err); })
+    .catch((err) => {  console.log(err); })*/
 }
 }
+class Property  {
+  constructor(name,id) {
+  this.name = name;//string
+  this.id=id;//int
+  this.types=[]; //PropValue
+  }
+  }
+  class PropValue  {
+  constructor(type,value) {
+  this.type = type;//string
+  this.value=value;//int
+  }
+  }
+  
+  class HNode  {
+  constructor(property,value) {
+  this.children = [];//string
+  this.property=property;//int
+  this.elem=[]; //html elem
+  }
+  }
+  class Element  {
+  constructor(id) {
+  this.id = id;//string
+  this.properties=[]; //PropValue
+  }
+  }
+  let propertyList=new Array();
+  let propertyArr=new Array();
+  let ElementArr=new Array();
+  var nbProperty=0;
+  var nbElement=0;
+  var jsonHArr ='';
+  //************************* */
+  function createJSON(nav,jsonHArr)
+{
+ 
+   jsonHArr+='{';
+   for (n = 0; n< nav.length; n++) {
+        jsonHArr+=createJSONHierarchyTree(nav[n],'');
+        if(n+1 < nav.length)
+              jsonHArr+=',';
+    }
+   jsonHArr+='}';
+   return jsonHArr;
+}
+function createJSONHierarchyTree(nav,jsonHArr)
+{
+        //console.log(nav);
+        if (nav!== null)
+        { 
+            
+            var name=nav['suiTreeviewListItem']['text'];
+            var id=nav['suiTreeviewListItem']['id'];
+            var arrTypes=propertyArr[id].types;
+            var child=nav['child'];
+            jsonHArr+= getString(name)+':';
+            if(child.length!==0)
+            { 
+                jsonHArr+='{'+getStringPropNode(child,arrTypes,0,arrTypes.length,'')+'}';
+                /*jsonHArr+='{';
+                for (k = 0; k < arrTypes.length; k++) {
+                    jsonHArr+=getString(arrTypes[k].type)+':{';
+                    for (j = 0; j < child.length; j++) {
+                        jsonHArr+=createJSONHierarchyTree(child[j],'');
+                        console.log(jsonHArr);
+                        if(j+1 < child.length)
+                             jsonHArr+=',';
+                    }
+                    if(k+1 < arrTypes.length)
+                         jsonHArr+='},';
+                    else
+                         jsonHArr+='}';
+                }
+                jsonHArr+='}';*/
+            }
+            else
+            {
+                jsonHArr+='['+ getStringOfPropElement(arrTypes)+']';
+            }
+            
+        }
+        return jsonHArr;
+}
+function getStringPropNode(child,arrTypes,k,length,jsonHArr)
+{
+    if(k<length)
+    {
+        jsonHArr+=getString(arrTypes[k].type)+':{';
+        for (j = 0; j < child.length; j++) {
+            jsonHArr+=createJSONHierarchyTree(child[j],'');
+            //console.log(jsonHArr);
+            if(j+1 < child.length)
+              jsonHArr+=',';
+        }
+        if(k+1 < arrTypes.length){
+            jsonHArr+='},';
+            jsonHArr+=getStringPropNode(child,arrTypes,k+1,length,'');
+        }
+        else
+            jsonHArr+='}';
+    }
+    return jsonHArr;
+}
+function getStringOfPropElement(arr)
+{
+    var s=getString(arr[0].type);
+    for (i = 1; i < arr.length; i++) {
+       s += ','+getString(arr[i].type);
+    }
+    return s;
+}
+function getString(s)
+{
+    return '\"'+s+'\"';
+}
+/*********************************** */
 (function() {
     'use strict';
     /**
@@ -684,17 +837,17 @@ _handleCreateTreeButton = function() {
   format: function(jsonData, targetElem) {
     let parsedData = jsonData;
     if (typeof jsonData === 'string' || jsonData instanceof String) parsedData = JSON.parse(jsonData);
-    var numParticles=parsedData['general']['particles'];
+    //var numParticles=parsedData['general']['particles'];
     
     //const properties=createPropertyArray(parsedData['stats']['global']);
     //console.log(Properties);
  
    
-    const tree = createTree(parsedData['stats']['elements'],numParticles,false);
+    const tree = createTree( parsedData,150,false);
     render(tree, targetElem,0);
-    const propertyTree = createTree(parsedData['stats']['global'],numParticles,true);
-    render(propertyTree, targetElem,1);
-    connectTrees(tree,propertyTree);
+    //const propertyTree = createTree(parsedData['stats']['global'],numParticles,true);
+   // render(propertyTree, targetElem,1);
+   // connectTrees(tree,propertyTree);
     console.log(tree);
 
   }
