@@ -19,7 +19,7 @@ constructor(options) {
       nbProperty=0;
       for (var x in json) {
           let p=new Property(x,nbProperty);  
-          var d={text: "",id:"", expanded: true,iconCls: "fa fa-folder"};
+          var d={text: "",id:"", expanded: true,iconCls: "fas fa-ellipsis-horizontal"};
           d.text=x;
           d.id=nbProperty;
           nbProperty++;
@@ -31,7 +31,7 @@ constructor(options) {
           }
           propertyArr.push(p);
       }
-      console.log(propertyArr);
+      //console.log(propertyArr);
    });
    fetch("data_schema.json").then(response => response.json()).then(data_schema=>{
       var json =data_schema['stats']['elements'];
@@ -45,7 +45,7 @@ constructor(options) {
           }
           ElementArr.push(e);
       }
-      console.log(ElementArr);
+      //console.log(ElementArr);
    });
 }
 _handleReadJSONButton = function() {
@@ -171,13 +171,13 @@ class Property  {
   }
   }
   
-  class HNode  {
+  /*class HNode  {
   constructor(property,value) {
   this.children = [];//string
   this.property=property;//int
   this.elem=[]; //html elem
   }
-  }
+  }*/
   class Element  {
   constructor(id) {
   this.id = id;//string
@@ -702,13 +702,13 @@ function getString(s)
      * @param {Object} obj
      * @return {number}
      */ 
-    function getSumOfChildValues(obj) {
+    /*function getSumOfChildValues(obj) {
       var sum=0;
       obj.children.forEach((item) => {
         sum=sum + item.value;
       });
       return sum;
-    }
+    }*/
     /**
      * Return object length
      * @param {Object} obj
@@ -748,8 +748,14 @@ function getString(s)
         const child = createNode();
         child.isPropertyTree=isPropertyTree;
         child.parent = parent;
-        child.property = property;
         child.storageType = getType(obj[property]);
+        if(Array.isArray(obj))
+        {
+          child.property = obj[property];
+        }
+        else{
+          child.property = property;
+        }
         child.depth = parent.depth + 1;
         child.expanded = false;
         child.isroot=false
@@ -758,12 +764,12 @@ function getString(s)
           parent.children.push(child);
           traverseObject(obj[property], child,isPropertyTree);
           //child.value = obj[property];
-          child.value = getSumOfChildValues(child);
-          child.maxValue = child.value;
+          //child.value = getSumOfChildValues(child);
+         // child.maxValue = child.value;
           child.elem = createExpandedElement(child);
         } else {
-          child.value = obj[property];
-          child.maxValue = child.value;
+          //child.value = obj[property];
+          //child.maxValue = child.value;
           child.elem = createNotExpandedElement(child);
           parent.children.push(child);
         }
@@ -775,12 +781,12 @@ function getString(s)
      * @param {Object} obj Json object
      * @return {Object}
      */
-    function createTree(obj,numParticles,isPropertyTree) {
+    function createTree(obj,isPropertyTree) {
       const tree = createNode();
       tree.storageType = getType(obj);
       tree.isPropertyTree=isPropertyTree;
-      tree.value = numParticles;
-      tree.maxValue = numParticles;
+      tree.value = nbElement;
+      tree.maxValue = nbElement;
       tree.children = [];
       tree.expanded = true;
       tree.isroot=true;
@@ -836,19 +842,17 @@ function getString(s)
    */
   format: function(jsonData, targetElem) {
     let parsedData = jsonData;
-    if (typeof jsonData === 'string' || jsonData instanceof String) parsedData = JSON.parse(jsonData);
+    if (typeof jsonData === 'string' || jsonData instanceof String) 
+        parsedData = JSON.parse(jsonData);
     //var numParticles=parsedData['general']['particles'];
-    
-    //const properties=createPropertyArray(parsedData['stats']['global']);
-    //console.log(Properties);
- 
-   
-    const tree = createTree( parsedData,150,false);
+    console.log(parsedData);
+    const tree = createTree(parsedData,false);
     render(tree, targetElem,0);
+
     //const propertyTree = createTree(parsedData['stats']['global'],numParticles,true);
-   // render(propertyTree, targetElem,1);
+    //render(propertyTree, targetElem,1);
    // connectTrees(tree,propertyTree);
-    console.log(tree);
+    //console.log(tree);
 
   }
 }
@@ -918,35 +922,3 @@ function readPropertyValues(obj) {
   return arrayTypes;
 }*/
 })();
-
-/***************
-
-class Property  {
-constructor(name,id) {
-this.name = name;//string
-this.id=id;//int
-this.types=[]; //PropertyValue
-this.control=null; //html elem
-this.HIcontrol=[];//html elem
-//this.value=??
-//this.maxValue=0;
-//this.minValue=0;
-}
-}
-class PropertyValue  {
-constructor(name,value) {
-this.name = name;//string
-this.value=value;//int
-}
-}
-//let user = new User("John");
-//user.getName();
-
-class HNode  {
-constructor(property,value) {
-this.subNode = [];//string
-this.property=property;//int
-this.elem=[]; //html elem
-}
-}*/
-
