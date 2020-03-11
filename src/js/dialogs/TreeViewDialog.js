@@ -19,7 +19,7 @@ constructor(options) {
       nbProperty=0;
       for (var x in json) {
           let p=new Property(x,nbProperty);  
-          var d={text: "",id:"", expanded: true,iconCls: "fas fa-ellipsis-horizontal"};
+          var d={text: "",id:"", expanded: true,iconCls: "fa fa-folder"};
           d.text=x;
           d.id=nbProperty;
           nbProperty++;
@@ -217,21 +217,6 @@ function createJSONHierarchyTree(nav,jsonHArr)
             if(child.length!==0)
             { 
                 jsonHArr+='{'+getStringPropNode(child,arrTypes,0,arrTypes.length,'')+'}';
-                /*jsonHArr+='{';
-                for (k = 0; k < arrTypes.length; k++) {
-                    jsonHArr+=getString(arrTypes[k].type)+':{';
-                    for (j = 0; j < child.length; j++) {
-                        jsonHArr+=createJSONHierarchyTree(child[j],'');
-                        console.log(jsonHArr);
-                        if(j+1 < child.length)
-                             jsonHArr+=',';
-                    }
-                    if(k+1 < arrTypes.length)
-                         jsonHArr+='},';
-                    else
-                         jsonHArr+='}';
-                }
-                jsonHArr+='}';*/
             }
             else
             {
@@ -328,18 +313,18 @@ function getString(s)
       const handleClick = node.toggle.bind(node);
       caretElem.addEventListener('click', handleClick);
     
-      const indexElem = createElement('div', {
+     /* const indexElem = createElement('div', {
         className: 'json-index',
         content: node.property,
       });
     
       const typeElem = createElement('div', {
         className: 'json-type',
-        content: 'Global',
+        content: 'root',
       });
-    
+    */
       const propertyElem = createElement('div', {
-        className: 'json-property',
+        className: 'property',
         content: node.property,
       });
       const div_Lock =createElement('div', {
@@ -360,33 +345,40 @@ function getString(s)
       const handleChange = node.sliderChange.bind(node);
       div3.addEventListener('click', handleChange);
       div3.setAttribute('type',"range");
-      div3.setAttribute('max',node.value);
+      div3.setAttribute('max',100);
       div3.setAttribute('min',0);
-      div3.setAttribute('value',node.value);
+      div3.setAttribute('value',100);
       div3.setAttribute('step',1);
       div_slider.appendChild(div3);
 
       let lineChildren;
-      if( node.isroot==true)
+      if( node.isroot==true || node.parent.isroot==true)
       {
-        lineChildren = [caretElem,typeElem]
+        //lineChildren = [caretElem,typeElem]
+        lineChildren = [caretElem,propertyElem]
       }
-      else if(node.isPropertyTree)
+      /*else if(node.isPropertyTree)
       {
         if (node.property === null) {
+          //lineChildren = [caretElem,typeElem,div_slider]
           lineChildren = [caretElem,typeElem,div_slider]
         } else if (node.parent.storageType === 'array') {
+         // lineChildren = [caretElem,indexElem];//,div_slider]
           lineChildren = [caretElem,indexElem];//,div_slider]
         } else {
           lineChildren = [caretElem,propertyElem];//,div_slider]
         }
-      }
+      }*/
       else if (node.property === null) {
-        lineChildren = [caretElem,typeElem];//,div_slider,div_Lock]
-      } else if (node.depth == 1) {//else if (node.parent.storageType === 'array') {
-        lineChildren = [caretElem,indexElem,div_slider];//,div_Lock]
+        //lineChildren = [caretElem,typeElem];//,div_slider,div_Lock]
+        node.hasLocked=true;
+        node.hasSlider=true;
+        lineChildren = [caretElem,propertyElem,div_slider,div_Lock];
       } else {
-        lineChildren = [caretElem,propertyElem];//,div_slider,div_Lock]
+        //lineChildren = [caretElem,propertyElem];//,div_slider,div_Lock]
+        node.hasLocked=true;
+        node.hasSlider=true;
+        lineChildren = [caretElem,propertyElem,div_slider,div_Lock];
       }
     
       const lineElem = createElement('div', {
@@ -410,7 +402,7 @@ function getString(s)
       });
     
       const propertyElem = createElement('div', {
-        className: 'json-property',
+        className: 'property',
         content: node.property
       });
       const div_Lock =createElement('div', {
@@ -431,19 +423,21 @@ function getString(s)
       const handleChange = node.sliderChange.bind(node);
       div3.addEventListener('click', handleChange);
       div3.setAttribute('type',"range");
-      div3.setAttribute('max',node.value);
+      div3.setAttribute('max',100);
       div3.setAttribute('min',0);
-      div3.setAttribute('value',node.value);
+      div3.setAttribute('value',100);
       div3.setAttribute('step',1);
       div_slider.appendChild(div3);
       var arr;
-      if(node.isPropertyTree)
+      /*if(node.isPropertyTree)
       {
         arr=[caretElem, propertyElem,div_slider];
       }
-     else{
+     else{*/
+        node.hasLocked=true;
+        node.hasSlider=true;
         arr=[caretElem, propertyElem,div_slider,div_Lock];
-     }
+     //}
       const lineElem = createElement('div', {
         className: 'line',
         children: arr
@@ -465,16 +459,23 @@ function getString(s)
     function createNode() {
       return {
         property: null,
+        maxValue: 0,
+        value: 100,
+        elem: null,
         parent: null,
-        value: null,
-        maxValue: null,
+        children: null,
+        //count:0,
         expanded: false,
         storageType: null,
-        children: null,
-        elem: null,
         depth: 0,
         control:null,
         HIcontrol:[],
+        isDisabled:false,
+        isPropertyName:false,
+        isPropertyTree:false,
+        isroot:false,
+        hasLocked: false,
+        hasSlider: false,
         setCaretIconRight() {
           const icon = this.elem.querySelector('.fas');
           icon.classList.replace('fa-caret-down', 'fa-caret-right');
@@ -519,14 +520,14 @@ function getString(s)
           }
         },
         sliderChange: function() {
-          var el=getSlider(this);
-          if(el.disabled!==true)
+          if(this.isDisabled!==true)
           {
             var prevValue=this.value;
             var currValue=getSliderCurrentValue(this);
             this.value = currValue;
-            var ratio= (this.value/this.maxValue)*100;
-            if(this.isPropertyTree && this.HIcontrol!=[])
+            //var ratio= (this.value/this.maxValue)*100;
+
+            /*if(this.isPropertyTree && this.HIcontrol!=[])
             {
               this.HIcontrol.forEach((item) => {
                 if(isUnLocked(item)===true)
@@ -546,31 +547,34 @@ function getString(s)
                 sum=sum+item.value;
               });
               setSliderValue(this.conrol,sum);
+            }*/
+            //if(this.parent)
+            if(this.parent!==null && this.parent.hasSlider==true)
+            {
+              updateParentsSliderValue(this.parent);
             }
+      
 
-            //updateParentsSliderValue(this.parent);
-
-            /*if(this.children!==null)
+            if(this.children!==null)
             {
               var diff=currValue-prevValue;
-              if(diff>0){
-                increaseChildrenSliderValue(this,diff,preValue);
-              }
-              else
-              {
-                decreaseChildrenSliderValue(this,diff*-1,preValue);
-              }
-            }*/
+              var isNegative=false;
+              if(diff<0)
+                isNegative=true;
+              updateChildrenSliderValue(this,prevValue,currValue,isNegative);
+            }
           }
         },
         LockChange:function(){
           
-          if(isUnLocked(this))
+          if(this.isDisabled==false)
           {
+
             var element = getLockElement(this);
             element.className='lock';
             var element2 = getSlider(this);
             element2.disabled=true;
+            this.isDisabled=true;
             lockedChildren(this);
           }
           else
@@ -579,6 +583,7 @@ function getString(s)
             element.className='lock unlocked';
             var element2 = getSlider(this);
             element2.disabled=false;
+            this.isDisabled=false;
             unlockedParents(this.parent);
             
           }
@@ -586,7 +591,7 @@ function getString(s)
       }
     }
     function unlockedParents(node) { 
-      if(node!==null)
+      if(node!==null && node.hasLocked==true)
       {
           var element = getLockElement(node);
           element.className='lock unlocked';
@@ -595,13 +600,13 @@ function getString(s)
           unlockedParents(node.parent);
       }
   }
-  function isUnLocked(node) { 
+  /*function isUnLocked(node) { 
     var element = getLockElement(node);
     if(element.className==='lock unlocked')
         return true;
     else
         return false;
-  }
+  }*/
     function lockedChildren(node) { 
         if(node.children!==null)
         {
@@ -622,59 +627,72 @@ function getString(s)
        * @param {Object} obj
        */ 
       function updateParentsSliderValue(node) {
-        if(node.isroot===false)
+        if(node.isroot===false && node.hasSlider==true)
         {
           var sum=0;
           node.children.forEach((item) => {
             sum=sum + item.value;
           });
+          sum= sum/node.children.length;
           setSliderValue(node,sum);
           updateParentsSliderValue(node.parent);
         }
         
       }
-  
-      function decreaseChildrenSliderValue(node,counter,preValue) {
-        if(node.children!==null)
-         {
-          while(counter>0)
-          {
-            var i = Math.floor(Math.random() * node.children.length); 
-            var v= getSliderCurrentValue(node.children[i]);
-            if (v!==0 )//&& isUnLocked(node.children[i]) )
+      function updateChildrenSliderValue(node,parentPrevValue,parentCurrValue,isNegative)
+      {
+            var diff=parentCurrValue-parentPrevValue;
+            if(node.children!==null)
             {
-              setSliderValue(node.children[i],v-1);
-              decreaseChildrenSliderValue(node.children[i],1);
-              counter=counter-1;
+              var rem=0;
+              node.children.forEach((item) => {
+                var PrevValue=item.value;
+                if(isNegative==false && PrevValue<100)
+                {
+                  var ratio=(diff*PrevValue)/parentPrevValue;
+                  if(PrevValue+ratio>100){
+                      rem+=(PrevValue+ratio)-100;
+                      setSliderValue(item,100);
+                      updateChildrenSliderValue(item,item.value-PrevValue,PrevValue,isNegative) ;
+                    }
+                    else
+                    {
+                      setSliderValue(item,PrevValue+ratio);
+                      updateChildrenSliderValue(item,ratio,PrevValue,isNegative) ;
+                    }
+                }
+                else if(isNegative==true && PrevValue>0)
+                {
+                  var ratio=(diff*PrevValue)/parentPrevValue;
+                  if(PrevValue+ratio<0){
+                      rem+=(PrevValue+ratio);
+                      setSliderValue(item,0);
+                      updateChildrenSliderValue(item,item.value-PrevValue,PrevValue,isNegative) ;
+                    }
+                    else
+                    {
+                      setSliderValue(item,PrevValue+ratio);
+                      updateChildrenSliderValue(item,ratio,PrevValue,isNegative) ;
+                    }
+                }
+ 
+              });
+              if(rem>0 || rem<0)
+              {
+                var d=diff-rem;
+                updateChildrenSliderValue(node,parentPrevValue+d,parentCurrValue,isNegative) ;
+              }
             }
-
-          }
-        }
-      }
-      function increaseChildrenSliderValue(node,counter) {
-        if(node.children!==null)
-        {
-          while(counter>0)
-          {
-            var i = Math.floor(Math.random() * node.children.length);
-            var v= getSliderCurrentValue(node.children[i]);
-            if (v!==getSliderMaxValue(node.children[i]) )//&& isUnLocked(node.children[i]))
-            {
-              setSliderValue(node.children[i],v+1);
-              increaseChildrenSliderValue(node.children[i],1);
-              counter=counter-1;
-            }
-          }
-        }
       }
 
-  
+
            /**
      * Return slider value
      * @param {Object} obj
      * @return {Object}
      */ 
     function getSlider(obj) {
+    //  console.log(obj);
       return (obj.elem.children[2].children[0]);
     }
     function getSliderCurrentValue(obj) {
@@ -702,13 +720,13 @@ function getString(s)
      * @param {Object} obj
      * @return {number}
      */ 
-    /*function getSumOfChildValues(obj) {
+    function getSumOfChildValues(obj) {
       var sum=0;
       obj.children.forEach((item) => {
-        sum=sum + item.value;
+        sum=sum + item.maxValue;
       });
       return sum;
-    }*/
+    }
     /**
      * Return object length
      * @param {Object} obj
@@ -756,6 +774,10 @@ function getString(s)
         else{
           child.property = property;
         }
+        if(child.parent.isPropertyName!==true)
+        {
+           child.isPropertyName=true;
+        }
         child.depth = parent.depth + 1;
         child.expanded = false;
         child.isroot=false
@@ -763,19 +785,37 @@ function getString(s)
           child.children = [];
           parent.children.push(child);
           traverseObject(obj[property], child,isPropertyTree);
-          //child.value = obj[property];
-          //child.value = getSumOfChildValues(child);
-         // child.maxValue = child.value;
+          /*
+            child.maxValue = //  should be computed from element list
+          }*/
           child.elem = createExpandedElement(child);
         } else {
-          //child.value = obj[property];
-          //child.maxValue = child.value;
+          
+          //child.maxValue = //  should be computed from element list
           child.elem = createNotExpandedElement(child);
           parent.children.push(child);
         }
       }
     }
-
+    /*function getValueFromPropArr(node,_type)
+    {
+      var _name=node.parent.property;
+      for (var i=0 ; i < propertyArr.length ; i++)
+      {
+          if (propertyArr[i].name == _name) {
+           
+              for (var j=0 ; j < propertyArr[i].types.length ; j++)
+              {
+                //console.log(propertyArr[i].types);
+                if (propertyArr[i].types[j].type == _type) {
+                  //console.log(propertyArr[i].types[j].value);
+                  return propertyArr[i].types[j].value;
+                }
+              }
+          }
+      }
+     
+    }*/
     /**
      * Create root of a tree
      * @param {Object} obj Json object
@@ -790,12 +830,12 @@ function getString(s)
       tree.children = [];
       tree.expanded = true;
       tree.isroot=true;
+      tree.isPropertyName=false;
       traverseObject(obj, tree,isPropertyTree);
+      tree.maxValue=(getSumOfChildValues(tree))/tree.children.length;
       tree.elem = createExpandedElement(tree);
       return tree;
-    }
-    
-    
+    } 
     /**
      * Recursively traverse Tree object
      * @param {Object} node
@@ -852,7 +892,7 @@ function getString(s)
     //const propertyTree = createTree(parsedData['stats']['global'],numParticles,true);
     //render(propertyTree, targetElem,1);
    // connectTrees(tree,propertyTree);
-    //console.log(tree);
+    console.log(tree);
 
   }
 }
@@ -894,31 +934,4 @@ function searchANDLink(HInode,node,property)
       }
   
 }
-      /**
- * Create root of a tree
- * @param {Object} obj Json object
- *@return {Object}
- 
-function createPropertyArray(obj) {
-  var arrayProperties=[];
-  var i = 0;
-  for (let p in obj) {
-    let property = new Property(p,i++);
-    property.types=readPropertyValues(obj[p]);
-    //property.value=??
-    //property.minValue=??
-    arrayProperties.push(property);
-  }
-  return arrayProperties;
-
-}
-function readPropertyValues(obj) {
-  var arrayTypes=[];
-  for (let type in obj) 
-  {
-      let pv=new PropertyValue(type,obj[type]);
-      arrayTypes.push(pv);
-  }
-  return arrayTypes;
-}*/
 })();
