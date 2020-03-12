@@ -57,11 +57,50 @@
     },
     {
       "type": "field",
-      "label": "Visibility:",
+      "label": "Visibility (undefined):",
       "children": [
         {
           "type": "slider",
-          "bind": "visibility",
+          "bind": "visibilityUndefined",
+          "value": 0.9,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "label": "Visibility (sphere):",
+      "children": [
+        {
+          "type": "slider",
+          "bind": "visibilitySphere",
+          "value": 0.9,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "label": "Visibility (ellipsoid):",
+      "children": [
+        {
+          "type": "slider",
+          "bind": "visibilityEllipsoid",
+          "value": 0.9,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "label": "Visibility (box):",
+      "children": [
+        {
+          "type": "slider",
+          "bind": "visibilityBox",
           "value": 0.9,
           "min": 0,
           "max": 1
