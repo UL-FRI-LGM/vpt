@@ -11,6 +11,9 @@ constructor(options) {
     this._handleCreateTreeButton=this._handleCreateTreeButton.bind(this);
     this._binds.createTreeButton.addEventListener('click', this._handleCreateTreeButton);
 
+    this._handleSaveJSON=this._handleSaveJSON.bind(this);
+    this._binds.saveJSON.addEventListener('click', this._handleSaveJSON);
+    
     this._handleReadJSONButton=this._handleReadJSONButton.bind(this);
     this._binds.ReadJSONButton.addEventListener('click', this._handleReadJSONButton);
 
@@ -45,7 +48,7 @@ constructor(options) {
           }
           ElementArr.push(e);
       }
-      //console.log(ElementArr);
+      console.log(ElementArr);
    });
 }
 _handleReadJSONButton = function() {
@@ -130,11 +133,16 @@ _handleReadJSONButton = function() {
 });
 
 }
+
+_handleSaveJSON = function() {
+  let jsonObject = extractInfoTree(Htree);
+  console.log(jsonObject);
+  saveJSON(JSON.stringify(jsonObject ));
+  console.log("File has been created");
+}
 _handleCreateTreeButton = function() {
   var element = document.querySelector(".sui-treeview-list");
   element.id="Dtreeview"
-  //console.log(element);
-
   var nav = getNav($('#Dtreeview'));
   function getNav($ul) {
       return $ul.children('li').map(function () {
@@ -147,16 +155,43 @@ _handleCreateTreeButton = function() {
   }
  //console.log(nav);
  jsonHArr=createJSON(nav,jsonHArr);
- //console.log(jsonHArr);
- //console.log(JSON.parse(jsonHArr));
  jsonView.format(jsonHArr, '.root');
-   /*fetch(jsonHArr)
-    .then((res)=> { return res.text();})
-    .then((data) => { 
-      jsonView.format(data, '.root'); })
-    .catch((err) => {  console.log(err); })*/
 }
 }
+function extractInfoTree(node)
+{
+  var obj=new Object();
+  if(node!==null)
+  {
+    obj.property = node.property;
+    obj.visValue = node.value;
+    obj.count = node.count;
+    if(node.children!=null)
+    {
+      obj.children=[];
+      node.children.forEach((child) => {
+        obj.children.push(extractInfoTree(child));
+      });
+    }
+    return obj;
+  }
+  return null;
+}
+function saveJSON(data) {
+  //let data = "Whatever it is you want to save";
+  let bl = new Blob([data], {
+     type: "text/html"
+  });
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(bl);
+  a.download = "data.json";
+  a.hidden = true;
+  document.body.appendChild(a);
+  a.innerHTML =
+     "someinnerhtml";
+  a.click();
+}
+var Htree;
 class Property  {
   constructor(name,id) {
   this.name = name;//string
@@ -459,7 +494,7 @@ function getString(s)
     function createNode() {
       return {
         property: null,
-        maxValue: 0,
+        count: 0,
         value: 100,
         elem: null,
         parent: null,
@@ -470,8 +505,9 @@ function getString(s)
         depth: 0,
         control:null,
         HIcontrol:[],
+        elementsList:[],
         isDisabled:false,
-        isPropertyName:false,
+        isPropClassName:false,
         isPropertyTree:false,
         isroot:false,
         hasLocked: false,
@@ -774,9 +810,9 @@ function getString(s)
         else{
           child.property = property;
         }
-        if(child.parent.isPropertyName!==true)
+        if(child.parent.isPropClassName!==true)
         {
-           child.isPropertyName=true;
+           child.isPropClassName=true;
         }
         child.depth = parent.depth + 1;
         child.expanded = false;
@@ -797,6 +833,10 @@ function getString(s)
         }
       }
     }
+    /*function getCountElementArr(properities)
+    {
+
+    }*/
     /*function getValueFromPropArr(node,_type)
     {
       var _name=node.parent.property;
@@ -825,14 +865,13 @@ function getString(s)
       const tree = createNode();
       tree.storageType = getType(obj);
       tree.isPropertyTree=isPropertyTree;
-      tree.value = nbElement;
-      tree.maxValue = nbElement;
+      tree.value = 100;
+      //tree.count = nbElement;
       tree.children = [];
       tree.expanded = true;
       tree.isroot=true;
-      tree.isPropertyName=false;
+      tree.isPropClassName=false;
       traverseObject(obj, tree,isPropertyTree);
-      tree.maxValue=(getSumOfChildValues(tree))/tree.children.length;
       tree.elem = createExpandedElement(tree);
       return tree;
     } 
@@ -872,7 +911,7 @@ function getString(s)
     }
     
 
-    
+   
  /* Export jsonView object */
  window.jsonView = {
   /**
@@ -885,16 +924,86 @@ function getString(s)
     if (typeof jsonData === 'string' || jsonData instanceof String) 
         parsedData = JSON.parse(jsonData);
     //var numParticles=parsedData['general']['particles'];
-    console.log(parsedData);
-    const tree = createTree(parsedData,false);
-    render(tree, targetElem,0);
-
+   // console.log(parsedData);
+   
+    Htree = createTree(parsedData,false);
+    render(Htree, targetElem,0);
+    Htree.count=nbElement;
+    countElementsOfthisClass(Htree,[],[]);
     //const propertyTree = createTree(parsedData['stats']['global'],numParticles,true);
     //render(propertyTree, targetElem,1);
    // connectTrees(tree,propertyTree);
-    console.log(tree);
+    console.log(Htree);
 
   }
+}
+function countElementsOfthisClass(node,className,problist)
+{
+ if(node.isPropClassName==true){
+        //var count=0;
+        className.push(node.property);
+        node.count=countElements(className,problist);
+        node.children.forEach((item) => {
+          countElementsOfthisClass(item,className,problist);
+        });
+  }
+  else if(node.children!=null)
+  {
+    //var count=0;
+    if(node.property!=null)
+    {
+      problist.push(node.property);
+      node.count=countElements(className,problist);
+    }
+    node.children.forEach((item) => {
+      countElementsOfthisClass(item,className,problist);
+    });
+    if(node.property!=null)
+      problist.pop();
+  }
+  else {
+    
+    problist.push(node.property);
+    node.count=countElements(className,problist);
+    problist.pop();
+  }
+}
+function countElements(className,problist)
+{
+  var count=0;
+  
+  for(var i=0;i<nbElement;i++)
+  {
+    //var incCount=true;
+    var AllPropExist=true;
+    for(var j=0;j<problist.length;j++)
+    {
+      //console.log(problist);
+      var propExist=false;
+      for(var k=0;k<ElementArr[i].properties.length;k++)
+      {
+        //console.log(problist[j]+ ElementArr[i].properties[k].value);
+       // console.log(ElementArr[i].properties[k].value);
+        var obj=ElementArr[i].properties[k].value;
+        if (obj == problist[j]) {
+          propExist=true;
+          break;
+        }
+      }
+      if(propExist==false)
+      {
+        AllPropExist=false;
+        break;
+      }
+    }
+    if(AllPropExist==true)
+    {
+      //console.log(ElementArr[i]);
+      //console.log('pass');
+      count++;
+    }
+  }
+  return count;
 }
 function connectTrees(HItree,node)
 {

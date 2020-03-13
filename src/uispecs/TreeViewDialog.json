@@ -31,7 +31,14 @@
         {
           "type": "treeView",
           "label": "Tree"
-        }]
+        },
+        {
+          "type": "button",
+          "bind": "saveJSON",
+          "label": "save JSON file"
+        }
+      
+      ]
     },
     {
       "type": "accordion",
