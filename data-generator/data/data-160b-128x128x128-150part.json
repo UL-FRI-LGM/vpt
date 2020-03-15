@@ -68,104 +68,54 @@
     "stats": {
         "elements": [
             {
-                "Orientation": "Random",
-                "Size": "Class 6",
-                "Type": "Box"
-            },
-            {
                 "Orientation": "Left",
-                "Size": "Class 3",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Back",
                 "Size": "Class 1",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Random",
-                "Size": "Class 4",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 7",
                 "Type": "Sphere"
             },
             {
-                "Orientation": "Down",
-                "Size": "Class 8",
-                "Type": "Box"
+                "Orientation": "Diagonal",
+                "Size": "Class 3",
+                "Type": "Ellipsoid"
             },
             {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 4",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Random",
+                "Orientation": "Up",
                 "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 7",
                 "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Diagonal",
-                "Size": "Class 3",
-                "Type": "Sphere"
             },
             {
                 "Orientation": "Left",
-                "Size": "Class 3",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 2",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 1",
+                "Size": "Class 8",
                 "Type": "Sphere"
             },
             {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 6",
+                "Orientation": "Down",
+                "Size": "Class 1",
                 "Type": "Ellipsoid"
             },
             {
-                "Orientation": "Diagonal",
-                "Size": "Class 7",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 8",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Up",
+                "Orientation": "Down",
                 "Size": "Class 4",
                 "Type": "Sphere"
             },
             {
-                "Orientation": "Back",
-                "Size": "Class 7",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 6",
+                "Orientation": "Random",
+                "Size": "Class 2",
                 "Type": "Ellipsoid"
             },
             {
                 "Orientation": "Up",
-                "Size": "Class 3",
-                "Type": "Sphere"
+                "Size": "Class 7",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Back",
+                "Size": "Class 7",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 4",
+                "Type": "Box"
             },
             {
                 "Orientation": "Diagonal",
@@ -173,14 +123,129 @@
                 "Type": "Box"
             },
             {
+                "Orientation": "Diagonal",
+                "Size": "Class 5",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 4",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 5",
+                "Type": "Box"
+            },
+            {
                 "Orientation": "Up",
+                "Size": "Class 5",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 5",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 4",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "InverseDiagonal",
                 "Size": "Class 5",
                 "Type": "Box"
             },
             {
                 "Orientation": "Up",
                 "Size": "Class 1",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 8",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 5",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 4",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 2",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 7",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Up",
+                "Size": "Class 8",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Up",
+                "Size": "Class 5",
                 "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 7",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 1",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Up",
+                "Size": "Class 4",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 5",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 8",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 5",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "InverseDiagonal",
+                "Size": "Class 2",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "InverseDiagonal",
+                "Size": "Class 1",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 2",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Down",
+                "Size": "Class 3",
+                "Type": "Sphere"
             },
             {
                 "Orientation": "Front",
@@ -188,9 +253,119 @@
                 "Type": "Sphere"
             },
             {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 6",
+                "Orientation": "Left",
+                "Size": "Class 4",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 2",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 4",
                 "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 7",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 5",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 4",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Back",
+                "Size": "Class 4",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Down",
+                "Size": "Class 1",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Down",
+                "Size": "Class 7",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Down",
+                "Size": "Class 5",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 4",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Down",
+                "Size": "Class 4",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "InverseDiagonal",
+                "Size": "Class 3",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 7",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 1",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 7",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 1",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Back",
+                "Size": "Class 8",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 3",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 1",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "InverseDiagonal",
+                "Size": "Class 2",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 1",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 2",
+                "Type": "Sphere"
             },
             {
                 "Orientation": "Diagonal",
@@ -198,268 +373,138 @@
                 "Type": "Box"
             },
             {
-                "Orientation": "Back",
-                "Size": "Class 3",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 7",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 7",
-                "Type": "Box"
-            },
-            {
                 "Orientation": "Random",
-                "Size": "Class 5",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 4",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Front",
-                "Size": "Class 4",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Random",
-                "Size": "Class 5",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Front",
-                "Size": "Class 1",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 3",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 6",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 2",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 4",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 4",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Front",
                 "Size": "Class 8",
                 "Type": "Ellipsoid"
             },
             {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 6",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 3",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 3",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 6",
-                "Type": "Ellipsoid"
-            },
-            {
                 "Orientation": "Up",
                 "Size": "Class 1",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 4",
                 "Type": "Sphere"
             },
             {
                 "Orientation": "Random",
-                "Size": "Class 4",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 6",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 5",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 1",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 1",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 3",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Left",
                 "Size": "Class 2",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 3",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 2",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 3",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 7",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 8",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Front",
-                "Size": "Class 3",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 6",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 4",
                 "Type": "Box"
             },
             {
                 "Orientation": "Random",
-                "Size": "Class 3",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Front",
-                "Size": "Class 6",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Front",
-                "Size": "Class 6",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 8",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Front",
-                "Size": "Class 6",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 3",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Random",
-                "Size": "Class 1",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Down",
                 "Size": "Class 5",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 1",
                 "Type": "Sphere"
             },
             {
-                "Orientation": "Up",
-                "Size": "Class 2",
-                "Type": "Box"
+                "Orientation": "Down",
+                "Size": "Class 3",
+                "Type": "Sphere"
             },
             {
                 "Orientation": "InverseDiagonal",
+                "Size": "Class 6",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Down",
+                "Size": "Class 1",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Front",
                 "Size": "Class 7",
                 "Type": "Box"
             },
             {
-                "Orientation": "Front",
+                "Orientation": "Random",
+                "Size": "Class 5",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Down",
                 "Size": "Class 5",
                 "Type": "Box"
             },
             {
                 "Orientation": "Up",
-                "Size": "Class 6",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Random",
                 "Size": "Class 4",
                 "Type": "Box"
             },
             {
-                "Orientation": "Front",
+                "Orientation": "Diagonal",
+                "Size": "Class 5",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "InverseDiagonal",
+                "Size": "Class 5",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 3",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 5",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 1",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 3",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "InverseDiagonal",
                 "Size": "Class 8",
                 "Type": "Sphere"
             },
             {
                 "Orientation": "Down",
+                "Size": "Class 2",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Front",
                 "Size": "Class 3",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 4",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Back",
+                "Size": "Class 1",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 6",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 5",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 3",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 2",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 5",
                 "Type": "Sphere"
             },
             {
@@ -468,79 +513,94 @@
                 "Type": "Box"
             },
             {
-                "Orientation": "Left",
-                "Size": "Class 6",
+                "Orientation": "InverseDiagonal",
+                "Size": "Class 2",
                 "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "InverseDiagonal",
+                "Size": "Class 2",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Back",
+                "Size": "Class 3",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 5",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 7",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 3",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "InverseDiagonal",
+                "Size": "Class 2",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Down",
+                "Size": "Class 1",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Down",
+                "Size": "Class 1",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 2",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 6",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 3",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Down",
+                "Size": "Class 7",
+                "Type": "Box"
             },
             {
                 "Orientation": "Up",
-                "Size": "Class 7",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 2",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 7",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 2",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 4",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 4",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Front",
-                "Size": "Class 1",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Back",
                 "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 2",
                 "Type": "Ellipsoid"
             },
             {
                 "Orientation": "Down",
-                "Size": "Class 7",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 2",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Front",
                 "Size": "Class 1",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 6",
-                "Type": "Ellipsoid"
+                "Type": "Box"
             },
             {
                 "Orientation": "Back",
-                "Size": "Class 3",
-                "Type": "Box"
+                "Size": "Class 1",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 8",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Up",
+                "Size": "Class 6",
+                "Type": "Sphere"
             },
             {
                 "Orientation": "Diagonal",
@@ -548,48 +608,78 @@
                 "Type": "Box"
             },
             {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 8",
+                "Orientation": "Left",
+                "Size": "Class 6",
                 "Type": "Box"
             },
             {
-                "Orientation": "Random",
-                "Size": "Class 3",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 5",
-                "Type": "Sphere"
+                "Orientation": "Left",
+                "Size": "Class 4",
+                "Type": "Box"
             },
             {
                 "Orientation": "Front",
-                "Size": "Class 6",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Down",
                 "Size": "Class 1",
                 "Type": "Box"
             },
             {
+                "Orientation": "Down",
+                "Size": "Class 5",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 2",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 6",
+                "Type": "Sphere"
+            },
+            {
                 "Orientation": "InverseDiagonal",
-                "Size": "Class 8",
+                "Size": "Class 3",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 6",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 4",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Up",
+                "Size": "Class 3",
                 "Type": "Sphere"
             },
             {
                 "Orientation": "Diagonal",
-                "Size": "Class 6",
+                "Size": "Class 2",
                 "Type": "Sphere"
             },
             {
-                "Orientation": "Down",
-                "Size": "Class 6",
+                "Orientation": "Front",
+                "Size": "Class 8",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 3",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 3",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 3",
                 "Type": "Box"
             },
             {
@@ -598,73 +688,48 @@
                 "Type": "Sphere"
             },
             {
-                "Orientation": "Down",
+                "Orientation": "Diagonal",
+                "Size": "Class 1",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Front",
                 "Size": "Class 2",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Random",
-                "Size": "Class 3",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Random",
-                "Size": "Class 3",
                 "Type": "Ellipsoid"
             },
             {
-                "Orientation": "Up",
+                "Orientation": "Left",
+                "Size": "Class 2",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 6",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Back",
+                "Size": "Class 8",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 4",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Random",
                 "Size": "Class 7",
                 "Type": "Box"
             },
             {
-                "Orientation": "Up",
+                "Orientation": "Diagonal",
                 "Size": "Class 3",
-                "Type": "Ellipsoid"
+                "Type": "Sphere"
             },
             {
-                "Orientation": "Left",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Front",
+                "Orientation": "Back",
                 "Size": "Class 2",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 8",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 3",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Front",
-                "Size": "Class 5",
                 "Type": "Sphere"
             },
             {
@@ -673,177 +738,111 @@
                 "Type": "Sphere"
             },
             {
-                "Orientation": "Down",
-                "Size": "Class 5",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 1",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 4",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 6",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Random",
-                "Size": "Class 1",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 8",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 1",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 7",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Up",
-                "Size": "Class 7",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Down",
-                "Size": "Class 7",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 4",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 4",
-                "Type": "Sphere"
-            },
-            {
                 "Orientation": "Random",
                 "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 6",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Random",
-                "Size": "Class 4",
                 "Type": "Sphere"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 4",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 6",
-                "Type": "Ellipsoid"
-            },
-            {
-                "Orientation": "Back",
-                "Size": "Class 6",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 7",
-                "Type": "Box"
             },
             {
                 "Orientation": "Front",
+                "Size": "Class 2",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 1",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Down",
+                "Size": "Class 4",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Back",
+                "Size": "Class 5",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 3",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Random",
                 "Size": "Class 3",
                 "Type": "Sphere"
             },
             {
-                "Orientation": "Back",
-                "Size": "Class 1",
+                "Orientation": "Diagonal",
+                "Size": "Class 7",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Up",
+                "Size": "Class 8",
                 "Type": "Sphere"
+            },
+            {
+                "Orientation": "Left",
+                "Size": "Class 2",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Up",
+                "Size": "Class 7",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Front",
+                "Size": "Class 5",
+                "Type": "Ellipsoid"
+            },
+            {
+                "Orientation": "Up",
+                "Size": "Class 4",
+                "Type": "Box"
+            },
+            {
+                "Orientation": "Random",
+                "Size": "Class 5",
+                "Type": "Sphere"
+            },
+            {
+                "Orientation": "Diagonal",
+                "Size": "Class 6",
+                "Type": "Box"
             },
             {
                 "Orientation": "Up",
                 "Size": "Class 2",
                 "Type": "Sphere"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 5",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "Left",
-                "Size": "Class 8",
-                "Type": "Box"
-            },
-            {
-                "Orientation": "InverseDiagonal",
-                "Size": "Class 5",
-                "Type": "Sphere"
-            },
-            {
-                "Orientation": "Random",
-                "Size": "Class 4",
-                "Type": "Box"
             }
         ],
         "global": {
             "Orientation": {
-                "Back": 22,
-                "Diagonal": 7,
-                "Down": 22,
-                "Front": 16,
-                "InverseDiagonal": 20,
-                "Left": 21,
-                "Orientation": 6,
-                "Random": 16,
-                "Up": 26
+                "Back": 9,
+                "Diagonal": 24,
+                "Down": 18,
+                "Front": 23,
+                "InverseDiagonal": 12,
+                "Left": 29,
+                "Random": 19,
+                "Up": 16
             },
             "Size": {
-                "Class 1": 17,
-                "Class 2": 14,
-                "Class 3": 23,
+                "Class 1": 22,
+                "Class 2": 24,
+                "Class 3": 21,
                 "Class 4": 19,
-                "Class 5": 26,
-                "Class 6": 24,
-                "Class 7": 16,
+                "Class 5": 28,
+                "Class 6": 11,
+                "Class 7": 14,
                 "Class 8": 11
             },
             "Type": {
-                "Box": 33,
-                "Ellipsoid": 64,
-                "Sphere": 53
+                "Box": 63,
+                "Ellipsoid": 31,
+                "Sphere": 56
             }
         }
     }

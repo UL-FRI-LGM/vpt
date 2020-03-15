@@ -238,14 +238,14 @@ QJsonObject computeStats(QList<Object*> objects)
                 tssc[o->getSize()]++;
                 break;
             case 2:
-                tbc++;
-                tboc[o->getOrientation()]++;
-                tbsc[o->getSize()]++;
-                break;
-            case 3:
                 tec++;
                 teoc[o->getOrientation()]++;
                 tesc[o->getSize()]++;
+                break;
+            case 3:
+                tbc++;
+                tboc[o->getOrientation()]++;
+                tbsc[o->getSize()]++;
                 break;
         }
 
@@ -272,7 +272,7 @@ QJsonObject computeStats(QList<Object*> objects)
     orientations.push_back("Back");
     orientations.push_back("Diagonal");
     orientations.push_back("InverseDiagonal");
-    orientations.push_back("Orientation");
+    //orientations.push_back("Orientation");
 
     for(int i = 0; i< orientations.size(); i++) {
         orientation[orientations[i]] = oc[i];
