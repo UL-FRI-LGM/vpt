@@ -7,16 +7,21 @@
   "children": [
     {
       "type": "button",
-      "bind": "createTreeButton",
-      "label": "Create Tree"
+      "bind": "ReadJSONButton",
+      "label": "Read JSON file"
     },
     {
       "type": "accordion",
-      "label": "DTree View Controller",
+      "label": "Hierarchy abstract",
       "children": [
         {
           "type": "DtreeView",
           "label": "DTree"
+        },
+        {
+          "type": "button",
+          "bind": "createTreeButton",
+          "label": "Create Tree"
         }]
     },
     {
@@ -26,7 +31,14 @@
         {
           "type": "treeView",
           "label": "Tree"
-        }]
+        },
+        {
+          "type": "button",
+          "bind": "saveJSON",
+          "label": "save JSON file"
+        }
+      
+      ]
     },
     {
       "type": "accordion",
