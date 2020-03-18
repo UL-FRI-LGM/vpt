@@ -171,7 +171,7 @@ function extractInfoTree(node)
   {
     if(node.isPropClassName==true||node.isroot==true)
     {
-      console.log(node.property);
+      //console.log(node.property);
       obj.property = node.property;
       obj.visValue = node.value;
       obj.count = node.count;
@@ -820,7 +820,7 @@ function getString(s)
     function setColorValue(obj,newValue)
     {
       getColor(obj).value = newValue;
-      obj.value=newValue;
+      obj.color=newValue;
     }
                /**
      * set slider value
