@@ -48,7 +48,7 @@ constructor(options) {
           }
           ElementArr.push(e);
       }
-      console.log(ElementArr);
+      //console.log(ElementArr);
    });
 }
 _handleReadJSONButton = function() {
@@ -644,7 +644,8 @@ function getString(s)
         },
         ColorChange:function()
         {
-            this.color=getNodeColor(this);
+            this.color=(getColor(this)).value;
+            updateChildrenColorValue(this,this.color);
         },
         LockChange:function(){
           
@@ -700,9 +701,9 @@ function getString(s)
           });
         }
     }
-    function getNodeColor(node)
+    function getColor(node)
     {
-      return node.elem.children[3].children[0].value;
+      return node.elem.children[3].children[0];
     }
     function getLockElement(node) {
       return node.elem.children[4].children[0];
@@ -723,6 +724,20 @@ function getString(s)
           updateParentsSliderValue(node.parent);
         }
         
+      }
+      function updateChildrenColorValue(node,colorValue)
+      {
+            if(node.children!==null)
+            {
+              node.children.forEach((item) => {
+                
+                if(item.isDisabled==false)
+                {
+                  setColorValue(item,colorValue);
+                  updateChildrenColorValue(item,colorValue);
+                }
+              });
+            }
       }
       function updateChildrenSliderValue(node,parentPrevValue,parentCurrValue)
       {
@@ -801,6 +816,11 @@ function getString(s)
     function getSliderCurrentValue(obj) {
   
       return parseInt(getSlider(obj).value);
+    }
+    function setColorValue(obj,newValue)
+    {
+      getColor(obj).value = newValue;
+      obj.value=newValue;
     }
                /**
      * set slider value
