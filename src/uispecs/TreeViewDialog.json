@@ -26,7 +26,7 @@
     },
     {
       "type": "accordion",
-      "label": "Elements View Controller",
+      "label": "Hierarchical View",
       "children": [
         {
           "type": "treeView",
@@ -34,21 +34,11 @@
         },
         {
           "type": "button",
-          "bind": "saveJSON",
-          "label": "save JSON file"
+          "bind": "createHierarchyJSONFile",
+          "label": "Update & Save JSON file"
         }
       
       ]
-    },
-    {
-      "type": "accordion",
-      "label": "Properties View Controller",
-      "children": [
-        {
-          "type": "treeView",
-          "label": "Tree"
-        }]
     }
-
   ]
 }

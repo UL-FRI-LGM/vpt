@@ -11,8 +11,8 @@ constructor(options) {
     this._handleCreateTreeButton=this._handleCreateTreeButton.bind(this);
     this._binds.createTreeButton.addEventListener('click', this._handleCreateTreeButton);
 
-    this._handleSaveJSON=this._handleSaveJSON.bind(this);
-    this._binds.saveJSON.addEventListener('click', this._handleSaveJSON);
+    this._handleCreateHierarchyJSONFile=this._handleCreateHierarchyJSONFile.bind(this);
+    this._binds.createHierarchyJSONFile.addEventListener('click', this._handleCreateHierarchyJSONFile);
     
     this._handleReadJSONButton=this._handleReadJSONButton.bind(this);
     this._binds.ReadJSONButton.addEventListener('click', this._handleReadJSONButton);
@@ -134,11 +134,11 @@ _handleReadJSONButton = function() {
 
 }
 
-_handleSaveJSON = function() {
+_handleCreateHierarchyJSONFile = function() {
   let jsonObject = extractInfoTree(Htree);
-  console.log(jsonObject);
+  console.log("File has been created"+jsonObject);
   saveJSON(JSON.stringify(jsonObject ));
-  console.log("File has been created");
+  
 }
 _handleCreateTreeButton = function() {
   var element = document.querySelector(".sui-treeview-list");
@@ -156,16 +156,34 @@ _handleCreateTreeButton = function() {
  //console.log(nav);
  jsonHArr=createJSON(nav,jsonHArr);
  jsonView.format(jsonHArr, '.root');
+ //removeElement('Dtreeview') ;
 }
+}
+function removeElement(elementId) {
+  // Removes an element from the document
+  var element = document.getElementById(elementId);
+  element.parentNode.removeChild(element);
 }
 function extractInfoTree(node)
 {
   var obj=new Object();
   if(node!==null)
   {
-    obj.property = node.property;
-    obj.visValue = node.value;
-    obj.count = node.count;
+    if(node.isPropClassName==true||node.isroot==true)
+    {
+      console.log(node.property);
+      obj.property = node.property;
+      obj.visValue = node.value;
+      obj.count = node.count;
+    }
+    else
+    {
+      obj.property = node.parent.property;
+      obj.value = node.property;
+      obj.visValue = node.value;
+      obj.count = node.count;
+    }
+    obj.color = node.color;
     if(node.children!=null)
     {
       obj.children=[];
@@ -386,8 +404,20 @@ function getString(s)
       div3.setAttribute('step',1);
       div_slider.appendChild(div3);
 
+      const div_colorChooser =createElement('div', {
+        className:  'treeColor'
+      });
+      const div4 =createElement('input', {
+        className: 'primary_color'
+      });
+      div4.setAttribute('type',"color");
+      div4.setAttribute('data-bind',"input");
+      div4.setAttribute('value',"#808080");
+      const handleColorChange = node.ColorChange.bind(node);
+      div4.addEventListener('change', handleColorChange);
+      div_colorChooser.appendChild(div4);
       let lineChildren;
-      if( node.isroot==true || node.parent.isroot==true)
+      if( node.isroot==true )//|| node.parent.isroot==true)
       {
         //lineChildren = [caretElem,typeElem]
         lineChildren = [caretElem,propertyElem]
@@ -408,12 +438,12 @@ function getString(s)
         //lineChildren = [caretElem,typeElem];//,div_slider,div_Lock]
         node.hasLocked=true;
         node.hasSlider=true;
-        lineChildren = [caretElem,propertyElem,div_slider,div_Lock];
+        lineChildren = [caretElem,propertyElem,div_slider,div_colorChooser,div_Lock];
       } else {
         //lineChildren = [caretElem,propertyElem];//,div_slider,div_Lock]
         node.hasLocked=true;
         node.hasSlider=true;
-        lineChildren = [caretElem,propertyElem,div_slider,div_Lock];
+        lineChildren = [caretElem,propertyElem,div_slider,div_colorChooser,div_Lock];
       }
     
       const lineElem = createElement('div', {
@@ -464,6 +494,21 @@ function getString(s)
       div3.setAttribute('step',1);
       div_slider.appendChild(div3);
       var arr;
+      const div_colorChooser =createElement('div', {
+        className:  'treeColor'
+      });
+      const div4 =createElement('input', {
+        className: 'primary_color'
+      });
+      div4.setAttribute('type',"color");
+      div4.setAttribute('value',"#808080");
+      const handleColorChange = node.ColorChange.bind(node);
+      div4.addEventListener('change', handleColorChange);
+      div4.setAttribute('data-bind',"input");
+      //const handleLockChange = node.LockChange.bind(node);
+      //div2.addEventListener('click', handleLockChange);
+      div_colorChooser.appendChild(div4);
+
       /*if(node.isPropertyTree)
       {
         arr=[caretElem, propertyElem,div_slider];
@@ -471,7 +516,7 @@ function getString(s)
      else{*/
         node.hasLocked=true;
         node.hasSlider=true;
-        arr=[caretElem, propertyElem,div_slider,div_Lock];
+        arr=[caretElem, propertyElem,div_slider,div_colorChooser,div_Lock];
      //}
       const lineElem = createElement('div', {
         className: 'line',
@@ -496,6 +541,7 @@ function getString(s)
         property: null,
         count: 0,
         value: 100,
+        color:'#808080',//gray
         elem: null,
         parent: null,
         children: null,
@@ -589,17 +635,16 @@ function getString(s)
             {
               updateParentsSliderValue(this.parent);
             }
-      
 
             if(this.children!==null)
             {
-              var diff=currValue-prevValue;
-              var isNegative=false;
-              if(diff<0)
-                isNegative=true;
-              updateChildrenSliderValue(this,prevValue,currValue,isNegative);
+              updateChildrenSliderValue(this,prevValue,currValue);
             }
           }
+        },
+        ColorChange:function()
+        {
+            this.color=getNodeColor(this);
         },
         LockChange:function(){
           
@@ -655,8 +700,12 @@ function getString(s)
           });
         }
     }
+    function getNodeColor(node)
+    {
+      return node.elem.children[3].children[0].value;
+    }
     function getLockElement(node) {
-      return node.elem.children[3].children[0];
+      return node.elem.children[4].children[0];
   }
       /**
        * 
@@ -675,49 +724,67 @@ function getString(s)
         }
         
       }
-      function updateChildrenSliderValue(node,parentPrevValue,parentCurrValue,isNegative)
+      function updateChildrenSliderValue(node,parentPrevValue,parentCurrValue)
       {
-            var diff=parentCurrValue-parentPrevValue;
             if(node.children!==null)
             {
-              var rem=0;
-              node.children.forEach((item) => {
-                var PrevValue=item.value;
-                if(isNegative==false && PrevValue<100)
+                var diff=parentCurrValue-parentPrevValue;
+                //var diff2=diff;
+                if(diff>0)
                 {
-                  var ratio=(diff*PrevValue)/parentPrevValue;
-                  if(PrevValue+ratio>100){
-                      rem+=(PrevValue+ratio)-100;
-                      setSliderValue(item,100);
-                      updateChildrenSliderValue(item,item.value-PrevValue,PrevValue,isNegative) ;
-                    }
-                    else
+                  node.children.forEach((item) => {
+                    var PrevValue=item.value;
+                    if(PrevValue<100 && item.isDisabled==false)
                     {
-                      setSliderValue(item,PrevValue+ratio);
-                      updateChildrenSliderValue(item,ratio,PrevValue,isNegative) ;
-                    }
+                      var ratio=(diff*PrevValue)/parentPrevValue;
+                      console.log('P('+ratio+')');
+                      if(PrevValue+ratio>100){
+                          var rem=(PrevValue+ratio)-100;
+                          setSliderValue(item,100);
+                          updateChildrenSliderValue(item,PrevValue,item.value) ;
+                          //diff2-=ratio;
+                         // diff2+=rem;
+                        }
+                        else
+                        {
+                          setSliderValue(item,PrevValue+ratio);
+                          updateChildrenSliderValue(item,PrevValue,item.value) ;
+                         // diff2-=ratio;
+                        }
+                      }
+                  });
                 }
-                else if(isNegative==true && PrevValue>0)
+                else if(diff<0)
                 {
-                  var ratio=(diff*PrevValue)/parentPrevValue;
-                  if(PrevValue+ratio<0){
-                      rem+=(PrevValue+ratio);
-                      setSliderValue(item,0);
-                      updateChildrenSliderValue(item,item.value-PrevValue,PrevValue,isNegative) ;
-                    }
-                    else
+                  node.children.forEach((item) => {
+                    var PrevValue=item.value;
+                    if(PrevValue>0 && item.isDisabled==false)
                     {
-                      setSliderValue(item,PrevValue+ratio);
-                      updateChildrenSliderValue(item,ratio,PrevValue,isNegative) ;
-                    }
+                      var ratio=(diff*PrevValue)/parentPrevValue;
+                      console.log('N'+ratio);
+                      if(PrevValue+ratio<0){
+                          var rem=(PrevValue+ratio);
+                          setSliderValue(item,0);
+                          updateChildrenSliderValue(item,PrevValue,item.value) ;
+                         // diff2-=ratio;
+                        //  diff2+=rem;
+                        }
+                        else
+                        {
+                          setSliderValue(item,PrevValue+ratio);
+                          updateChildrenSliderValue(item,PrevValue,item.value) ;
+                         // diff2-=ratio;
+                        }
+                      }
+                  });
                 }
  
-              });
-              if(rem>0 || rem<0)
+             
+              /*if(diff2>0 || diff2<0)
               {
-                var d=diff-rem;
-                updateChildrenSliderValue(node,parentPrevValue+d,parentCurrValue,isNegative) ;
-              }
+                //var d=diff-rem;
+                updateChildrenSliderValue(node,parentPrevValue+(diff-diff2),parentCurrValue) ;
+              }*/
             }
       }
 
@@ -933,7 +1000,7 @@ function getString(s)
     //const propertyTree = createTree(parsedData['stats']['global'],numParticles,true);
     //render(propertyTree, targetElem,1);
    // connectTrees(tree,propertyTree);
-    console.log(Htree);
+    //console.log(Htree);
 
   }
 }
@@ -982,8 +1049,6 @@ function countElements(className,problist)
       var propExist=false;
       for(var k=0;k<ElementArr[i].properties.length;k++)
       {
-        //console.log(problist[j]+ ElementArr[i].properties[k].value);
-       // console.log(ElementArr[i].properties[k].value);
         var obj=ElementArr[i].properties[k].value;
         if (obj == problist[j]) {
           propExist=true;
@@ -998,14 +1063,12 @@ function countElements(className,problist)
     }
     if(AllPropExist==true)
     {
-      //console.log(ElementArr[i]);
-      //console.log('pass');
       count++;
     }
   }
   return count;
 }
-function connectTrees(HItree,node)
+/*function connectTrees(HItree,node)
 {
     if (node !== null) {
       searchANDLink(HItree,node,node.property);
@@ -1042,5 +1105,5 @@ function searchANDLink(HInode,node,property)
           }
       }
   
-}
+}*/
 })();
