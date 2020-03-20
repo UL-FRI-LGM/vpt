@@ -14,10 +14,14 @@ constructor(gl, volume, environmentTexture, options) {
         slices         : 200,
         occlusionScale : 0.01,
         occlusionDecay : 0.9,
-        visibilityUndefined : 0.9,
-        visibilitySphere    : 0.9,
-        visibilityEllipsoid : 0.9,
-        visibilityBox       : 0.9,
+        visibility0    : 0.9,
+        visibility1    : 0.9,
+        visibility2    : 0.9,
+        visibility3    : 0.9,
+        visibility4    : 0.9,
+        visibility5    : 0.9,
+        visibility6    : 0.9,
+        visibility7    : 0.9,
         _depth         : 1,
         _minDepth      : -1,
         _maxDepth      : 1
@@ -26,7 +30,8 @@ constructor(gl, volume, environmentTexture, options) {
     this._programs = WebGL.buildPrograms(this._gl, {
         integrate : SHADERS.DOSIntegrate,
         render    : SHADERS.DOSRender,
-        reset     : SHADERS.DOSReset
+        reset     : SHADERS.DOSReset,
+        //store     : SHADERS.VolumeStore
     }, MIXINS);
 }
 
@@ -106,11 +111,17 @@ _integrateFrame() {
     // TODO: calculate correct blur radius (occlusion scale)
     gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
     gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
-    gl.uniform4f(program.uniforms.uVisibility,
-        this.visibilityUndefined,
-        this.visibilitySphere,
-        this.visibilityEllipsoid,
-        this.visibilityBox
+    gl.uniform4f(program.uniforms.uVisibility1,
+        this.visibility0,
+        this.visibility1,
+        this.visibility2,
+        this.visibility3
+    );
+    gl.uniform4f(program.uniforms.uVisibility2,
+        this.visibility4,
+        this.visibility5,
+        this.visibility6,
+        this.visibility7
     );
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
 
