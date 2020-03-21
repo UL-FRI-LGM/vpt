@@ -3,7 +3,9 @@
 .treeSlider {
     width: 100%;
   }
-.theSlider {
+
+.theSlider { 
+   /* pointer-events: none;*/
     -webkit-appearance: none;
     width: 90%;
     height: 15px;
@@ -17,23 +19,29 @@
   .theSlider:hover {
     opacity: 1;
   }
-  
+
   .theSlider::-webkit-slider-thumb {
+    /*pointer-events: auto;*/
     -webkit-appearance: none;
     appearance: none;
     width: 15px;
     height: 15px;
     border-radius: 50%;
     background: #2196f3;
-    cursor: pointer;
   }
-  
+  .theSlider::-ms-thumb {
+    /*pointer-events: auto;*/
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #2196f3;
+  }
   .theSlider::-moz-range-thumb {
+    /*pointer-events: auto;*/
     width: 15px;
     height: 15px;
     border-radius: 50%;
     background: white;
-    cursor: pointer;
   }
   .theSlider:disabled::-webkit-slider-thumb,
 .theSlider[disabled]::-webkit-slider-thumb{
