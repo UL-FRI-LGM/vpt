@@ -136,7 +136,7 @@ _handleReadJSONButton = function() {
 
 _handleCreateHierarchyJSONFile = function() {
   let jsonObject = extractInfoTree(Htree);
-  console.log("File has been created"+jsonObject);
+ // console.log("File has been created"+jsonObject);
   saveJSON(JSON.stringify(jsonObject ));
   
 }
@@ -384,8 +384,9 @@ function getString(s)
       });
       const handleChange = node.sliderChange.bind(node);
       div3.addEventListener('change', handleChange);
-      //const handleOnChange = node.sliderOnChange.bind(node);
-      //div3.addEventListener('mouseup', handleOnChange);
+      //const handleSliderOnChange = node.sliderOnChange.bind(node);
+      //div3.addEventListener('toggle', handleSliderOnChange);
+      div3.setAttribute('id',"range");
       div3.setAttribute('type',"range");
       div3.setAttribute('max',100);
       div3.setAttribute('min',0);
@@ -460,8 +461,9 @@ function getString(s)
       });
       const handleChange = node.sliderChange.bind(node);
       div3.addEventListener('change', handleChange);
-     //const handleSliderClick = node.sliderClick.bind(node);
-      //div3.addEventListener("mouseup", handleSliderClick);
+      //const handleSliderOnChange = node.sliderOnChange.bind(node);
+      //div3.addEventListener('toggle', handleSliderOnChange);
+      div3.setAttribute('id',"range");
       div3.setAttribute('type',"range");
       div3.setAttribute('max',100);
       div3.setAttribute('min',0);
@@ -524,6 +526,7 @@ function getString(s)
         isPropClassName:false,
        // isPropertyTree:false,
         isroot:false,
+        isEmpty:false,
      //   hasLocked: false,
       //  hasSlider: false,
         setCaretIconRight() {
@@ -569,72 +572,84 @@ function getString(s)
             this.setCaretIconDown();
           }
         },
-        sliderOnChange:function(){
-          console.log(this);
-          var currValue=getSliderCurrentValue(this);
-          if(currValue>this.maxValue)
-                setSliderValue(this,this.maxValue);
-          if(currValue<this.minValue)
-          {
-            setSliderValue(this,this.minValue);
-          }
-        },
         sliderChange: function() {
-          if(this.isDisabled!==true)
+          
+          if(this.isDisabled!==true && exceedMinMaxRange(this)==false)
           {
-           // var prevValue=this.value;
             var currValue=getSliderCurrentValue(this);
             this.value = currValue;
             var prevCount=this.visCount;
             updateCountFromSliderValue(this);
             var amount= this.visCount-prevCount;
                       //console.log(avalChild);
-           console.log(amount);
-           console.log(this);
+           //console.log(amount);
+           //console.log(this);
             updateParentsSliderCountValues(this.parent);
             if(amount>0)
                 increaseChildrenSliderCountValues(this,amount);
             else
                  decreaseChildrenSliderCountValues(this,amount*-1);
-            console.log(this);
+            //console.log(this);
           }
           else
           {
             console.log('illegal change');
           }
         },
+        /*onHandleSliderClick:function(){
+
+        },*/
         ColorChange:function()
         {
             this.color=(getColor(this)).value;
             updateChildrenColorValue(this,this.color);
         },
         LockChange:function(){
-          
-          if(this.isDisabled==false)
+          if(this.isEmpty==false)
           {
-            var element = getLockElement(this);
-            element.className='lock';
-            var element2 = getSlider(this);
-            element2.disabled=true;
-            this.isDisabled=true;
-            this.minValue=this.value;
-            this.maxValue=this.value;
-            lockedChildren(this);
-            changeMinMaxRange(this.parent);}
-          else
-          {
-            var element = getLockElement(this);
-            element.className='lock unlocked';
-            var element2 = getSlider(this);
-            element2.disabled=false;
-            this.isDisabled=false;
-            this.minValue=0;
-            this.maxValue=100;
-            unlockedParents(this.parent);
-            changeMinMaxRange(this.parent);
-          }
+
+              if(this.isDisabled==false)
+              {
+                var element = getLockElement(this);
+                element.className='lock';
+                var element2 = getSlider(this);
+                element2.disabled=true;
+                this.isDisabled=true;
+                this.minValue=this.value;
+                this.maxValue=this.value;
+                lockedChildren(this);
+                changeMinMaxRange(this.parent);}
+              else
+              {
+                var element = getLockElement(this);
+                element.className='lock unlocked';
+                var element2 = getSlider(this);
+                element2.disabled=false;
+                this.isDisabled=false;
+                this.minValue=0;
+                this.maxValue=100;
+                unlockedParents(this.parent);
+                changeMinMaxRange(this.parent);
+              }
+            }
         }
       }
+    }
+    function exceedMinMaxRange(node)
+    {
+      var slider = getSlider(node);
+      //var value= getSliderCurrentValue(node);
+      //check sliders total if greater than 150 and re-update slider 
+      if (slider.value > node.maxValue) {
+          setSliderValue(node,node.maxValue);
+          return true;
+      }
+      else if (slider.value < node.minValue) {
+          setSliderValue(node,node.minValue);
+          return true;
+      }
+      else
+          return false;
     }
     function changeMinMaxRange(node)
     {
@@ -650,8 +665,6 @@ function getString(s)
         node.maxValue=max;
         changeMinMaxRange(node.parent);
       }
-      //else
-        // console.log(node);
     }
     function updateCountFromSliderValue(node)
     {
@@ -662,7 +675,7 @@ function getString(s)
     {
       var newValue=(node.visCount/node.count)*100;
       setSliderValue(node,newValue);
-      console.log(node);
+      //console.log(node);
     }
 
     function setCountValue(node,newValue)
@@ -685,11 +698,14 @@ function getString(s)
         if(node.children!==null)
         {
           node.children.forEach((item) => {
-            var element = getLockElement(item);
-            element.className='lock';
-            var element2 = getSlider(item);
-            element2.disabled=true;
-            lockedChildren(item);
+            if(item.isEmpty==false)
+            {
+              var element = getLockElement(item);
+              element.className='lock';
+              var element2 = getSlider(item);
+              element2.disabled=true;
+              lockedChildren(item);
+            }
           });
         }
     }
@@ -1197,6 +1213,10 @@ function countElementsOfthisClass(node,className,problist)
         className.push(node.property);
         node.count=countElements(className,problist);
         node.visCount=node.count;
+        if(node.count==0)
+        {
+          LockedEmptyNode(node);
+        }
         node.children.forEach((item) => {
           countElementsOfthisClass(item,className,problist);
         });
@@ -1209,6 +1229,10 @@ function countElementsOfthisClass(node,className,problist)
       problist.push(node.property);
       node.count=countElements(className,problist);
       node.visCount=node.count;
+      if(node.count==0)
+      {
+        LockedEmptyNode(node);
+      }
     }
     node.children.forEach((item) => {
       countElementsOfthisClass(item,className,problist);
@@ -1221,8 +1245,25 @@ function countElementsOfthisClass(node,className,problist)
     problist.push(node.property);
     node.count=countElements(className,problist);
     node.visCount=node.count;
+    if(node.count==0)
+    {
+      LockedEmptyNode(node);
+    }
     problist.pop();
   }
+}
+function LockedEmptyNode(node)
+{
+    node.isEmpty=true;
+    //LockChange
+    var element = getLockElement(node);
+    element.className='empty';
+    var element2 = getSlider(node);
+    element2.disabled=true;
+    element2.value=0;
+    node.isDisabled=true;
+    node.minValue=0;
+    node.maxValue=0;
 }
 function countElements(className,problist)
 {

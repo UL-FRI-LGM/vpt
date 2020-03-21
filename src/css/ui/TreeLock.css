@@ -7,6 +7,7 @@
   box-sizing: border-box;
     --locked-color: #6d6a6a;
     --unlocked-color: #2196f3; 
+    --empty-color: #c93c3c;
 }
 .treeLock {
   margin-bottom: 10px;
@@ -72,3 +73,43 @@
   background: var(--unlocked-color);
 }
 
+/* Empty */
+.empty {
+  width: 19px;
+  height: 15px;
+  border: 2px solid var(--empty-color);
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+  -webkit-transition: all 0.1s ease-in-out;
+  transition: all 0.1s ease-in-out;
+}
+.empty:after {
+  content: "";
+  display: block;
+  background: var(--empty-color);
+  width: 2px;
+  height: 5px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -3.5px 0 0 -2px;
+  -webkit-transition: all 0.1s ease-in-out;
+  transition: all 0.1s ease-in-out;
+}
+.empty:before {
+  content: "";
+  display: block;
+  width: 9px;
+  height: 3px;
+  bottom: 100%;
+  position: absolute;
+  left: 50%;
+  margin-left: -8px;
+  border: 3px solid var(--empty-color);
+  border-top-right-radius: 50%;
+  border-top-left-radius: 50%;
+  border-bottom: 0;
+  -webkit-transition: all 0.1s ease-in-out;
+  transition: all 0.1s ease-in-out;
+}
