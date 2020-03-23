@@ -30,6 +30,9 @@ getTreeViewContainer() {
     return this._binds.TreeViewContainer;
 }
 
+getRuleListContainer() {
+    return this._binds.RuleListContainer;
+}
 getEnvmapLoadContainer() {
     return this._binds.envmapLoadContainer;
 }

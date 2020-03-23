@@ -51,6 +51,10 @@ constructor() {
 
     this._treeViewDialog = new TreeViewDialog();
     this._treeViewDialog.appendTo(this._mainDialog.getTreeViewContainer());
+    //this._treeViewDialog.addEventListener('click', this._handlechangeColoredSlider);
+
+    this._ruleListDialog = new RuleListDialog();
+    this._ruleListDialog.appendTo(this._mainDialog.getRuleListContainer());
     //this._treeViewDialog.addEventListener('sliderChange', this._handleSliderChange);
     
     this._renderingContextDialog = new RenderingContextDialog();
@@ -191,3 +195,4 @@ _getDialogForToneMapper(toneMapper) {
 }
 
 }
+

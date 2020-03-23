@@ -1,0 +1,59 @@
+/* #package css/main */
+
+
+.range-holder{
+	margin: 0;
+	padding: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+.dragdealer {
+  position: relative;
+  height: 20px;
+  background: #FFF;
+  /*border-radius: 8px;*/
+  border: 1px solid #a7a7a7;
+  width: 100%;
+  pointer-events: none;
+}
+.dragdealer .handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.stripe{
+	position: absolute;
+	top: 1;
+  left: 0;
+  
+  height: 20px;
+  /*border-radius: 8px;*/
+  width: 100%;
+  pointer-events: none;
+}
+
+	#first-highlight{position: absolute; top:0; height: 18px; opacity: .5; background: #a7ca56; display: none;pointer-events: none;}
+	#second-highlight{position: absolute; top:0; height: 18px; opacity: .5; background: #6e9ce0; display: none;pointer-events: none;}
+  #third-highlight{position: absolute;top:0; height: 18px; opacity: .5; background: #414d61; pointer-events: none;}/*display: none;}*/
+  
+
+.thumb{
+  position: absolute;
+  top: 1;
+  left: 0px;	  
+  margin-top: -1px;
+  margin-left: -5px;
+  cursor: pointer;
+  width: 5px;
+  height: 20px;
+  background: #373838;
+  /*border-radius: 8px;*/
+  color: rgb(101, 102, 102);
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  padding-top: 13px;
+  pointer-events: auto;
+}

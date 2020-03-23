@@ -48,6 +48,7 @@ constructor(options) {
           }
           ElementArr.push(e);
       }
+  
       //console.log(ElementArr);
    });
 }

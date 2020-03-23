@@ -20,6 +20,7 @@
 // #include VectorSpinner.js
 // #include TreeView.js
 // #include DTreeView.js
+// #include ColoredSlider.js
 class UI {
 
 static get CLASS_FROM_TYPE() {
@@ -42,6 +43,7 @@ static get CLASS_FROM_TYPE() {
         'tabs'          : Tabs,
         'textbox'       : Textbox,
         'vector'        : VectorSpinner,
+        'coloredSlider' : ColoredSlider,
         'treeView'      : TreeView,
         'DtreeView'      : DTreeView,
     };
