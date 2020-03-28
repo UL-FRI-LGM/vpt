@@ -1,7 +1,6 @@
 // #package uispecs
 
 // #section RuleListDialog
-
 {
   "type": "panel",
   "children": [
