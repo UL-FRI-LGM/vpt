@@ -32,11 +32,13 @@ _handleAddButton = function() {
     {
       rulesTable.elem = document.querySelector(".rulesTable");
     }
-    rulesTable.length=rulesTable.length+1;
+    
     var newRow=createRow();
+    fillRowWithInfo(newRow);
     //fill the row with info
     newRow.elem = createNewRowElement(newRow);
     newRow.rowNumber=rulesTable.length;
+    rulesTable.length=rulesTable.length+1;
     rulesTable.elem.appendChild(newRow.elem);
     rulesTable.children.push(newRow);
     
@@ -66,21 +68,7 @@ _handleAddButton = function() {
 //$("#pr-slider").ready(SliderHandler); 
 $("#tb").on("click", "#up", Up); 
 $("#tb").on("click", "#down", Down); 
-function Up(e) {
-    var row = $(e.target).parent().parent(); //tr
-    var trIndex = row.index();
-    if(trIndex<=1) {
-        alert("Sorry!!");
-      }
-    else if (row.prev().length)
-        row.prev().before(row);
-}
-function Down(e) {
-    var row = $(e.target).parent().parent(); //tr
-    if (row.next().length)
-        row.before(row.next());
-    else
-        alert("Sorry!!");
+
 }*/
 
 function createTable()
@@ -167,6 +155,9 @@ function createNewRowElement(row) {
           children: [OptionProValue]
         });  
         selectProValue.setAttribute('data-bind','input');
+        const handlePropValueChange = row.propValueChange.bind(row);
+        selectProValue.addEventListener('change', handlePropValueChange);
+
        // selectProValue.setAttribute('multiple','');
       //Addlisener change???
       const div2Dropdown = createElement('div', {
@@ -222,6 +213,8 @@ function createNewRowElement(row) {
       theColor.setAttribute('data-bind',"input");
       theColor.setAttribute('type',"color");
       theColor.setAttribute('style','border: 0ch;');
+      const handleColorChange = row.ColorChange.bind(row);
+      theColor.addEventListener('change', handleColorChange);
 
       const divSColor = createElement('div', {
         className: 'container',
@@ -252,10 +245,14 @@ function createNewRowElement(row) {
       });
       spanUp.innerHTML='&#9650;';
       spanUp.setAttribute('id','up');
+      const handleClickUp = row.clickUp.bind(row);
+      spanUp.addEventListener('click', handleClickUp);
+  
       const tdUp = createElement('td', {
         children: [spanUp]
       });
       tdUp.setAttribute('id','control');
+      
       const rowElem2 = createElement('tr', {
         children: [tdUp]
       });
@@ -264,6 +261,9 @@ function createNewRowElement(row) {
       });
       spanDown.setAttribute('id','down');
       spanDown.innerHTML='&#9660;';
+
+      const handleClickDown = row.clickDown.bind(row);
+      spanDown.addEventListener('click', handleClickDown);
       const tdDown = createElement('td', {
         children: [spanDown]
       });
@@ -336,23 +336,27 @@ function createNewRowElement(row) {
           sliderValue: 100,
           color:'#808080',//gray
           elem: null,
+          rowNumber:0,
           propertyChange:function()
           {
             var selectValueElem=getValueDropboxElem(this);
             var selectPropElem=getPropDropboxElem(this);
-           // console.log(propertyArr);
             selectValueElem.options.length=0;
-                  //selectPropElem.options=null;
-            //propertyArr
             var isFound=false;
             propertyArr.forEach((prop) => {
-            //  console.log(prop['name']);
               if (selectPropElem.value==prop['name'])
               {
-                isFound=true;
-                prop['types'].forEach((value) => {
-                 // console.log(value['type']);
+                  isFound=true;
+                  this.property=prop['name'];
+                  this.count=prop['value'];
+                  this.visCount=prop['value'];//read from slider
+
                   var OptionProperty = createElement('option');
+                  OptionProperty.setAttribute('value','All');
+                  OptionProperty.innerHTML='All';
+                  selectValueElem.appendChild(OptionProperty);
+                  prop['types'].forEach((value) => {
+                  OptionProperty = createElement('option');
                   OptionProperty.setAttribute('value',value['type']);
                   OptionProperty.innerHTML=value['type'];
                   selectValueElem.appendChild(OptionProperty);
@@ -361,14 +365,89 @@ function createNewRowElement(row) {
             });
             if(isFound==false)
             {
-              var OptionProperty = createElement('option');
+                  var OptionProperty = createElement('option');
                   OptionProperty.setAttribute('value','All');
                   OptionProperty.innerHTML='All';
                   selectValueElem.appendChild(OptionProperty);
+
+                  this.property='All';
+                  this.propertyValue='All';
+                  this.count=nbElement;
+                  this.visCount=row.count;//read from slider
+            }
+          },
+          propValueChange: function()
+          {
+            var selectValueElem=getValueDropboxElem(this);
+            var selectPropElem=getPropDropboxElem(this);
+            if (selectValueElem.value=='All')
+              {
+                this.propertyValue='All';
+                propertyArr.forEach((prop) => {
+                  if (selectPropElem.value==prop['name'])
+                  {
+                      this.count=prop['value'];
+                      this.visCount=prop['value'];//read from slider
+
+                  }
+                  });
+              }
+              else
+              {
+                
+                propertyArr.forEach((prop) => {
+                  if (selectPropElem.value==prop['name'])
+                  {
+                      this.property=prop['name'];
+                      this.propertyValue=selectValueElem.value;
+                      prop['types'].forEach((p) => {
+                        if(p['type']==selectValueElem.value)
+                        {
+                          this.count=p['value'];
+                          this.visCount=p['value'];//read from slider
+                        }
+                      });
+                  }
+                });
+              }
+              console.log(this);
+          },
+          clickUp: function(){
+           
+            var prevIndex=this.rowNumber-1;
+            if(prevIndex<0) {
+              alert("Sorry!!");
+            }
+            else{
+              var prevElement=rulesTable.children[prevIndex].elem;
+              prevElement.before(this.elem);
+              swapRowInTableArray(rulesTable.children[prevIndex],this);
+            }
+            
+
+          },
+          clickDown: function(){
+            var successIndex=this.rowNumber+1;
+            if(successIndex>=rulesTable.length) {
+              alert("Sorry!!");
+            }
+            else{
+              var successElement=rulesTable.children[successIndex].elem;
+              this.elem.before(successElement);
+              swapRowInTableArray(rulesTable.children[successIndex],this);
             }
           },
           sliderChange: function() {
                 console.log('Slider');
+
+        //console.log('propertyArr');
+        //console.log(propertyArr);
+        /*property: null,
+          propertyValue: null,
+          count: 0,
+          visCount: 0,
+        propertyArr.forEach((prop) => {});*/
+
           },
           removeThis:function()
           {
@@ -379,17 +458,17 @@ function createNewRowElement(row) {
               rulesTable.children.splice(index, 1);
             }
             rulesTable.length=rulesTable.length-1;
-            //console.log(rulesTable);
           },
           ColorChange:function()
           {
+            
               this.color=(getColorElem(this)).value;
           }
         }
       }
       function getColorElem(row)
       {
-        return row.color;//node.elem.children[3].children[0];
+        return row.elem.children[0].children[1].children[3].children[1].children[0];
       }
       function getRowElem(row)
       {
@@ -403,3 +482,23 @@ function createNewRowElement(row) {
       {
         return row.elem.children[0].children[1].children[0].children[1].children[0].children[0];//node.elem.children[3].children[0];
       }
+      function getUpButton(row)
+      {
+        return row.elem.children[0];
+      }
+      function  fillRowWithInfo(row)
+      {
+        row.property='All';
+        row.propertyValue='All';
+        row.count=nbElement;
+        row.visCount=row.count;
+      }
+      function swapRowInTableArray(row1, row2) {
+        var temp = rulesTable.children[row1.rowNumber];
+        rulesTable.children[row1.rowNumber] = rulesTable.children[row2.rowNumber];
+        rulesTable.children[row2.rowNumber] = temp; 
+        // swap numbers
+        var tempIndex=row1.rowNumber;
+        row1.rowNumber=row2.rowNumber;
+        row2.rowNumber=tempIndex;
+        }

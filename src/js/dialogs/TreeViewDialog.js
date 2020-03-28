@@ -20,6 +20,7 @@ class TreeViewDialog extends AbstractDialog {
       fetch("data_schema.json").then(response => response.json()).then(data_schema=>{
         var json =data_schema['stats']['global'];
         nbProperty=0;
+        
         for (var x in json) {
             let p=new Property(x,nbProperty);  
             var d={text: "",id:"", expanded: true,iconCls: "fa fa-folder"};
@@ -27,11 +28,13 @@ class TreeViewDialog extends AbstractDialog {
             d.id=nbProperty;
             nbProperty++;
             propertyList.push(d);
-     
+            var sumValues=0;
             for (var y in json[x]) {
                 let pp=new PropValue(y,json[x][y])
+                sumValues+=json[x][y];
                 p.types.push(pp);
             }
+            p.value=sumValues;
             propertyArr.push(p);
         }
         //console.log(propertyArr);
