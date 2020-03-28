@@ -10,64 +10,10 @@
       "label": "Visibility Rules",
       "children": [
         {
-          "type": "field",
-          "label": "Property:",
-          "children": [
-            {
-              "type": "dropdown",
-              "bind": "propertyDropdown",
-              "options": [
-                {
-                  "value": "all",
-                  "label": "All",
-                  "selected": true
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "field",
-          "label": "Values:",
-          "children": [
-            {
-              "type": "dropdown",
-              "bind": "propertyValuesDropdown",
-              "options": [
-                {
-                  "value": "all",
-                  "label": "All",
-                  "selected": true
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "field",
-          "label": "Visibility:",
-          "children": [
-            {
-              "type": "coloredSlider",
-              "bind": "changeColoredSlider"
-            }
-          ]
-        },
-        {
-          "type": "field",
-          "label": "Color:",
-          "children": [
-            {
-              "type": "color-chooser",
-              "bind": "color",
-              "value": "#ddeeff"
-            }
-          ]
-        },
-        {
-          "type": "button",
-          "label": "Add Rule"
-        }]
+          "type": "table"
+        }
+      ]
+          
     }
   ]
 }

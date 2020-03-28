@@ -6,15 +6,24 @@
 
 class RuleListDialog extends AbstractDialog {
 
-constructor(options) {
-    super(UISPECS.RuleListDialog, options);
-    //console.log(propertyList);
-    //console.log(propertyArr);
-    this._handleChangeColoredSlider=this._handleChangeColoredSlider.bind(this);
+  constructor(options) {
+      super(UISPECS.RuleListDialog, options);
+  
+      //console.log(propertyList);
+      //console.log(propertyArr);
+      
+  }
+  
+  }
+  
+  
+/*  
+
+
     this._binds.changeColoredSlider.addEventListener('click', this._handleChangeColoredSlider);
-    $("#third-highlight").css("width",""+(100-(0))+"%");
+   /* $("#third-highlight").css("width",""+(100-(0))+"%");
     $("#third-highlight").css("left",""+(0)+"%");
-    $("#third-highlight").show();
+    $("#third-highlight").show();*/
     /*this._handleCreateHierarchyJSONFile=this._handleCreateHierarchyJSONFile.bind(this);
     this._binds.createHierarchyJSONFile.addEventListener('click', this._handleCreateHierarchyJSONFile);
     
@@ -53,10 +62,10 @@ constructor(options) {
           ElementArr.push(e);
       }
       //console.log(ElementArr);
-   });*/
+   });
 }
 _handleChangeColoredSlider = function() {
-    		//set defaults
+    	/*	//set defaults
 		new Dragdealer('pr-slider', {
             animationCallback: function(x, y) {
               var slider_value = ((Math.round(x * 100)));
@@ -90,3 +99,78 @@ _handleChangeColoredSlider = function() {
     
   }
 }
+}
+
+/*
+
+
+{
+  "type": "panel",
+  "children": [
+    {
+      "type": "accordion",
+      "label": "Visibility Rules",
+      "children": [
+        {
+          "type": "field",
+          "label": "Property:",
+          "children": [
+            {
+              "type": "dropdown",
+              "bind": "propertyDropdown",
+              "options": [
+                {
+                  "value": "all",
+                  "label": "All",
+                  "selected": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "field",
+          "label": "Values:",
+          "children": [
+            {
+              "type": "dropdown",
+              "bind": "propertyValuesDropdown",
+              "options": [
+                {
+                  "value": "all",
+                  "label": "All",
+                  "selected": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "field",
+          "label": "Visibility:",
+          "children": [
+            {
+              "type": "coloredSlider",
+              "bind": "changeColoredSlider"
+            }
+          ]
+        },
+        {
+          "type": "field",
+          "label": "Color:",
+          "children": [
+            {
+              "type": "color-chooser",
+              "bind": "color",
+              "value": "#ddeeff"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "label": "Add Rule"
+        }]
+    }
+  ]
+}
+*/

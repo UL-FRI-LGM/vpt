@@ -21,6 +21,7 @@
 // #include TreeView.js
 // #include DTreeView.js
 // #include ColoredSlider.js
+// #include Table.js
 class UI {
 
 static get CLASS_FROM_TYPE() {
@@ -46,6 +47,7 @@ static get CLASS_FROM_TYPE() {
         'coloredSlider' : ColoredSlider,
         'treeView'      : TreeView,
         'DtreeView'      : DTreeView,
+        'table'      : Table,
     };
 }
 
