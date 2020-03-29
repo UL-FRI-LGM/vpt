@@ -17,7 +17,12 @@ constructor(options) {
     this._handleAddButton=this._handleAddButton.bind(this);
     this._binds.AddMore.addEventListener('click', this._handleAddButton);
     rulesTable=createTable();
-    $('#ex22').slider({
+    
+    //var input = createElement("input", { "id": "ex22" });
+    //rulesTable.children.push(input); 
+
+/*
+    $('#ex22').bootstrapSlider({
       id: 'slider22',
       min: 0,
       max: 20,
@@ -28,7 +33,9 @@ constructor(options) {
                         { "start": 17, "end": 19 },
                         { "start": 17, "end": 24 },
                         { "start": -3, "end": 19 }]});
+  */  
     
+                        /*
     // Without JQuery
     var slider = new Slider("#ex22", {
       id: 'slider22',
@@ -41,6 +48,7 @@ constructor(options) {
                         { "start": 17, "end": 19 },
                         { "start": 17, "end": 24 },
                         { "start": -3, "end": 19 }]});
+*/
     //this._binds.input.value = this.label;
 }
 
@@ -65,7 +73,23 @@ _handleAddButton = function() {
     rulesTable.elem.appendChild(newRow.elem);
     rulesTable.children.push(newRow);
     
+    // TESTS
+    // TODO: make it general and place it somewhere else
+    $('#ex22').slider({
+      id: 'slider22',
+      min: 0,
+      max: 20,
+      step: 1,
+      value: 14,
+      rangeHighlights: [{ "start": 2, "end": 5, "class": "category1" },
+                        { "start": 7, "end": 8, "class": "category2" },
+                        { "start": 17, "end": 19 },
+                        { "start": 17, "end": 24 },
+                        { "start": -3, "end": 19 }]});
 
+    $('.multipleselect').selectpicker();  
+    // END TESTS
+    
     console.log(newRow);
     //console.log(jQuery('#.instantiate row').clone();
     //$(".firstRow").hide();
@@ -174,7 +198,8 @@ function createNewRowElement(row) {
       OptionProValue.innerHTML='All';
   
       const selectProValue = createElement('select',{
-          className: 'selectProperty',
+          className: 'selectProperty multipleselect',
+          multiple: true,
           children: [OptionProValue]
         });  
         selectProValue.setAttribute('data-bind','input');
@@ -326,12 +351,20 @@ function createNewRowElement(row) {
           return htmlElement;
         }
         
+        if (config.id) {
+          htmlElement.id = config.id;          
+        }
+
         if (config.className) {
           htmlElement.className = config.className;
         }
       
         if (config.content) {
           htmlElement.textContent = config.content;
+        }
+
+        if (config.multiple) {          
+          htmlElement.setAttribute("multiple", "");
         }
         
         if (config.children) {
