@@ -17,7 +17,30 @@ constructor(options) {
     this._handleAddButton=this._handleAddButton.bind(this);
     this._binds.AddMore.addEventListener('click', this._handleAddButton);
     rulesTable=createTable();
-
+    $('#ex22').slider({
+      id: 'slider22',
+      min: 0,
+      max: 20,
+      step: 1,
+      value: 14,
+      rangeHighlights: [{ "start": 2, "end": 5, "class": "category1" },
+                        { "start": 7, "end": 8, "class": "category2" },
+                        { "start": 17, "end": 19 },
+                        { "start": 17, "end": 24 },
+                        { "start": -3, "end": 19 }]});
+    
+    // Without JQuery
+    var slider = new Slider("#ex22", {
+      id: 'slider22',
+      min: 0,
+      max: 20,
+      step: 1,
+      value: 14,
+      rangeHighlights: [{ "start": 2, "end": 5, "class": "category1" },
+                        { "start": 7, "end": 8, "class": "category2" },
+                        { "start": 17, "end": 19 },
+                        { "start": 17, "end": 24 },
+                        { "start": -3, "end": 19 }]});
     //this._binds.input.value = this.label;
 }
 
@@ -502,3 +525,6 @@ function createNewRowElement(row) {
         row1.rowNumber=row2.rowNumber;
         row2.rowNumber=tempIndex;
         }
+
+
+// With JQuery
