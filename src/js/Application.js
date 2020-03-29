@@ -17,7 +17,8 @@ constructor() {
     this._handleToneMapperChange = this._handleToneMapperChange.bind(this);
     this._handleVolumeLoad = this._handleVolumeLoad.bind(this);
     this._handleEnvmapLoad = this._handleEnvmapLoad.bind(this);
-
+    this._handleSliderChange = this._handleSliderChange.bind(this);
+    
     this._renderingContext = new RenderingContext();
     this._canvas = this._renderingContext.getCanvas();
     this._canvas.className += 'renderer';
@@ -51,11 +52,11 @@ constructor() {
 
     this._treeViewDialog = new TreeViewDialog();
     this._treeViewDialog.appendTo(this._mainDialog.getTreeViewContainer());
-    //this._treeViewDialog.addEventListener('click', this._handlechangeColoredSlider);
+    this._treeViewDialog.addEventListener('sliderChange', this._handleSliderChange);
 
     this._ruleListDialog = new RuleListDialog();
     this._ruleListDialog.appendTo(this._mainDialog.getRuleListContainer());
-    //this._treeViewDialog.addEventListener('sliderChange', this._handleSliderChange);
+    
     
     this._renderingContextDialog = new RenderingContextDialog();
     this._renderingContextDialog.appendTo(
@@ -193,6 +194,11 @@ _getDialogForToneMapper(toneMapper) {
         case 'artistic' : return ArtisticToneMapperDialog;
     }
 }
-
+_handleSliderChange()
+{
+    var Htree=this._treeViewDialog._getHtree();
+    var HtreeJsonObj=this._treeViewDialog._getHtreeJsonObject();
+    console.log(HtreeJsonObj);
+}
 }
 

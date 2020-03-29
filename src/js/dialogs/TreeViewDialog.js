@@ -10,7 +10,7 @@ class TreeViewDialog extends AbstractDialog {
       super(UISPECS.TreeViewDialog, options);
       this._handleCreateTreeButton=this._handleCreateTreeButton.bind(this);
       this._binds.createTreeButton.addEventListener('click', this._handleCreateTreeButton);
-  
+      TVDClass=this;
       this._handleCreateHierarchyJSONFile=this._handleCreateHierarchyJSONFile.bind(this);
       this._binds.createHierarchyJSONFile.addEventListener('click', this._handleCreateHierarchyJSONFile);
       
@@ -54,6 +54,14 @@ class TreeViewDialog extends AbstractDialog {
     
         //console.log(ElementArr);
      });
+  }
+  _getHtree()
+  {
+    return Htree;
+  }
+  _getHtreeJsonObject()
+  {
+    return extractInfoTree(Htree);
   }
   _handleReadJSONButton = function() {
     var element = document.querySelector(".sui-treeview");
@@ -228,6 +236,7 @@ class TreeViewDialog extends AbstractDialog {
        "someinnerhtml";
     a.click();
   }
+  var TVDClass;
   var Htree;
   class Property  {
     constructor(name,id) {
@@ -611,6 +620,7 @@ class TreeViewDialog extends AbstractDialog {
               else
                    decreaseChildrenSliderCountValues(this,amount*-1);
               //console.log(this);
+              TVDClass.trigger('sliderChange');
             }
             else
             {
