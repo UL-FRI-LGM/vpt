@@ -1,4 +1,7 @@
 /* #package css/main */
+td,tr{
+  padding: 3px;
+}
 #notControl {
     width:100%;
   }
@@ -14,7 +17,12 @@
     width: 15px;
     cursor: pointer;
 }
-
+#multiSelect{
+  width:fit!important;
+  height:-5px !important;
+  margin: 0;
+  padding: 0;
+}
 #hline
 {
 

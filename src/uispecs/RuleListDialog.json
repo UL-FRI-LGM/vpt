@@ -10,6 +10,11 @@
       "children": [
         {
           "type": "table"
+        },
+        {
+          "type": "button",
+          "bind": "createJSONFile",
+          "label": "Update & Save JSON file"
         }
       ]
           

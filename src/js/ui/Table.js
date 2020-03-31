@@ -48,6 +48,18 @@ constructor(options) {
                         { "start": 17, "end": 19 },
                         { "start": 17, "end": 24 },
                         { "start": -3, "end": 19 }]});
+
+                        <input id="ex22" type="text" 
+     data-slider-id="slider22"
+     data-slider-min="0"
+     data-slider-max="20"
+     data-slider-step="1"
+     data-slider-value="14"
+     data-slider-rangeHighlights='[{ "start": 2, "end": 5, "class": "category1" },
+                                   { "start": 7, "end": 8, "class": "category2" },
+                                   { "start": 17, "end": 19 },
+                                   { "start": 17, "end": 24 }, //not visible -  out of slider range
+                                   { "start": -3, "end": 19 }]' />
 */
     //this._binds.input.value = this.label;
 }
@@ -65,17 +77,17 @@ _handleAddButton = function() {
     }
     
     var newRow=createRow();
-    fillRowWithInfo(newRow);
+    fillRowWithDefaultInfo(newRow);
     //fill the row with info
     newRow.elem = createNewRowElement(newRow);
     newRow.rowNumber=rulesTable.length;
     rulesTable.length=rulesTable.length+1;
     rulesTable.elem.appendChild(newRow.elem);
     rulesTable.children.push(newRow);
-    
+    $('.selectpicker').selectpicker({selectedTextFormat:'count'});
     // TESTS
     // TODO: make it general and place it somewhere else
-    $('#ex22').slider({
+    /*$('#ex22').slider({
       id: 'slider22',
       min: 0,
       max: 20,
@@ -85,12 +97,10 @@ _handleAddButton = function() {
                         { "start": 7, "end": 8, "class": "category2" },
                         { "start": 17, "end": 19 },
                         { "start": 17, "end": 24 },
-                        { "start": -3, "end": 19 }]});
-
-    $('.multipleselect').selectpicker();  
+                        { "start": -3, "end": 19 }]});*/
     // END TESTS
     
-    console.log(newRow);
+   // console.log(newRow);
     //console.log(jQuery('#.instantiate row').clone();
     //$(".firstRow").hide();
     //console.log('hii');
@@ -140,11 +150,13 @@ function createNewRowElement(row) {
       });
     const handleRemove = row.removeThis.bind(row);
     removeDiv.addEventListener('click', handleRemove);
+    
     //-----------------------------------
     const selectProperty = createElement('select',{
       className: 'selectProperty',
     });  
     selectProperty.setAttribute('data-bind','input');
+    selectProperty.setAttribute('style','top:-6px');
     var OptionProperty = createElement('option');
    // OptionProperty.setAttribute('disabled','');
     OptionProperty.setAttribute('selected','');
@@ -196,13 +208,17 @@ function createNewRowElement(row) {
       //OptionProValue.setAttribute('hidden','');
       OptionProValue.setAttribute('value','All');
       OptionProValue.innerHTML='All';
-  
       const selectProValue = createElement('select',{
-          className: 'selectProperty multipleselect',
+          className: 'selectpicker',
           multiple: true,
           children: [OptionProValue]
         });  
-        selectProValue.setAttribute('data-bind','input');
+        selectProValue.setAttribute('data-maxOptionsText','1');
+        selectProValue.setAttribute('title','All');
+        selectProValue.setAttribute('data-style','btn-default');
+        selectProValue.setAttribute('data-width','100%');
+        selectProValue.setAttribute('multiple','');
+        //selectProValue.setAttribute('data-bind','input');
         const handlePropValueChange = row.propValueChange.bind(row);
         selectProValue.addEventListener('change', handlePropValueChange);
 
@@ -363,9 +379,9 @@ function createNewRowElement(row) {
           htmlElement.textContent = config.content;
         }
 
-        if (config.multiple) {          
+       /* if (config.multiple) {          
           htmlElement.setAttribute("multiple", "");
-        }
+        }*/
         
         if (config.children) {
           config.children.forEach((el) => {
@@ -386,7 +402,7 @@ function createNewRowElement(row) {
     function createRow() {
         return {
           property: null,
-          propertyValue: null,
+          propertyValue: [],
           count: 0,
           visCount: 0,
           sliderValue: 100,
@@ -398,6 +414,7 @@ function createNewRowElement(row) {
             var selectValueElem=getValueDropboxElem(this);
             var selectPropElem=getPropDropboxElem(this);
             selectValueElem.options.length=0;
+            //console.log(selectValueElem);
             var isFound=false;
             propertyArr.forEach((prop) => {
               if (selectPropElem.value==prop['name'])
@@ -405,67 +422,74 @@ function createNewRowElement(row) {
                   isFound=true;
                   this.property=prop['name'];
                   this.count=prop['value'];
-                  this.visCount=prop['value'];//read from slider
 
-                  var OptionProperty = createElement('option');
-                  OptionProperty.setAttribute('value','All');
-                  OptionProperty.innerHTML='All';
-                  selectValueElem.appendChild(OptionProperty);
                   prop['types'].forEach((value) => {
-                  OptionProperty = createElement('option');
+                  var OptionProperty = createElement('option');
                   OptionProperty.setAttribute('value',value['type']);
                   OptionProperty.innerHTML=value['type'];
                   selectValueElem.appendChild(OptionProperty);
-                });
+                }); 
               }
             });
             if(isFound==false)
             {
                   var OptionProperty = createElement('option');
                   OptionProperty.setAttribute('value','All');
+                  OptionProperty.setAttribute('data-style','btn-default');
+                  OptionProperty.setAttribute('data-width','100%');
                   OptionProperty.innerHTML='All';
                   selectValueElem.appendChild(OptionProperty);
 
                   this.property='All';
-                  this.propertyValue='All';
+                  this.propertyValue=['All'];
                   this.count=nbElement;
-                  this.visCount=row.count;//read from slider
             }
+            updateCountFromSliderValue(this);
+            $(".selectpicker").selectpicker('refresh'); 
           },
           propValueChange: function()
           {
-            var selectValueElem=getValueDropboxElem(this);
+            
+            //var selectValueElem=getValueDropboxElem(this);
             var selectPropElem=getPropDropboxElem(this);
-            if (selectValueElem.value=='All')
+            var multiSelectValues= $(".selectpicker").val();
+
+            if (multiSelectValues.length==0)//no selection
               {
-                this.propertyValue='All';
-                propertyArr.forEach((prop) => {
+                this.propertyValue=['All'];
+                /*propertyArr.forEach((prop) => {
                   if (selectPropElem.value==prop['name'])
                   {
-                      this.count=prop['value'];
-                      this.visCount=prop['value'];//read from slider
-
+                      this.count+=prop['value'];
                   }
-                  });
+                  });*/
               }
               else
               {
-                
-                propertyArr.forEach((prop) => {
-                  if (selectPropElem.value==prop['name'])
-                  {
-                      this.property=prop['name'];
-                      this.propertyValue=selectValueElem.value;
-                      prop['types'].forEach((p) => {
-                        if(p['type']==selectValueElem.value)
-                        {
-                          this.count=p['value'];
-                          this.visCount=p['value'];//read from slider
-                        }
+                //====== clear =========
+                this.propertyValue.length=0;
+                this.count=0;
+                //=======================
+                  propertyArr.forEach((prop) => {
+                    if (selectPropElem.value==prop['name'])
+                    {
+                      //this.property=prop['name'];
+                      multiSelectValues.forEach((selectedValue)=> {
+                      //======================
+                        prop['types'].forEach((p) => {
+                          if(p['type']==selectedValue)
+                          {
+                            this.propertyValue.push(selectedValue);
+                            this.count+=p['value'];
+                          }
+                        });
                       });
-                  }
-                });
+                    }
+                  });
+              
+                
               }
+              updateCountFromSliderValue(this);
               console.log(this);
           },
           clickUp: function(){
@@ -494,15 +518,11 @@ function createNewRowElement(row) {
             }
           },
           sliderChange: function() {
-                console.log('Slider');
-
-        //console.log('propertyArr');
-        //console.log(propertyArr);
-        /*property: null,
-          propertyValue: null,
-          count: 0,
-          visCount: 0,
-        propertyArr.forEach((prop) => {});*/
+                //console.log('Slider');
+                var sliderElem=getSliderElem(this);
+                this.sliderValue = sliderElem.value;
+                updateCountFromSliderValue(this);
+                //TVDClass.trigger('sliderChange'); 
 
           },
           removeThis:function()
@@ -522,6 +542,10 @@ function createNewRowElement(row) {
           }
         }
       }
+      function getSliderElem(row)
+      {
+        return row.elem.children[0].children[1].children[2].children[1].children[0];
+      }
       function getColorElem(row)
       {
         return row.elem.children[0].children[1].children[3].children[1].children[0];
@@ -532,22 +556,19 @@ function createNewRowElement(row) {
       }
       function getValueDropboxElem(row)
       {
-        return row.elem.children[0].children[1].children[1].children[1].children[0].children[0];//node.elem.children[3].children[0];
+        return row.elem.children[0].children[1].children[1].children[1].children[0].children[0].children[0];
       }
       function getPropDropboxElem(row)
       {
         return row.elem.children[0].children[1].children[0].children[1].children[0].children[0];//node.elem.children[3].children[0];
       }
-      function getUpButton(row)
-      {
-        return row.elem.children[0];
-      }
-      function  fillRowWithInfo(row)
+      function  fillRowWithDefaultInfo(row)
       {
         row.property='All';
-        row.propertyValue='All';
+        row.propertyValue=['All'];
         row.count=nbElement;
         row.visCount=row.count;
+        row.sliderValue=100;
       }
       function swapRowInTableArray(row1, row2) {
         var temp = rulesTable.children[row1.rowNumber];
@@ -558,6 +579,26 @@ function createNewRowElement(row) {
         row1.rowNumber=row2.rowNumber;
         row2.rowNumber=tempIndex;
         }
-
+      function setCountValue(row,newValue)
+      {
+        row.visCount=Math.ceil(newValue);
+          if(row.visCount>row.count)
+            row.visCount=row.count;
+      }
+      function updateCountFromSliderValue(row)
+      {
+        var newValue=(row.sliderValue*row.count)/100;
+        setCountValue(row,newValue);
+      }    
+      /*function updateSliderFromCountValue(row)
+      {
+        var newValue=(row.visCount/row.count)*100;
+        setSliderValue(row,newValue);
+        //console.log(node);
+      }
+      function setSliderValue(obj,newValue) {
+        getSlider(obj).value = newValue;
+        obj.sliderValue=newValue;
+      }*/
 
 // With JQuery

@@ -11,11 +11,49 @@ class RuleListDialog extends AbstractDialog {
   
       //console.log(propertyList);
       //console.log(propertyArr);
+      this._handleCreateJSONFile=this._handleCreateJSONFile.bind(this);
+      this._binds.createJSONFile.addEventListener('click', this._handleCreateJSONFile);
+      
       
   }
-  
+  _handleCreateJSONFile=function()
+  {
+    //console.log(rulesTable);
+    let jsonObject = extractInfoTable(rulesTable);
+    // console.log("File has been created"+jsonObject);
+     saveJSON(JSON.stringify(jsonObject ));
   }
   
+  }
+  function extractInfoTable()
+  {
+    var obj=new Object();
+    obj.children=[];
+    rulesTable.children.forEach((row) => {
+        var rowObj=new Object();
+        rowObj.property = row.property;
+        rowObj.propertyValue = row.propertyValue;
+        rowObj.visValue = row.sliderValue;
+        rowObj.count = row.count;
+        rowObj.color = row.color;
+        obj.children.push(rowObj);
+    });
+    return obj;
+  }
+  function saveJSON(data) {
+    //let data = "Whatever it is you want to save";
+    let bl = new Blob([data], {
+       type: "text/html"
+    });
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(bl);
+    a.download = "data.json";
+    a.hidden = true;
+    document.body.appendChild(a);
+    a.innerHTML =
+       "someinnerhtml";
+    a.click();
+  }
   
 /*  
 

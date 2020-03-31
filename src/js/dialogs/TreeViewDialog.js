@@ -603,24 +603,43 @@ class TreeViewDialog extends AbstractDialog {
             }
           },
           sliderChange: function() {
+
+
             
-            if(this.isDisabled!==true && exceedMinMaxRange(this)==false)
+            if(this.isDisabled!==true)
             {
-              var currValue=getSliderCurrentValue(this);
-              this.value = currValue;
-              var prevCount=this.visCount;
-              updateCountFromSliderValue(this);
-              var amount= this.visCount-prevCount;
-                        //console.log(avalChild);
-             //console.log(amount);
-             //console.log(this);
-              updateParentsSliderCountValues(this.parent);
-              if(amount>0)
-                  increaseChildrenSliderCountValues(this,amount);
-              else
-                   decreaseChildrenSliderCountValues(this,amount*-1);
-              //console.log(this);
-              TVDClass.trigger('sliderChange');
+              // check if exceed limit
+              var isSliderUpdated=false;
+              if(exceedMaxRange(this)==false && exceedMinRange(this)==false )
+              {
+                isSliderUpdated=true;
+              }
+              else if(exceedMaxRange(this)==true && this.value<this.maxValue)
+              {
+                setSliderValue(this,this.maxValue);
+                isSliderUpdated=true;
+              }
+              else if(exceedMinRange(this)==true && this.value>this.minValue)
+              {
+                setSliderValue(this,this.minValue);
+                isSliderUpdated=true;
+              }
+              //=========================
+              if(isSliderUpdated==true)
+              {
+                var currValue=getSliderCurrentValue(this);
+                this.value = currValue;
+                var prevCount=this.visCount;
+                updateCountFromSliderValue(this);
+                var amount= this.visCount-prevCount;
+                updateParentsSliderCountValues(this.parent);
+                if(amount>0)
+                    increaseChildrenSliderCountValues(this,amount);
+                else
+                    decreaseChildrenSliderCountValues(this,amount*-1);
+                //console.log(this);
+                TVDClass.trigger('sliderChange');
+              }
             }
             else
             {
@@ -666,17 +685,25 @@ class TreeViewDialog extends AbstractDialog {
           }
         }
       }
-      function exceedMinMaxRange(node)
+      function exceedMinRange(node)
+      {
+        var slider = getSlider(node);
+        //var value= getSliderCurrentValue(node);
+        //check sliders total if greater than 150 and re-update slider 
+        if (slider.value < node.minValue) {
+            //setSliderValue(node,node.minValue);
+            return true;
+        }
+        else
+            return false;
+      }
+      function exceedMaxRange(node)
       {
         var slider = getSlider(node);
         //var value= getSliderCurrentValue(node);
         //check sliders total if greater than 150 and re-update slider 
         if (slider.value > node.maxValue) {
-            setSliderValue(node,node.maxValue);
-            return true;
-        }
-        else if (slider.value < node.minValue) {
-            setSliderValue(node,node.minValue);
+            //setSliderValue(node,node.maxValue);
             return true;
         }
         else
@@ -722,6 +749,7 @@ class TreeViewDialog extends AbstractDialog {
             element.className='lock unlocked';
             var element2 = getSlider(node);
             element2.disabled=false;
+            node.isDisabled=false;
             unlockedParents(node.parent);
         }
     }
@@ -735,6 +763,7 @@ class TreeViewDialog extends AbstractDialog {
                 element.className='lock';
                 var element2 = getSlider(item);
                 element2.disabled=true;
+                item.isDisabled=true;
                 lockedChildren(item);
               }
             });

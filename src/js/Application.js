@@ -194,11 +194,13 @@ _getDialogForToneMapper(toneMapper) {
         case 'artistic' : return ArtisticToneMapperDialog;
     }
 }
+
+
 _handleSliderChange()
 {
     var Htree=this._treeViewDialog._getHtree();
     var HtreeJsonObj=this._treeViewDialog._getHtreeJsonObject();
-    console.log(HtreeJsonObj);
+    //console.log(HtreeJsonObj);
 }
 }
 
