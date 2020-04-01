@@ -16,6 +16,7 @@ constructor() {
     this._handleRendererChange = this._handleRendererChange.bind(this);
     this._handleToneMapperChange = this._handleToneMapperChange.bind(this);
     this._handleVolumeLoad = this._handleVolumeLoad.bind(this);
+    this._handleAttribLoad = this._handleAttribLoad.bind(this);
     this._handleEnvmapLoad = this._handleEnvmapLoad.bind(this);
 
     this._renderingContext = new RenderingContext();
@@ -44,6 +45,10 @@ constructor() {
     this._volumeLoadDialog = new VolumeLoadDialog();
     this._volumeLoadDialog.appendTo(this._mainDialog.getVolumeLoadContainer());
     this._volumeLoadDialog.addEventListener('load', this._handleVolumeLoad);
+
+    this._attribLoadDialog = new AttribLoadDialog();
+    this._attribLoadDialog.appendTo(this._mainDialog.getAttribLoadContainer());
+    this._attribLoadDialog.addEventListener('load', this._handleAttribLoad);
 
     this._envmapLoadDialog = new EnvmapLoadDialog();
     this._envmapLoadDialog.appendTo(this._mainDialog.getEnvmapLoadContainer());
@@ -137,6 +142,32 @@ _handleVolumeLoad(options) {
             this._renderingContext.setVolume(reader);
         }
     }
+}
+
+_handleAttribLoad(options) {
+    const attrib = new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.addEventListener('load', () => {
+            resolve(fr.result);
+        });
+        fr.addEventListener('error', reject);
+        fr.readAsArrayBuffer(options.attribFile);
+    });
+
+    const layout = new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.addEventListener('load', () => {
+            resolve(JSON.parse(fr.result));
+        });
+        fr.addEventListener('error', reject);
+        fr.readAsText(options.layoutFile);
+    });
+
+    Promise.all([attrib, layout]).then(([attrib, layout]) => {
+        const renderer = this._renderingContext.getRenderer();
+        renderer.setAttributes(attrib);
+        renderer.setLayout(layout);
+    });
 }
 
 _handleEnvmapLoad(options) {

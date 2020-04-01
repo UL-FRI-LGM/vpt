@@ -20,11 +20,14 @@ constructor(gl, volume, environmentTexture, options) {
         _maxDepth      : 1
     }, options);
 
-    this._programs = WebGL.buildPrograms(this._gl, {
+    this._programs = WebGL.buildPrograms(gl, {
         integrate : SHADERS.DOSIntegrate,
         render    : SHADERS.DOSRender,
         reset     : SHADERS.DOSReset
     }, MIXINS);
+
+    this._attrib = gl.createBuffer();
+    this._layout = [];
 }
 
 destroy() {
@@ -59,6 +62,17 @@ calculateDepth() {
     }
 
     return [minDepth, maxDepth];
+}
+
+setAttributes(attributes) {
+    WebGL.createBuffer(this._gl, {
+        buffer : this._attrib,
+        data   : attributes
+    });
+}
+
+setLayout(layout) {
+    this._layout = layout;
 }
 
 _resetFrame() {
