@@ -449,11 +449,9 @@ function createNewRowElement(row) {
           },
           propValueChange: function()
           {
-            
-            //var selectValueElem=getValueDropboxElem(this);
             var selectPropElem=getPropDropboxElem(this);
-            var multiSelectValues= $(".selectpicker").val();
-
+            var multiSelectValues= getmultiSelectedValuesDropboxElem(this);
+            console.log(multiSelectValues);
             if (multiSelectValues.length==0)//no selection
               {
                 this.propertyValue=['All'];
@@ -473,7 +471,6 @@ function createNewRowElement(row) {
                   propertyArr.forEach((prop) => {
                     if (selectPropElem.value==prop['name'])
                     {
-                      //this.property=prop['name'];
                       multiSelectValues.forEach((selectedValue)=> {
                       //======================
                         prop['types'].forEach((p) => {
@@ -557,6 +554,32 @@ function createNewRowElement(row) {
       function getValueDropboxElem(row)
       {
         return row.elem.children[0].children[1].children[1].children[1].children[0].children[0].children[0];
+      }
+      function getmultiSelectedValuesDropboxElem(row)
+      {
+        var el=getDropbox(row);
+        var values=[];
+        for(var i=0; el.children[i]!=undefined;i++)
+        {
+          var li=el.children[i];
+          if(hasClass(li, 'selected')) {
+            values.push(getValueOfli(li));
+          }
+        }
+        return values;
+          
+      }
+      function hasClass(element, className) {
+          return (' ' + element.className + ' ').indexOf(' ' + className+ ' ') > -1;
+      }
+      function getDropbox(row)
+      {
+        return row.elem.children[0].children[1].children[1].children[1].children[0].children[0].children[2].children[0].children[0];
+  
+      }
+      function getValueOfli(li)
+      {
+          return li.children[0].children[1].innerHTML;
       }
       function getPropDropboxElem(row)
       {

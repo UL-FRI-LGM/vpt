@@ -31,6 +31,7 @@ class RuleListDialog extends AbstractDialog {
     obj.children=[];
     rulesTable.children.forEach((row) => {
         var rowObj=new Object();
+        rowObj.priority=row.rowNumber;
         rowObj.property = row.property;
         rowObj.propertyValue = row.propertyValue;
         rowObj.visValue = row.sliderValue;
