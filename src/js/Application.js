@@ -165,8 +165,7 @@ _handleAttribLoad(options) {
 
     Promise.all([attrib, layout]).then(([attrib, layout]) => {
         const renderer = this._renderingContext.getRenderer();
-        renderer.setAttributes(attrib);
-        renderer.setLayout(layout);
+        renderer.setAttributes(attrib, layout);
     });
 }
 

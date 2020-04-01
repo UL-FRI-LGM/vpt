@@ -26,8 +26,10 @@ constructor(gl, volume, environmentTexture, options) {
         reset     : SHADERS.DOSReset
     }, MIXINS);
 
+    this._compute = null;
     this._attrib = gl.createBuffer();
     this._layout = [];
+    this._mask = gl.createTexture();
 }
 
 destroy() {
@@ -64,22 +66,80 @@ calculateDepth() {
     return [minDepth, maxDepth];
 }
 
-setAttributes(attributes) {
+setVolume(volume) {
+    super.setVolume(volume);
+
+    const gl = this._gl;
+    const modality = volume._currentModality;
+
+    this._mask = WebGL.createTexture(gl, {
+        texture        : this._mask,
+        target         : gl.TEXTURE_3D,
+        width          : modality.width,
+        height         : modality.height,
+        depth          : modality.depth,
+        type           : gl.UNSIGNED_BYTE,
+        format         : gl.RGBA,
+        internalFormat : gl.RGBA,
+        min            : gl.LINEAR,
+        mag            : gl.LINEAR,
+        wrapS          : gl.CLAMP_TO_EDGE,
+        wrapT          : gl.CLAMP_TO_EDGE,
+        wrapR          : gl.CLAMP_TO_EDGE,
+    });
+}
+
+setAttributes(attributes, layout) {
     WebGL.createBuffer(this._gl, {
         buffer : this._attrib,
         data   : attributes
     });
+    this._layout = layout;
+    this._rebuildAttribCompute();
 }
 
-setLayout(layout) {
-    this._layout = layout;
+_rebuildAttribCompute() {
+    const gl = this._gl;
+
+    if (this._compute) {
+        gl.deleteProgram(this._compute.program);
+    }
+
+    const members = [];
+    for (const attrib of this._layout) {
+        members.push(attrib.type + ' ' + attrib.name + ';');
+    }
+
+    const instance = members.join('\n');
+    const rules = [].join('\n');
+
+    this._compute = WebGL.buildPrograms(gl, {
+        compute  : SHADERS.AttribCompute
+    }, { instance, rules }).compute;
+}
+
+_recomputeMask() {
+    const gl = this._gl;
+
+    const program = this._compute;
+    gl.useProgram(program.program);
+
+    const dimensions = this._volume._currentModality.dimensions;
+    gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
+
+    gl.bindImageTexture(0, this._volume, 0, false, 0, gl.READ_ONLY, gl.R32UI);
+    gl.bindImageTexture(0, this._mask, 0, false, 0, gl.WRITE_ONLY, gl.RGBA8);
+
+    const groupsX = dimensions.width / 8;
+    const groupsY = dimensions.height / 8;
+    const groupsZ = dimensions.depth;
+    gl.dispatchCompute(groupsX, groupsY, groupsZ);
 }
 
 _resetFrame() {
     const gl = this._gl;
 
     const [minDepth, maxDepth] = this.calculateDepth();
-    //console.log(minDepth, maxDepth);
     this._minDepth = minDepth;
     this._maxDepth = maxDepth;
     this._depth = minDepth;

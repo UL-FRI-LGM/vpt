@@ -12,10 +12,11 @@ constructor(gl, reader, options) {
     this._gl = gl;
     this._reader = reader;
 
-    this.meta       = null;
-    this.modalities = null;
-    this.blocks     = null;
-    this._texture   = null;
+    this.meta             = null;
+    this.modalities       = null;
+    this.blocks           = null;
+    this._texture         = null;
+    this._currentModality = null;
 }
 
 readMetadata(handlers) {
@@ -42,6 +43,8 @@ readModality(modalityName, handlers) {
     if (!modality) {
         return;
     }
+
+    this._currentModality = modality;
     const dimensions = modality.dimensions;
     const components = modality.components;
     const blocks = this.blocks;
