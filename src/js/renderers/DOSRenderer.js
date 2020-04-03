@@ -26,9 +26,8 @@ constructor(gl, volume, environmentTexture, options) {
         reset     : SHADERS.DOSReset
     }, MIXINS);
 
-    this._compute = null;
-    this._attrib = gl.createBuffer();
     this._layout = [];
+    this._attrib = gl.createBuffer();
     this._mask = gl.createTexture();
 }
 
@@ -101,8 +100,8 @@ setAttributes(attributes, layout) {
 _rebuildAttribCompute() {
     const gl = this._gl;
 
-    if (this._compute) {
-        gl.deleteProgram(this._compute.program);
+    if (this._programs.compute) {
+        gl.deleteProgram(this._programs.compute.program);
     }
 
     const members = [];
@@ -113,7 +112,7 @@ _rebuildAttribCompute() {
     const instance = members.join('\n');
     const rules = [].join('\n');
 
-    this._compute = WebGL.buildPrograms(gl, {
+    this._programs.compute = WebGL.buildPrograms(gl, {
         compute  : SHADERS.AttribCompute
     }, { instance, rules }).compute;
 }
@@ -121,18 +120,18 @@ _rebuildAttribCompute() {
 _recomputeMask() {
     const gl = this._gl;
 
-    const program = this._compute;
+    const program = this._programs.compute;
     gl.useProgram(program.program);
 
     const dimensions = this._volume._currentModality.dimensions;
     gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
 
     gl.bindImageTexture(0, this._volume, 0, false, 0, gl.READ_ONLY, gl.R32UI);
-    gl.bindImageTexture(0, this._mask, 0, false, 0, gl.WRITE_ONLY, gl.RGBA8);
+    gl.bindImageTexture(1, this._mask, 0, false, 0, gl.WRITE_ONLY, gl.RGBA8);
 
-    const groupsX = dimensions.width / 8;
-    const groupsY = dimensions.height / 8;
-    const groupsZ = dimensions.depth;
+    const groupsX = Math.ceil(dimensions.width / 8);
+    const groupsY = Math.ceil(dimensions.height / 8);
+    const groupsZ = Math.ceil(dimensions.depth);
     gl.dispatchCompute(groupsX, groupsY, groupsZ);
 }
 
