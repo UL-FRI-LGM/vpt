@@ -71,8 +71,8 @@ readModality(modalityName, handlers) {
         internalFormat = gl.R8;
         format = gl.RED;
     }
-    internalFormat = gl.RGBA8UI;
-    format = gl.RGBA_INTEGER;
+    internalFormat = gl.R32UI;
+    format = gl.RED_INTEGER;
     gl.texStorage3D(gl.TEXTURE_3D, 1, internalFormat, dimensions.width, dimensions.height, dimensions.depth);
     let remainingBlocks = modality.placements.length;
     modality.placements.forEach(placement => {
@@ -85,7 +85,7 @@ readModality(modalityName, handlers) {
                 gl.texSubImage3D(gl.TEXTURE_3D, 0,
                     position.x, position.y, position.z,
                     blockdim.width, blockdim.height, blockdim.depth,
-                    format, gl.UNSIGNED_BYTE, new Uint8Array(data));
+                    format, gl.UNSIGNED_INT, new Uint32Array(data));
                 remainingBlocks--;
                 if (remainingBlocks === 0) {
                     this.ready = true;

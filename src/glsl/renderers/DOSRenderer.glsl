@@ -25,9 +25,9 @@ void main() {
 #version 300 es
 precision mediump float;
 precision mediump sampler2D;
-precision mediump usampler3D;
+precision mediump sampler3D;
 
-uniform usampler3D uVolume;
+uniform sampler3D uVolume;
 uniform sampler2D uTransferFunction;
 
 uniform sampler2D uColor;
@@ -45,14 +45,9 @@ layout (location = 0) out vec4 oColor;
 layout (location = 1) out float oOcclusion;
 
 vec4 getSample(vec3 position) {
-    uvec4 volumeSample = texture(uVolume, position);
-    uint header = volumeSample.r;
-    uint id = volumeSample.g;
-    uint value = volumeSample.b;
-
-    if (float(id) / 255.0 < uVisibility) {
-        return texture(uTransferFunction, vec2(float(value) / 255.0, 0));
-    }
+    vec4 volumeSample = texture(uVolume, position);
+    vec4 transferSample = texture(uTransferFunction, volumeSample.rg);
+    return transferSample;
 }
 
 void main() {

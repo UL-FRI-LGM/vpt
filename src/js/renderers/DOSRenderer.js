@@ -28,7 +28,13 @@ constructor(gl, volume, environmentTexture, options) {
 
     this._layout = [];
     this._attrib = gl.createBuffer();
-    this._mask = gl.createTexture();
+    this._mask = null;
+
+    this._localSize = {
+        x: 8,
+        y: 8,
+        z: 1,
+    };
 }
 
 destroy() {
@@ -69,27 +75,28 @@ setVolume(volume) {
     super.setVolume(volume);
 
     const gl = this._gl;
-    const modality = volume._currentModality;
+    const dimensions = volume._currentModality.dimensions;
 
-    this._mask = WebGL.createTexture(gl, {
-        texture        : this._mask,
-        target         : gl.TEXTURE_3D,
-        width          : modality.width,
-        height         : modality.height,
-        depth          : modality.depth,
-        type           : gl.UNSIGNED_BYTE,
-        format         : gl.RGBA,
-        internalFormat : gl.RGBA,
-        min            : gl.LINEAR,
-        mag            : gl.LINEAR,
-        wrapS          : gl.CLAMP_TO_EDGE,
-        wrapT          : gl.CLAMP_TO_EDGE,
-        wrapR          : gl.CLAMP_TO_EDGE,
-    });
+    if (this._mask) {
+        gl.deleteTexture(this._mask);
+    }
+
+    this._mask = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_3D, this._mask);
+    gl.texStorage3D(gl.TEXTURE_3D, 1, gl.RGBA8,
+        dimensions.width, dimensions.height, dimensions.depth);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
 }
 
 setAttributes(attributes, layout) {
-    WebGL.createBuffer(this._gl, {
+    const gl = this._gl;
+
+    WebGL.createBuffer(gl, {
+        target : gl.SHADER_STORAGE_BUFFER,
         buffer : this._attrib,
         data   : attributes
     });
@@ -110,11 +117,21 @@ _rebuildAttribCompute() {
     }
 
     const instance = members.join('\n');
-    const rules = [].join('\n');
+    const rules = [
+        'if (instance.length > 0.0) { return vec2(1, 1); }'
+    ].join('\n');
 
     this._programs.compute = WebGL.buildPrograms(gl, {
         compute  : SHADERS.AttribCompute
-    }, { instance, rules }).compute;
+    }, {
+        instance,
+        rules,
+        localSizeX: this._localSize.x,
+        localSizeY: this._localSize.y,
+        localSizeZ: this._localSize.z,
+    }).compute;
+
+    this._recomputeMask();
 }
 
 _recomputeMask() {
@@ -125,13 +142,13 @@ _recomputeMask() {
 
     const dimensions = this._volume._currentModality.dimensions;
     gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
+    gl.bindImageTexture(0, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
+    gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
+    gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._attrib);
 
-    gl.bindImageTexture(0, this._volume, 0, false, 0, gl.READ_ONLY, gl.R32UI);
-    gl.bindImageTexture(1, this._mask, 0, false, 0, gl.WRITE_ONLY, gl.RGBA8);
-
-    const groupsX = Math.ceil(dimensions.width / 8);
-    const groupsY = Math.ceil(dimensions.height / 8);
-    const groupsZ = Math.ceil(dimensions.depth);
+    const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
+    const groupsY = Math.ceil(dimensions.height / this._localSize.y);
+    const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
     gl.dispatchCompute(groupsX, groupsY, groupsZ);
 }
 
@@ -157,6 +174,10 @@ _resetFrame() {
 _integrateFrame() {
     const gl = this._gl;
 
+    if (!this._mask) {
+        return;
+    }
+
     const program = this._programs.integrate;
     gl.useProgram(program.program);
 
@@ -167,7 +188,7 @@ _integrateFrame() {
 
     gl.activeTexture(gl.TEXTURE2);
     gl.uniform1i(program.uniforms.uVolume, 2);
-    gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());
+    gl.bindTexture(gl.TEXTURE_3D, this._mask);
 
     gl.activeTexture(gl.TEXTURE3);
     gl.uniform1i(program.uniforms.uTransferFunction, 3);
@@ -228,8 +249,8 @@ _getFrameBufferSpec() {
         min            : gl.NEAREST,
         mag            : gl.NEAREST,
         format         : gl.RGBA,
-        internalFormat : gl.RGBA32F,
-        type           : gl.FLOAT
+        internalFormat : gl.RGBA,
+        type           : gl.UNSIGNED_BYTE
     }];
 }
 
@@ -242,8 +263,8 @@ _getAccumulationBufferSpec() {
         min            : gl.NEAREST,
         mag            : gl.NEAREST,
         format         : gl.RGBA,
-        internalFormat : gl.RGBA32F,
-        type           : gl.FLOAT
+        internalFormat : gl.RGBA,
+        type           : gl.UNSIGNED_BYTE
     };
 
     const occlusionBuffer = {
