@@ -1,0 +1,23 @@
+// #package uispecs
+
+// #section RuleListDialog
+{
+  "type": "panel",
+  "children": [
+    {
+      "type": "accordion",
+      "label": "Visibility Rules",
+      "children": [
+        {
+          "type": "table"
+        },
+        {
+          "type": "button",
+          "bind": "createJSONFile",
+          "label": "Update & Save JSON file"
+        }
+      ]
+          
+    }
+  ]
+}

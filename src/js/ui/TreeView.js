@@ -13,12 +13,14 @@ constructor(options) {
         label      : ''
     }, options);
 
-    this._binds.input.value = this.label;
+
+    //this._binds.input.value = this.label;
 }
 
 setEnabled(enabled) {
     super.setEnabled(enabled);
     this._binds.input.disabled = !enabled;
+
 }
 
 }

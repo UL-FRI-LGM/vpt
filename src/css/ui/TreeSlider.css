@@ -1,0 +1,49 @@
+/* #package css/main */
+
+.treeSlider {
+    width: 100%;
+  }
+
+.theSlider { 
+   /* pointer-events: none;*/
+    -webkit-appearance: none;
+    width: 90%;
+    height: 15px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+  } 
+  .theSlider:hover {
+    opacity: 1;
+  }
+
+  .theSlider::-webkit-slider-thumb {
+    /*pointer-events: auto;*/
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #2196f3;
+  }
+  .theSlider::-ms-thumb {
+    /*pointer-events: auto;*/
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #2196f3;
+  }
+  .theSlider::-moz-range-thumb {
+    /*pointer-events: auto;*/
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: white;
+  }
+  .theSlider:disabled::-webkit-slider-thumb,
+.theSlider[disabled]::-webkit-slider-thumb{
+  background: #737475;
+}

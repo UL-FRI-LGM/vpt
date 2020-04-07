@@ -1,0 +1,44 @@
+// #package uispecs
+
+// #section TreeViewDialog
+
+{
+  "type": "panel",
+  "children": [
+    {
+      "type": "button",
+      "bind": "ReadJSONButton",
+      "label": "Read JSON file"
+    },
+    {
+      "type": "accordion",
+      "label": "Hierarchy abstract",
+      "children": [
+        {
+          "type": "DtreeView",
+          "label": "DTree"
+        },
+        {
+          "type": "button",
+          "bind": "createTreeButton",
+          "label": "Create Tree"
+        }]
+    },
+    {
+      "type": "accordion",
+      "label": "Hierarchical View",
+      "children": [
+        {
+          "type": "treeView",
+          "label": "Tree"
+        },
+        {
+          "type": "button",
+          "bind": "createHierarchyJSONFile",
+          "label": "Update & Save JSON file"
+        }
+      
+      ]
+    }
+  ]
+}

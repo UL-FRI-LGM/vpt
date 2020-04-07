@@ -18,6 +18,7 @@ constructor() {
     this._handleVolumeLoad = this._handleVolumeLoad.bind(this);
     this._handleAttribLoad = this._handleAttribLoad.bind(this);
     this._handleEnvmapLoad = this._handleEnvmapLoad.bind(this);
+    this._handleSliderChange = this._handleSliderChange.bind(this);
 
     this._renderingContext = new RenderingContext();
     this._canvas = this._renderingContext.getCanvas();
@@ -53,6 +54,13 @@ constructor() {
     this._envmapLoadDialog = new EnvmapLoadDialog();
     this._envmapLoadDialog.appendTo(this._mainDialog.getEnvmapLoadContainer());
     this._envmapLoadDialog.addEventListener('load', this._handleEnvmapLoad);
+
+    this._treeViewDialog = new TreeViewDialog();
+    this._treeViewDialog.appendTo(this._mainDialog.getTreeViewContainer());
+    this._treeViewDialog.addEventListener('sliderChange', this._handleSliderChange);
+
+    this._ruleListDialog = new RuleListDialog();
+    this._ruleListDialog.appendTo(this._mainDialog.getRuleListContainer());
 
     this._renderingContextDialog = new RenderingContextDialog();
     this._renderingContextDialog.appendTo(
@@ -186,6 +194,12 @@ _handleEnvmapLoad(options) {
     } else if (options.type === 'url') {
         image.src = options.url;
     }
+}
+
+_handleSliderChange() {
+    var Htree=this._treeViewDialog._getHtree();
+    var HtreeJsonObj=this._treeViewDialog._getHtreeJsonObject();
+    //console.log(HtreeJsonObj);
 }
 
 _getReaderForFileType(type) {

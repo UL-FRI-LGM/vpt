@@ -1,0 +1,132 @@
+/* #package css/main */
+td,tr{
+  padding: 3px;
+}
+#notControl {
+    width:100%;
+  }
+#addMore
+{
+    content: "\002B";
+    position: relative;
+    font-size:22px;
+    color:blue;
+    margin: 0;
+    padding: 0;
+    left: 15px;
+    width: 15px;
+    cursor: pointer;
+}
+#multiSelect{
+  width:fit!important;
+  height:-5px !important;
+  margin: 0;
+  padding: 0;
+}
+#hline
+{
+
+  width:100%;
+  padding: 3px;
+    border-bottom: thin solid;/* hline*/
+}
+#remove
+{
+    content: "\2212";
+    position: relative;
+    font-size:22px;
+    color:red;
+    margin: 0;
+    padding: 0;
+    left: 15px;
+    cursor: pointer;
+}
+#up
+{
+    content: "\25B2";
+    position: relative;
+    font-size:15px;
+    color:black;
+    margin: 0;
+    padding: 0;
+    left: 15px;
+    cursor: pointer;
+}
+#down
+{
+    content: "\25BC";
+    position: relative;
+    font-size:15px;
+    color:black;
+    margin: 0;
+    padding: 0;
+    left: 15px;
+    cursor: pointer;  
+}
+
+
+
+.listSlider {
+    width: 100%;
+  }
+
+.theSlider { 
+   /* pointer-events: none;*/
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+   
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+  } 
+  .theSlider:hover {
+    opacity: 1;
+  }
+
+  .theSlider::-webkit-slider-thumb {
+    /*pointer-events: auto;*/
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #2196f3;
+  }
+  .theSlider::-ms-thumb {
+    /*pointer-events: auto;*/
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #2196f3;
+  }
+  .theSlider::-moz-range-thumb {
+    /*pointer-events: auto;*/
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: white;
+  }
+  .theSlider:disabled::-webkit-slider-thumb,
+.theSlider[disabled]::-webkit-slider-thumb{
+  background: #737475;
+}
+
+#slider22 .slider-selection {
+	background: #81bfde;
+}
+
+#slider22 .slider-rangeHighlight {
+	background: #f70616;
+}
+
+#slider22 .slider-rangeHighlight.category1 {
+    background: #FF9900;
+}
+
+#slider22 .slider-rangeHighlight.category2 {
+    background: #99CC00;
+}
