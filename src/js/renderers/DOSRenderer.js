@@ -118,7 +118,12 @@ _rebuildAttribCompute() {
 
     const instance = members.join('\n');
     const rules = [
-        'if (instance.length > 0.0) { return vec2(1, 1); }'
+        'if (instance.Label == 0.0) { return vec2(0); }',
+        'if (rand(vec2(instance.Label, 1.0)).x > 0.8) { return vec2(1.00, 1); }',
+        'if (rand(vec2(instance.Label, 1.0)).x > 0.6) { return vec2(0.75, 1); }',
+        'if (rand(vec2(instance.Label, 1.0)).x > 0.4) { return vec2(0.50, 1); }',
+        'if (rand(vec2(instance.Label, 1.0)).x > 0.2) { return vec2(0.25, 1); }',
+        'if (rand(vec2(instance.Label, 1.0)).x > 0.0) { return vec2(0.00, 1); }',
     ].join('\n');
 
     this._programs.compute = WebGL.buildPrograms(gl, {
@@ -126,6 +131,7 @@ _rebuildAttribCompute() {
     }, {
         instance,
         rules,
+        rand: MIXINS.rand,
         localSizeX: this._localSize.x,
         localSizeY: this._localSize.y,
         localSizeZ: this._localSize.z,

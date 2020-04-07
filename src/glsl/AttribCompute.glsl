@@ -17,6 +17,8 @@ uniform ivec3 imageSize;
 layout (r32ui, binding = 0) restrict readonly highp uniform uimage3D iID;
 layout (rgba8, binding = 1) restrict writeonly highp uniform image3D oMask;
 
+@rand
+
 vec2 rules(Instance instance) {
     @rules
     return vec2(0, 0);
