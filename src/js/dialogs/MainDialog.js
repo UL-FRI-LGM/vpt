@@ -34,14 +34,6 @@ getEnvmapLoadContainer() {
     return this._binds.envmapLoadContainer;
 }
 
-getTreeViewContainer() {
-    return this._binds.TreeViewContainer;
-}
-
-getRuleListContainer() {
-    return this._binds.RuleListContainer;
-}
-
 getRendererSettingsContainer() {
     return this._binds.rendererSettingsContainer;
 }

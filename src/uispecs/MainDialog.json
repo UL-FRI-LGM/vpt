@@ -125,14 +125,6 @@
             }
           ]
         },
-        "TreeView": {
-          "type": "panel",
-          "bind": "TreeViewContainer"
-        },
-        "Rules": {
-          "type": "panel",
-          "bind": "RuleListContainer"
-        },
         "About": {
           "type": "panel",
           "bind": "about"

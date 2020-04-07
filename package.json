@@ -2,10 +2,10 @@
   "name": "vpt",
   "version": "1.0.0",
   "description": "Volumetric Path Tracing",
-  "main": "node bin/server-express",
+  "main": "bin/server-express",
   "scripts": {
-    "build": "node bin/packer",
-    "start": "node bin/server-express",
+    "build": "bin/packer",
+    "start": "bin/server-express",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,9 +16,7 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/terier/vpt#readme",
   "dependencies": {
-    "bootstrap-slider": "^10.6.2",
-    "express": "^4.17.1",
-    "react-sortable-tree-theme-file-explorer": "^2.0.0"
+    "express": "^4.17.1"
   },
   "engines": {
     "node": "12.x"

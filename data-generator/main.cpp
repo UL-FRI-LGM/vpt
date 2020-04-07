@@ -211,7 +211,7 @@ QJsonObject computeStats(QList<Object*> objects)
 {
     QJsonObject stats;
     QJsonObject global;
-    QJsonArray elements;
+    QJsonObject elements;
 
     QJsonObject type;
     int tsc = 0, tbc = 0, tec = 0;
@@ -238,14 +238,14 @@ QJsonObject computeStats(QList<Object*> objects)
                 tssc[o->getSize()]++;
                 break;
             case 2:
-                tec++;
-                teoc[o->getOrientation()]++;
-                tesc[o->getSize()]++;
-                break;
-            case 3:
                 tbc++;
                 tboc[o->getOrientation()]++;
                 tbsc[o->getSize()]++;
+                break;
+            case 3:
+                tec++;
+                teoc[o->getOrientation()]++;
+                tesc[o->getSize()]++;
                 break;
         }
 
@@ -263,22 +263,6 @@ QJsonObject computeStats(QList<Object*> objects)
     }
     global["Size"] = size;
 
-    QList<QString> orientations;
-    orientations.push_back("Random");
-    orientations.push_back("Front");
-    orientations.push_back("Left");
-    orientations.push_back("Up");
-    orientations.push_back("Down");
-    orientations.push_back("Back");
-    orientations.push_back("Diagonal");
-    orientations.push_back("InverseDiagonal");
-    //orientations.push_back("Orientation");
-
-    for(int i = 0; i< orientations.size(); i++) {
-        orientation[orientations[i]] = oc[i];
-    }
-
-    /*
     orientation["Random"] = oc[0];
     orientation["Front"] = oc[1];
     orientation["Left"] = oc[2];
@@ -287,21 +271,10 @@ QJsonObject computeStats(QList<Object*> objects)
     orientation["Back"] = oc[5];
     orientation["Diagonal"] = oc[6];
     orientation["InverseDiagonal"] = oc[7];
-    */
     global["Orientation"] = orientation;
 
     stats["global"] = global;
 
-
-    for(auto obj : objects) {
-        QJsonObject o;
-        o["Size"] = "Class " + QString::number(obj->getSize() + 1);
-        o["Orientation"] = orientations[obj->getOrientation()];
-        o["Type"] = obj->getName();
-        elements.append(o);
-    }
-
-    /*
     QJsonObject typeS, typeB, typeE;
     QJsonObject sizeS, sizeB, sizeE;
     QJsonObject orientationS, orientationB, orientationE;
@@ -362,10 +335,8 @@ QJsonObject computeStats(QList<Object*> objects)
     typeE["Orientation"] = orientationE;
 
     elements["Ellipsoid"] = typeE;
-    */
 
     stats["elements"] = elements;
-
 
     return stats;
 }
