@@ -1,0 +1,18 @@
+// #package uispecs
+
+// #section VisibilityDialog
+
+{
+  "type": "panel",
+  "children": [
+    {
+      "type": "panel",
+      "bind": "groupsContainer"
+    },
+    {
+      "type": "button",
+      "bind": "addGroupButton",
+      "label": "Add group"
+    }
+  ]
+}

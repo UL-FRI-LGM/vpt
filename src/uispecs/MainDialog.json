@@ -125,6 +125,10 @@
             }
           ]
         },
+        "Visibility": {
+          "type": "panel",
+          "bind": "visibilityContainer"
+        },
         "About": {
           "type": "panel",
           "bind": "about"

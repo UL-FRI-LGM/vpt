@@ -18,6 +18,8 @@ constructor() {
     this._handleVolumeLoad = this._handleVolumeLoad.bind(this);
     this._handleAttribLoad = this._handleAttribLoad.bind(this);
     this._handleEnvmapLoad = this._handleEnvmapLoad.bind(this);
+    this._handleVisibilityChange = this._handleVisibilityChange.bind(this);
+    this._handleVisibilityRetopo = this._handleVisibilityRetopo.bind(this);
 
     this._renderingContext = new RenderingContext();
     this._canvas = this._renderingContext.getCanvas();
@@ -53,6 +55,11 @@ constructor() {
     this._envmapLoadDialog = new EnvmapLoadDialog();
     this._envmapLoadDialog.appendTo(this._mainDialog.getEnvmapLoadContainer());
     this._envmapLoadDialog.addEventListener('load', this._handleEnvmapLoad);
+
+    this._visibilityDialog = new VisibilityDialog();
+    this._visibilityDialog.appendTo(this._mainDialog.getVisibilityContainer());
+    this._visibilityDialog.addEventListener('retopo', this.handleVisibilityRetopo);
+    this._visibilityDialog.addEventListener('change', this.handleVisibilityChange);
 
     this._renderingContextDialog = new RenderingContextDialog();
     this._renderingContextDialog.appendTo(
@@ -166,6 +173,7 @@ _handleAttribLoad(options) {
     Promise.all([attrib, layout]).then(([attrib, layout]) => {
         const renderer = this._renderingContext.getRenderer();
         renderer.setAttributes(attrib, layout);
+        this._visibilityDialog.setAttributes(layout.map(x => x.name));
     });
 }
 
@@ -186,6 +194,14 @@ _handleEnvmapLoad(options) {
     } else if (options.type === 'url') {
         image.src = options.url;
     }
+}
+
+_handleVisibilityChange(options) {
+    console.log('visibility change');
+}
+
+_handleVisibilityRetopo(options) {
+    console.log('visibility retopo');
 }
 
 _getReaderForFileType(type) {

@@ -34,6 +34,10 @@ getEnvmapLoadContainer() {
     return this._binds.envmapLoadContainer;
 }
 
+getVisibilityContainer() {
+    return this._binds.visibilityContainer;
+}
+
 getRendererSettingsContainer() {
     return this._binds.rendererSettingsContainer;
 }
