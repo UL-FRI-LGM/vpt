@@ -18,7 +18,7 @@
           "children": [
             {
               "type": "dropdown",
-              "bind": "attributes"
+              "bind": "attribute"
             }
           ]
         },
@@ -27,7 +27,8 @@
           "label": "Range:",
           "children": [
             {
-              "type": "vector"
+              "type": "vector",
+              "bind": "range"
             }
           ]
         },
@@ -36,7 +37,8 @@
           "label": "Visibility:",
           "children": [
             {
-              "type": "slider"
+              "type": "slider",
+              "bind": "visibility"
             }
           ]
         },
@@ -45,7 +47,8 @@
           "label": "Color:",
           "children": [
             {
-              "type": "color-chooser"
+              "type": "color-chooser",
+              "bind": "color"
             }
           ]
         }

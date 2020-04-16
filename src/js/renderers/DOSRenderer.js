@@ -26,6 +26,7 @@ constructor(gl, volume, environmentTexture, options) {
         reset     : SHADERS.DOSReset
     }, MIXINS);
 
+    this._rules = [];
     this._layout = [];
     this._attrib = gl.createBuffer();
     this._mask = null;
@@ -102,6 +103,9 @@ setAttributes(attributes, layout) {
     });
     this._layout = layout;
     this._rebuildAttribCompute();
+}
+
+setRules(rules) {
 }
 
 _rebuildAttribCompute() {

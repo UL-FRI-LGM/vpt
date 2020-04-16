@@ -7,7 +7,7 @@
   "children": [
     {
       "type": "panel",
-      "bind": "groupsContainer"
+      "bind": "groupContainer"
     },
     {
       "type": "button",

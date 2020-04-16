@@ -18,8 +18,8 @@ constructor() {
     this._handleVolumeLoad = this._handleVolumeLoad.bind(this);
     this._handleAttribLoad = this._handleAttribLoad.bind(this);
     this._handleEnvmapLoad = this._handleEnvmapLoad.bind(this);
-    this._handleVisibilityChange = this._handleVisibilityChange.bind(this);
     this._handleVisibilityRetopo = this._handleVisibilityRetopo.bind(this);
+    this._handleVisibilityChange = this._handleVisibilityChange.bind(this);
 
     this._renderingContext = new RenderingContext();
     this._canvas = this._renderingContext.getCanvas();
@@ -58,8 +58,8 @@ constructor() {
 
     this._visibilityDialog = new VisibilityDialog();
     this._visibilityDialog.appendTo(this._mainDialog.getVisibilityContainer());
-    this._visibilityDialog.addEventListener('retopo', this.handleVisibilityRetopo);
-    this._visibilityDialog.addEventListener('change', this.handleVisibilityChange);
+    this._visibilityDialog.addEventListener('retopo', this._handleVisibilityRetopo);
+    this._visibilityDialog.addEventListener('change', this._handleVisibilityChange);
 
     this._renderingContextDialog = new RenderingContextDialog();
     this._renderingContextDialog.appendTo(
@@ -196,12 +196,14 @@ _handleEnvmapLoad(options) {
     }
 }
 
-_handleVisibilityChange(options) {
-    console.log('visibility change');
-}
-
 _handleVisibilityRetopo(options) {
     console.log('visibility retopo');
+    console.log(this._visibilityDialog.getGroups());
+}
+
+_handleVisibilityChange(options) {
+    console.log('visibility change');
+    console.log(this._visibilityDialog.getGroups());
 }
 
 _getReaderForFileType(type) {
