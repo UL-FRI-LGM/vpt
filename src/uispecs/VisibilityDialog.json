@@ -13,6 +13,11 @@
       "type": "button",
       "bind": "addGroupButton",
       "label": "Add group"
+    },
+    {
+      "type": "button",
+      "bind": "rebuildButton",
+      "label": "Rebuild"
     }
   ]
 }

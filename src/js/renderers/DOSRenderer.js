@@ -23,7 +23,8 @@ constructor(gl, volume, environmentTexture, options) {
     this._programs = WebGL.buildPrograms(gl, {
         integrate : SHADERS.DOSIntegrate,
         render    : SHADERS.DOSRender,
-        reset     : SHADERS.DOSReset
+        reset     : SHADERS.DOSReset,
+        transfer  : SHADERS.PolarTransferFunction,
     }, MIXINS);
 
     this._rules = [];
@@ -36,6 +37,21 @@ constructor(gl, volume, environmentTexture, options) {
         y: 8,
         z: 1,
     };
+
+    this._colorStrip = WebGL.createTexture(gl, {
+        min: gl.LINEAR,
+        mag: gl.LINEAR,
+    });
+
+    this._transferFunction = WebGL.createTexture(gl, {
+        texture : this._transferFunction,
+        width   : 256,
+        height  : 256,
+    });
+
+    this._transferFunctionFramebuffer = WebGL.createFramebuffer(gl, {
+        color: [ this._transferFunction ]
+    });
 }
 
 destroy() {
@@ -102,10 +118,24 @@ setAttributes(attributes, layout) {
         data   : attributes
     });
     this._layout = layout;
-    this._rebuildAttribCompute();
 }
 
 setRules(rules) {
+    this._rules = rules.map((rule, index) => {
+        const attribute = rule.attribute;
+        const lo = rule.range.x.toFixed(4);
+        const hi = rule.range.y.toFixed(4);
+        const visibility = (rule.visibility / 100).toFixed(4);
+        const phi = (index / rules.length) * 2 * Math.PI;
+        const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
+        const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
+        const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
+        const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
+        return `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
+    });
+
+    this._recomputeTransferFunction(rules);
+    this._rebuildAttribCompute();
 }
 
 _rebuildAttribCompute() {
@@ -121,14 +151,7 @@ _rebuildAttribCompute() {
     }
 
     const instance = members.join('\n');
-    const rules = [
-        'if (instance.Label == 0.0) { return vec2(0); }',
-        'if (instance.Orientation / 5.0 > 0.8) { return vec2(1.00, 1); }',
-        'if (instance.Orientation / 5.0 > 0.6) { return vec2(0.75, 1); }',
-        'if (instance.Orientation / 5.0 > 0.4) { return vec2(0.50, 1); }',
-        'if (instance.Orientation / 5.0 > 0.2) { return vec2(0.25, 1); }',
-        'if (instance.Orientation / 5.0 > 0.0) { return vec2(0.00, 1); }',
-    ].join('\n');
+    const rules = this._rules.join('\n');
 
     this._programs.compute = WebGL.buildPrograms(gl, {
         compute  : SHADERS.AttribCompute
@@ -160,6 +183,48 @@ _recomputeMask() {
     const groupsY = Math.ceil(dimensions.height / this._localSize.y);
     const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
     gl.dispatchCompute(groupsX, groupsY, groupsZ);
+}
+
+_recomputeTransferFunction(rules) {
+    const gl = this._gl;
+
+    // create color strip
+    const colors = rules
+        .map(rule => rule.color)
+        .map(hex => CommonUtils.hex2rgb(hex))
+        .map(color => [color.r, color.g, color.b, 1])
+        .flat()
+        .map(x => x * 255);
+    const data = new Uint8Array(colors);
+
+    // upload color strip
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this._colorStrip);
+    WebGL.createTexture(gl, {
+        unit    : 0,
+        texture : this._colorStrip,
+        width   : rules.length,
+        height  : 1,
+        data    : data
+    });
+
+    // render transfer function
+    const program = this._programs.transfer;
+    gl.useProgram(program.program);
+
+    gl.uniform1i(program.uniforms.uColorStrip, 0);
+    gl.uniform1f(program.uniforms.uOffset, 0.5 / rules.length);
+    gl.uniform1f(program.uniforms.uFalloffStart, 0.2);
+    gl.uniform1f(program.uniforms.uFalloffEnd, 0.8);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._clipQuad);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this._transferFunctionFramebuffer);
+    gl.viewport(0, 0, 256, 256); // TODO: get actual TF size
+    gl.drawBuffers([ gl.COLOR_ATTACHMENT0 ]);
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 }
 
 _resetFrame() {

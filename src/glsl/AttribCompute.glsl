@@ -19,9 +19,10 @@ layout (rgba8, binding = 1) restrict writeonly highp uniform image3D oMask;
 
 @rand
 
-vec2 rules(Instance instance) {
+vec2 rules(Instance instance, uint id) {
+    if (id == 0u) { return vec2(0.5); }
     @rules
-    return vec2(0, 0);
+    return vec2(0.5);
 }
 
 void main() {
@@ -29,7 +30,7 @@ void main() {
     if (voxel.x < imageSize.x && voxel.y < imageSize.y && voxel.z < imageSize.z) {
         uint id = imageLoad(iID, voxel).r;
         Instance instance = sInstances[id];
-        vec2 mask = rules(instance);
+        vec2 mask = rules(instance, id);
         imageStore(oMask, voxel, vec4(mask, 0, 0));
     }
 }
