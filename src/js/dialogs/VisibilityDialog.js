@@ -75,6 +75,7 @@ _addGroup() {
     for (const attribute of this.attributes) {
         binds.attribute.addOption(attribute, attribute);
     }
+    binds.attribute.setValue(this.attributes[0]);
 
     controlPanelButtons.up.addEventListener('click', e => this._moveUp(group));
     controlPanelButtons.down.addEventListener('click', e => this._moveDown(group));
