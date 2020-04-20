@@ -83,6 +83,46 @@ constructor() {
     this._mainDialog.addEventListener('tonemapperchange', this._handleToneMapperChange);
     this._mainDialog.trigger('rendererchange', this._mainDialog.getSelectedRenderer());
     this._mainDialog.trigger('tonemapperchange', this._mainDialog.getSelectedToneMapper());
+
+    // hardcoded loading, just for this deploy
+    this._handleVolumeLoad({
+        type       : 'url',
+        url        : 'fibers-id.raw',
+        filetype   : 'raw',
+        dimensions : { x: 400, y: 401, z: 800 },
+        precision  : 32
+    });
+
+    const attrib = new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = 'arraybuffer';
+        xhr.addEventListener('load', () => resolve(xhr.response));
+        xhr.addEventListener('error', reject);
+        xhr.open('GET', 'fibers-attrib.raw');
+        xhr.send();
+    });
+
+    const layout = new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = 'json';
+        xhr.addEventListener('load', () => resolve(xhr.response));
+        xhr.addEventListener('error', reject);
+        xhr.open('GET', 'fibers-layout.json');
+        xhr.send();
+    });
+
+    Promise.all([attrib, layout]).then(([attrib, layout]) => {
+        const renderer = this._renderingContext.getRenderer();
+        renderer.setAttributes(attrib, layout);
+        this._visibilityDialog.setAttributes(layout.map(x => x.name));
+    });
+
+    // create loading
+    const loadingDiv = DOMUtils.instantiate(TEMPLATES.LoadingScreen);
+    document.body.appendChild(loadingDiv);
+    this._renderingContext.addEventListener('volume-loaded', () => {
+        DOMUtils.remove(loadingDiv);
+    });
 }
 
 _handleFileDrop(e) {
@@ -146,7 +186,12 @@ _handleVolumeLoad(options) {
         const readerClass = this._getReaderForFileType(options.filetype);
         if (readerClass) {
             const loader = new AjaxLoader(options.url);
-            const reader = new readerClass(loader);
+            const reader = new readerClass(loader, {
+                width  : options.dimensions.x,
+                height : options.dimensions.y,
+                depth  : options.dimensions.z,
+                bits   : options.precision
+            });
             this._renderingContext.stopRendering();
             this._renderingContext.setVolume(reader);
         }
