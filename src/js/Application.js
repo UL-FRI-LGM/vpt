@@ -20,7 +20,10 @@ constructor() {
     this._handleEnvmapLoad = this._handleEnvmapLoad.bind(this);
     this._handleVisibilityRetopo = this._handleVisibilityRetopo.bind(this);
     this._handleVisibilityChange = this._handleVisibilityChange.bind(this);
-    this._handleVisibilityRebuild = this._handleVisibilityRebuild.bind(this);
+
+    this._visibilityUpdatePending = false;
+    this._visibilityUpdateInterval = 200;
+    this._visibilityUpdateTimeout = null;
 
     this._renderingContext = new RenderingContext();
     this._canvas = this._renderingContext.getCanvas();
@@ -61,7 +64,6 @@ constructor() {
     this._visibilityDialog.appendTo(this._mainDialog.getVisibilityContainer());
     this._visibilityDialog.addEventListener('retopo', this._handleVisibilityRetopo);
     this._visibilityDialog.addEventListener('change', this._handleVisibilityChange);
-    this._visibilityDialog.addEventListener('rebuild', this._handleVisibilityRebuild);
 
     this._renderingContextDialog = new RenderingContextDialog();
     this._renderingContextDialog.appendTo(
@@ -137,11 +139,12 @@ constructor() {
     });
 
     // create loading
-    const loadingDiv = DOMUtils.instantiate(TEMPLATES.LoadingScreen);
-    document.body.appendChild(loadingDiv);
+    this._loadingDiv = DOMUtils.instantiate(TEMPLATES.LoadingScreen);
+    document.body.appendChild(this._loadingDiv);
     this._renderingContext.addEventListener('volume-loaded', () => {
-        DOMUtils.remove(loadingDiv);
-        this._visibilityDialog.trigger('rebuild');
+        DOMUtils.remove(this._loadingDiv);
+        this._loadingDiv = null;
+        this._visibilityDialog.trigger('retopo');
     });
 }
 
@@ -263,20 +266,44 @@ _handleEnvmapLoad(options) {
     }
 }
 
-_handleVisibilityRetopo(options) {
-    //const renderer = this._renderingContext.getRenderer();
-    //renderer.setRules(this._visibilityDialog.getGroups());
-}
-
-_handleVisibilityChange(options) {
-    //const renderer = this._renderingContext.getRenderer();
-    //renderer.setRules(this._visibilityDialog.getGroups());
-}
-
-_handleVisibilityRebuild(options) {
+_updateVisibility() {
     const renderer = this._renderingContext.getRenderer();
     renderer.setRules(this._visibilityDialog.getGroups());
     renderer.reset();
+
+    if (this._visibilityUpdateTimeout) {
+        clearTimeout(this._visibilityUpdateTimeout);
+        this._visibilityUpdateTimeout = null;
+    }
+
+    this._visibilityUpdateTimeout = setTimeout(() => {
+        this._visibilityUpdateTimeout = null;
+
+        if (this._visibilityUpdatePending) {
+            this._visibilityUpdatePending = false;
+            this._updateVisibility();
+        }
+    }, this._visibilityUpdateInterval);
+}
+
+_throttleVisibility() {
+    if (this._loadingDiv) {
+        return;
+    }
+
+    if (!this._visibilityUpdateTimeout) {
+        this._updateVisibility();
+    } else {
+        this._visibilityUpdatePending = true;
+    }
+}
+
+_handleVisibilityRetopo(options) {
+    this._throttleVisibility();
+}
+
+_handleVisibilityChange(options) {
+    this._throttleVisibility();
 }
 
 _getReaderForFileType(type) {
