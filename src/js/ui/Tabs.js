@@ -10,7 +10,7 @@ constructor(options) {
     this._handleClick = this._handleClick.bind(this);
 
     this._tabs = [];
-    this._index = 2;
+    this._index = 0;
 }
 
 add(name, object) {
