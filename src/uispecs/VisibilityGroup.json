@@ -27,7 +27,7 @@
           "label": "Range:",
           "children": [
             {
-              "type": "vector",
+              "type": "vector2",
               "bind": "range"
             }
           ]
