@@ -115,6 +115,25 @@ constructor() {
         const renderer = this._renderingContext.getRenderer();
         renderer.setAttributes(attrib, layout);
         this._visibilityDialog.setAttributes(layout.map(x => x.name));
+
+        // add three visibility groups, so very hardcoded
+        const first = this._visibilityDialog._addGroup();
+        first.binds.attribute.setValue('RealX1');
+        first.binds.range.setValue({ x: 100, y: 200 });
+        first.binds.visibility.setValue(100);
+        first.binds.color.setValue('#ff7536');
+
+        const second = this._visibilityDialog._addGroup();
+        second.binds.attribute.setValue('RealX1');
+        second.binds.range.setValue({ x: 300, y: 400 });
+        second.binds.visibility.setValue(66);
+        second.binds.color.setValue('#ffe436');
+
+        const third = this._visibilityDialog._addGroup();
+        third.binds.attribute.setValue('RealX1');
+        third.binds.range.setValue({ x: 500, y: 600 });
+        third.binds.visibility.setValue(33);
+        third.binds.color.setValue('#68ff36');
     });
 
     // create loading
@@ -122,6 +141,7 @@ constructor() {
     document.body.appendChild(loadingDiv);
     this._renderingContext.addEventListener('volume-loaded', () => {
         DOMUtils.remove(loadingDiv);
+        this._visibilityDialog.trigger('rebuild');
     });
 }
 

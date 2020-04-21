@@ -85,6 +85,8 @@ _addGroup() {
     binds.range.addEventListener('change', this._handleGroupChange);
     binds.visibility.addEventListener('change', this._handleGroupChange);
     binds.color.addEventListener('change', this._handleGroupChange);
+
+    return group;
 }
 
 _moveUp(group) {
