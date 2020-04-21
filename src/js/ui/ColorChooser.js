@@ -29,8 +29,12 @@ setEnabled(enabled) {
     super.setEnabled(enabled);
 }
 
-_handleInput(e) {
+_updateColorBar() {
     this._binds.color.style.backgroundColor = this._binds.input.value /* + alpha */;
+}
+
+_handleInput(e) {
+    this._updateColorBar();
 }
 
 _handleClick() {
@@ -43,6 +47,7 @@ getValue() {
 
 setValue(value) {
     this._binds.input.value = value;
+    this._updateColorBar();
 }
 
 }

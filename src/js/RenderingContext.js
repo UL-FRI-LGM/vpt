@@ -8,10 +8,13 @@
 // #include Volume.js
 // #include renderers
 // #include tonemappers
+// #include EventEmitter.js
 
-class RenderingContext {
+class RenderingContext extends EventEmitter {
 
 constructor(options) {
+    super();
+
     this._render = this._render.bind(this);
     this._webglcontextlostHandler = this._webglcontextlostHandler.bind(this);
     this._webglcontextrestoredHandler = this._webglcontextrestoredHandler.bind(this);
@@ -118,6 +121,7 @@ setVolume(reader) {
                     if (this._renderer) {
                         this._renderer.setVolume(this._volume);
                         this.startRendering();
+                        this.trigger('volume-loaded');
                     }
                 }
             });

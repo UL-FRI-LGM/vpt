@@ -20,7 +20,10 @@ constructor() {
     this._handleEnvmapLoad = this._handleEnvmapLoad.bind(this);
     this._handleVisibilityRetopo = this._handleVisibilityRetopo.bind(this);
     this._handleVisibilityChange = this._handleVisibilityChange.bind(this);
-    this._handleVisibilityRebuild = this._handleVisibilityRebuild.bind(this);
+
+    this._visibilityUpdatePending = false;
+    this._visibilityUpdateInterval = 200;
+    this._visibilityUpdateTimeout = null;
 
     this._renderingContext = new RenderingContext();
     this._canvas = this._renderingContext.getCanvas();
@@ -61,7 +64,6 @@ constructor() {
     this._visibilityDialog.appendTo(this._mainDialog.getVisibilityContainer());
     this._visibilityDialog.addEventListener('retopo', this._handleVisibilityRetopo);
     this._visibilityDialog.addEventListener('change', this._handleVisibilityChange);
-    this._visibilityDialog.addEventListener('rebuild', this._handleVisibilityRebuild);
 
     this._renderingContextDialog = new RenderingContextDialog();
     this._renderingContextDialog.appendTo(
@@ -146,7 +148,12 @@ _handleVolumeLoad(options) {
         const readerClass = this._getReaderForFileType(options.filetype);
         if (readerClass) {
             const loader = new AjaxLoader(options.url);
-            const reader = new readerClass(loader);
+            const reader = new readerClass(loader, {
+                width  : options.dimensions.x,
+                height : options.dimensions.y,
+                depth  : options.dimensions.z,
+                bits   : options.precision
+            });
             this._renderingContext.stopRendering();
             this._renderingContext.setVolume(reader);
         }
@@ -198,20 +205,44 @@ _handleEnvmapLoad(options) {
     }
 }
 
-_handleVisibilityRetopo(options) {
-    //const renderer = this._renderingContext.getRenderer();
-    //renderer.setRules(this._visibilityDialog.getGroups());
-}
-
-_handleVisibilityChange(options) {
-    //const renderer = this._renderingContext.getRenderer();
-    //renderer.setRules(this._visibilityDialog.getGroups());
-}
-
-_handleVisibilityRebuild(options) {
+_updateVisibility() {
     const renderer = this._renderingContext.getRenderer();
     renderer.setRules(this._visibilityDialog.getGroups());
     renderer.reset();
+
+    if (this._visibilityUpdateTimeout) {
+        clearTimeout(this._visibilityUpdateTimeout);
+        this._visibilityUpdateTimeout = null;
+    }
+
+    this._visibilityUpdateTimeout = setTimeout(() => {
+        this._visibilityUpdateTimeout = null;
+
+        if (this._visibilityUpdatePending) {
+            this._visibilityUpdatePending = false;
+            this._updateVisibility();
+        }
+    }, this._visibilityUpdateInterval);
+}
+
+_throttleVisibility() {
+    if (this._loadingDiv) {
+        return;
+    }
+
+    if (!this._visibilityUpdateTimeout) {
+        this._updateVisibility();
+    } else {
+        this._visibilityUpdatePending = true;
+    }
+}
+
+_handleVisibilityRetopo(options) {
+    this._throttleVisibility();
+}
+
+_handleVisibilityChange(options) {
+    this._throttleVisibility();
 }
 
 _getReaderForFileType(type) {

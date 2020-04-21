@@ -18,13 +18,11 @@ constructor(options) {
 
 _registerEventListeners() {
     this._handleAddGroupClick = this._handleAddGroupClick.bind(this);
-    this._handleRebuildClick = this._handleRebuildClick.bind(this);
     this._handleGroupChange = this._handleGroupChange.bind(this);
 }
 
 _addEventListeners() {
     this._binds.addGroupButton.addEventListener('click', this._handleAddGroupClick);
-    this._binds.rebuildButton.addEventListener('click', this._handleRebuildClick);
 }
 
 reset() {
@@ -49,10 +47,6 @@ getGroups() {
 
 _handleAddGroupClick() {
     this._addGroup();
-}
-
-_handleRebuildClick() {
-    this.trigger('rebuild');
 }
 
 _handleGroupChange() {
@@ -85,6 +79,8 @@ _addGroup() {
     binds.range.addEventListener('change', this._handleGroupChange);
     binds.visibility.addEventListener('change', this._handleGroupChange);
     binds.color.addEventListener('change', this._handleGroupChange);
+
+    return group;
 }
 
 _moveUp(group) {
