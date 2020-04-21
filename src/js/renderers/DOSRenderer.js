@@ -115,7 +115,7 @@ setAttributes(attributes, layout) {
     WebGL.createBuffer(gl, {
         target : gl.SHADER_STORAGE_BUFFER,
         buffer : this._attrib,
-        data   : attributes
+        data   : attributes || new ArrayBuffer()
     });
     this._layout = layout;
 }

@@ -143,6 +143,8 @@ _handleVolumeLoad(options) {
             });
             this._renderingContext.stopRendering();
             this._renderingContext.setVolume(reader);
+            this._renderingContext.getRenderer().setAttributes(null, null);
+            this._visibilityDialog.reset();
         }
     } else if (options.type === 'url') {
         const readerClass = this._getReaderForFileType(options.filetype);
