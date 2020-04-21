@@ -176,6 +176,9 @@ QByteArray generateData(QList<Object*> objects, Settings* set)
                             out << (float)obj->getId();
                             out << (float)obj->getValue();
                             break;
+                    case 3:
+                            out << (int)obj->getValue();
+                        break;
                     }
                 } else {
                     switch(set->outputType) {
@@ -195,6 +198,9 @@ QByteArray generateData(QList<Object*> objects, Settings* set)
                             for(int i = 0; i < 5; i++) {
                                 out << (float)meta;
                             }
+                            break;
+                        case 3:
+                            out << (int)meta;
                             break;
                     }
                 }
@@ -341,6 +347,46 @@ QJsonObject computeStats(QList<Object*> objects)
     return stats;
 }
 
+void generateCSV(QList<Object*> objects, Settings* set)
+{
+    qDebug() << "writing attributes\n";
+
+    set->targetFile = "attributes.csv";
+    QFile csvFile(set->targetFile);
+
+    if(csvFile.open(QIODevice::WriteOnly)) {
+        QTextStream out(&csvFile);
+
+        for(auto o : objects) {
+            out << o->getId() << ";";
+            out << o->getType() << ";";
+            out << o->getSize() << ";";
+            out << o->getOrientation() << ";";
+            out << "\n";
+        }
+
+        csvFile.close();
+    }
+
+    set->targetFile = "attributes.raw";
+    QFile rawFile(set->targetFile);
+
+    if(rawFile.open(QIODevice::WriteOnly)) {
+        QDataStream out(&rawFile);
+
+        for(auto o : objects) {
+            out << (float)o->getId();
+            out << (float)o->getType();
+            out << (float)o->getSize();
+            out << (float)o->getOrientation();
+        }
+
+        csvFile.close();
+    }
+
+
+}
+
 QByteArray generateMeta(QList<Object*> objects, Settings* set)
 {
     QJsonObject root;
@@ -360,6 +406,9 @@ QByteArray generateMeta(QList<Object*> objects, Settings* set)
             break;
         case 2:
             general["bits"] = 160;
+            break;
+        case 3:
+            general["bits"] = 32;
             break;
     }
 
@@ -501,7 +550,7 @@ QByteArray generateMeta(QList<Object*> objects, Settings* set)
             value["datatype"] = "float";
             value["desc"] = "Value of the element presented in the current cell.";
             layout.append(value);
-        break;
+        break;       
     }
 
     root["layout"] = layout;
@@ -518,11 +567,10 @@ void writeData(QByteArray data, Settings* set) {
 
     qDebug() << "written to: " << QFileInfo(file).absoluteFilePath();
 
-    file.open(QIODevice::WriteOnly);
-
-    file.write(data);
-
-    file.close();
+    if(file.open(QIODevice::WriteOnly)) {
+        file.write(data);
+        file.close();
+    }
 }
 
 int main(int argc, char *argv[])
@@ -532,8 +580,8 @@ int main(int argc, char *argv[])
     set.w = 128;
     set.h = 128;
     set.d = 128;
-    set.targetCount = 150;
-    set.outputType = 2;
+    set.targetCount = 20;
+    set.outputType = 3;
 
     // main data generator
     QList<Object*> objects = generateObjects(&set);
@@ -541,9 +589,13 @@ int main(int argc, char *argv[])
     writeData(data, &set);
 
     // meta file descriptor
-    data = generateMeta(objects, &set);
-    set.targetFile = "data.json";
-    writeData(data, &set);
+    if(set.outputType == 3) {
+        generateCSV(objects, &set);
+    } else {
+        data = generateMeta(objects, &set);
+        set.targetFile = "data.json";
+        writeData(data, &set);
+    }
 
     return 0;
 }
