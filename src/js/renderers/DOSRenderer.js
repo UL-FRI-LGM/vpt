@@ -118,6 +118,11 @@ setAttributes(attributes, layout) {
         data   : attributes || new ArrayBuffer()
     });
     this._layout = layout;
+
+    if(layout) {
+        var values = this._getValuesByAttributeName("Orientation", layout, attributes);
+        console.log(values);
+    }
 }
 
 setRules(rules) {
@@ -356,6 +361,43 @@ _getAccumulationBufferSpec() {
         colorBuffer,
         occlusionBuffer
     ];
+}
+
+_getValuesByAttributeName(attribName, layout, attributes) {
+    var index = this._getIndexOfAttribute(attribName, layout);    
+    
+    return this._parseValuesFromAttributeRawFile(index, layout.length, attributes);
+}
+
+_getIndexOfAttribute(attribName, layout) {
+    if(!layout) {
+        return -1;
+    }
+
+    // get the index if the attribute
+    var index = 0;
+    for (; index < layout.length; index++) {
+        if(layout[index].name == attribName) {
+            break;
+        }
+    }
+    return index;
+}
+
+_parseValuesFromAttributeRawFile(index, valuesPerRow, attributes) {
+    if(index < 0 || index >= valuesPerRow) {
+        return [];
+    }
+
+    const view = new DataView(attributes);    
+    var count = attributes.byteLength / 4; // converting to float32
+    
+    var data = [];
+    for(var i = index; i < count; i += valuesPerRow) {        
+        data.push(view.getFloat32(i * 4, false));
+    }
+    
+    return data;
 }
 
 }
