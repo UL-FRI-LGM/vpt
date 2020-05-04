@@ -201,7 +201,7 @@ selectBump(index) {
     });
 
     const color = this._bumps[index].color;
-    this._$colorPicker.value = CommonUtils.rgb2hex(color.r, color.g, color.b);
+    this._$colorPicker.value = CommonUtils.rgb2hex(color);
     this._$alphaPicker.value = color.a;
 }
 

@@ -12,6 +12,8 @@ constructor(options) {
     this.groups = [];
     this.attributes = [];
 
+    this._colorSeed = Math.random();
+
     this._registerEventListeners();
     this._addEventListeners();
 }
@@ -70,6 +72,18 @@ _addGroup() {
         binds.attribute.addOption(attribute, attribute);
     }
     binds.attribute.setValue(this.attributes[0]);
+
+    const hsvColor = {
+        h: this._colorSeed,
+        s: 0.5,
+        v: 0.95
+    };
+    const rgbColor = CommonUtils.hsv2rgb(hsvColor);
+    const hexColor = CommonUtils.rgb2hex(rgbColor);
+    binds.color.setValue(hexColor);
+
+    const goldenRatioInverse = 0.618033988749895;
+    this._colorSeed = (this._colorSeed + goldenRatioInverse) % 1;
 
     controlPanelButtons.up.addEventListener('click', e => this._moveUp(group));
     controlPanelButtons.down.addEventListener('click', e => this._moveDown(group));
