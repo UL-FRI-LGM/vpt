@@ -23,7 +23,7 @@ public:
     int w = 128;                        // grid width
     int h = 128;                        // grid height
     int d = 128;                        // grid depth
-    int targetCount = 150;              // how many items do we want in the scene
+    int targetCount = 20;              // how many items do we want in the scene
     bool canOverlap = false;            // indication whether the objects can overlap
 
     // 0=one byte per voxel (value of the voxel),
@@ -114,6 +114,7 @@ QByteArray generateData(QList<Object*> objects, Settings* set)
     QByteArray data;
     QDataStream out(&data, QIODevice::OpenModeFlag::ReadWrite);
     out.setFloatingPointPrecision(QDataStream::SinglePrecision);
+    out.setByteOrder(QDataStream::LittleEndian);
     int counter = 0;
 
     // rasterizing grid
@@ -177,7 +178,8 @@ QByteArray generateData(QList<Object*> objects, Settings* set)
                             out << (float)obj->getValue();
                             break;
                         case 3:
-                            out << (int)obj->getValue();
+
+                            out << (int)obj->getId();
                             break;
                     }
                 } else {
