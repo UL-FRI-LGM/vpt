@@ -38,6 +38,7 @@ static get CLASS_FROM_TYPE() {
         'radio'         : Radio,
         'sidebar'       : Sidebar,
         'slider'        : Slider,
+        'slider-multi-track' : SliderMultiTrack,
         'spacer'        : Spacer,
         'spinner'       : Spinner,
         'status-bar'    : StatusBar,
