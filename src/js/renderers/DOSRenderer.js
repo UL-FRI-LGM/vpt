@@ -200,8 +200,6 @@ setHtreeRules(rules)
         this._rules+= `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
     //console.log(this._rules);
-    this.saveInFile(JSON.stringify(rules));
-    this.saveInFile(this._rules);
     this._recomputeTransferFunction(rules); 
     this._rebuildAttribComputeTree();
 }

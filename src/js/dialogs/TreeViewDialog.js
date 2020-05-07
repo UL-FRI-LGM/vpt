@@ -134,7 +134,7 @@ class TreeViewDialog extends AbstractDialog {
   _createDtree = function() {
     if(isDataLoaded==false)
     {
-      console.log('Data_schema.json file is not loaded !! ..  ');
+      console.log('tree_layout.json file is not found !! ..  ');
       return;
     }
     {
@@ -244,7 +244,7 @@ class TreeViewDialog extends AbstractDialog {
   _handleCreateTreeButton = function() {
     if(isDataLoaded==false)
     {
-      console.log('Data_schema.json file is not loaded !! ..  ');
+      console.log('tree_layout.json file is not found !! ..  ');
       return;
     }
     else if(isTreeTopologyCreated==false)
