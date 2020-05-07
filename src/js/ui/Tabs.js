@@ -14,7 +14,7 @@ constructor(options) {
 }
 
 add(name, object) {
-    let panel = document.createElement('div');
+    let _panel = document.createElement('div');
     let header = document.createElement('div');
     const index = this._tabs.length;
 
@@ -22,13 +22,13 @@ add(name, object) {
     this._tabs.push({
         object : object,
         header : header,
-        panel  : panel
+        _panel  : _panel
     });
-    this._binds.container.appendChild(panel);
+    this._binds._container.appendChild(_panel);
     this._binds.headers.appendChild(header);
-    object.appendTo(panel);
+    object.appendTo(_panel);
 
-    panel.style.order = index;
+    _panel.style.order = index;
     header.style.order = index;
 
     header.classList.add('header');
@@ -40,7 +40,7 @@ add(name, object) {
 _indexOfTab(tab) {
     for (let i = 0; i < this._tabs.length; i++) {
         if (this._tabs[i].header === tab ||
-            this._tabs[i].panel === tab ||
+            this._tabs[i]._panel === tab ||
             this._tabs[i].object === tab)
         {
             return i;
@@ -72,13 +72,13 @@ _updateStyle() {
     for (let i = 0; i < this._tabs.length; i++) {
         const tab = this._tabs[i];
         const offset = -this._index * 100;
-        tab.panel.style.left = offset + '%';
+        tab._panel.style.left = offset + '%';
         if (i === this._index) {
             tab.header.classList.add('selected');
-            tab.panel.classList.add('selected');
+            tab._panel.classList.add('selected');
         } else {
             tab.header.classList.remove('selected');
-            tab.panel.classList.remove('selected');
+            tab._panel.classList.remove('selected');
         }
     }
 }

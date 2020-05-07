@@ -110,7 +110,10 @@ resize(width, height) {
     this._canvas.height = height;
     this._camera.resize(width, height);
 }
-
+getCamera()
+{
+    return this._camera;
+}
 setVolume(reader) {
     this._volume = new Volume(this._gl, reader);
     this._volume.readMetadata({
@@ -151,7 +154,8 @@ chooseRenderer(renderer) {
         this._renderer.destroy();
     }
     const rendererClass = this._getRendererClass(renderer);
-    this._renderer = new rendererClass(this._gl, this._volume, this._environmentTexture);
+    this._renderer = new rendererClass(this._gl, this._volume,this.getCamera(), this._environmentTexture);
+    
     if (this._toneMapper) {
         this._toneMapper.setTexture(this._renderer.getTexture());
     }

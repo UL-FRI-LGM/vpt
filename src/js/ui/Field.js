@@ -34,7 +34,7 @@ setEnabled(enabled) {
 add(object) {
     if (!this._content) {
         this._content = object;
-        object.appendTo(this._binds.container);
+        object.appendTo(this._binds._container);
         object.setEnabled(this.enabled);
     }
 }

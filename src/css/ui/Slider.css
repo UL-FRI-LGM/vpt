@@ -15,7 +15,7 @@
     cursor: pointer;
 }
 
-.slider .container {
+.slider ._container {
     position: relative;
     width: calc(100% - var(--button-size));
     height: 100%;

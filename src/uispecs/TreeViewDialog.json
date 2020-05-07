@@ -1,0 +1,34 @@
+// #package uispecs
+
+// #section TreeViewDialog
+
+{
+  "type": "_panel",
+  "children": [
+    {
+      "type": "accordion",
+      "label": "Hierarchy abstract",
+      "children": [
+        {
+          "type": "DtreeView",
+          "label": "DTree"
+        },
+        {
+          "type": "button",
+          "bind": "createTreeButton",
+          "label": "Create Tree"
+        }]
+    },
+    {
+      "type": "accordion",
+      "label": "Hierarchical View",
+      "children": [
+        {
+          "type": "treeView",
+          "label": "Tree"
+        }
+      
+      ]
+    }
+  ]
+}

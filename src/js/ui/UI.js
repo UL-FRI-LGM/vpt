@@ -17,6 +17,8 @@
 // #include StatusBar.js
 // #include Tabs.js
 // #include Textbox.js
+// #include TreeView.js
+// #include DTreeView.js
 // #include VectorSpinner.js
 // #include Vector2Spinner.js
 
@@ -31,7 +33,7 @@ static get CLASS_FROM_TYPE() {
         'dropdown'      : Dropdown,
         'field'         : Field,
         'file-chooser'  : FileChooser,
-        'panel'         : Panel,
+        '_panel'         : Panel,
         'progress-bar'  : ProgressBar,
         'radio'         : Radio,
         'sidebar'       : Sidebar,
@@ -43,6 +45,8 @@ static get CLASS_FROM_TYPE() {
         'textbox'       : Textbox,
         'vector'        : VectorSpinner,
         'vector2'       : Vector2Spinner,
+        'treeView'      : TreeView,
+        'DtreeView'      : DTreeView,
     };
 }
 
@@ -80,7 +84,7 @@ static create(spec) {
                     break;
                 case 'accordion':
                 case 'field':
-                case 'panel':
+                case '_panel':
                 case 'sidebar':
                     object.add(childObject);
                     break;

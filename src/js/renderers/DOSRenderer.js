@@ -6,7 +6,7 @@
 
 class DOSRenderer extends AbstractRenderer {
 
-constructor(gl, volume, environmentTexture, options) {
+constructor(gl, volume,camera, environmentTexture, options) {
     super(gl, volume, environmentTexture, options);
 
     Object.assign(this, {
@@ -17,7 +17,10 @@ constructor(gl, volume, environmentTexture, options) {
         visibility     : 0.9,
         _depth         : 1,
         _minDepth      : -1,
-        _maxDepth      : 1
+        _maxDepth      : 1,
+        _lightPos      :[0.5,0.5,0.5],
+        _ks            :0.1,
+        _kt            : 0.1
     }, options);
 
     this._programs = WebGL.buildPrograms(gl, {
@@ -26,12 +29,14 @@ constructor(gl, volume, environmentTexture, options) {
         reset     : SHADERS.DOSReset,
         transfer  : SHADERS.PolarTransferFunction,
     }, MIXINS);
-
+    
+    this._camera= camera;
+    this._numberInstance=0;
     this._rules = [];
     this._layout = [];
     this._attrib = gl.createBuffer();
     this._mask = null;
-
+    //this._probMask =null;
     this._localSize = {
         x: 8,
         y: 8,
@@ -107,6 +112,20 @@ setVolume(volume) {
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+
+
+    /*if (this._probMask) {
+        gl.deleteTexture(this._probMask);
+    }
+    this._probMask = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_3D, this._probMask);
+    gl.texStorage3D(gl.TEXTURE_3D, 1, gl.Rf,
+        dimensions.width, dimensions.height, dimensions.depth);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);*/
 }
 
 setAttributes(attributes, layout) {
@@ -118,13 +137,74 @@ setAttributes(attributes, layout) {
         data   : attributes || new ArrayBuffer()
     });
     this._layout = layout;
-
+    //console.log(attributes);
     if(layout) {
         var values = this._getValuesByAttributeName("Orientation", layout, attributes);
-        console.log(values);
+        //console.log(values);
+        this._numberInstance=values.length;
     }
 }
+saveInFile(data) {
+    // this function just to test the content of long variables 
+    let bl = new Blob([data], {
+       type: "text/html"
+    });
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(bl);
+    a.download = "data.txt";
+    a.hidden = true;
+    document.body.appendChild(a);
+    a.innerHTML =
+       "someinnerhtml";
+    a.click();
+}
+setHtreeRules(rules)
+{
+    
+    this._rules='';
+    var _x = rules.map((rule, index) => {
+        const attribute = rule.attribute;
+        const hi = rule.hi;
+        const lo = rule.lo;
+        const visibility = (rule.visibility / 100).toFixed(4);
+        const phi = (index / rules.length) * 2 * Math.PI;
+        const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
+        const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
+        var rangeCondition = '';
+        if(attribute.length>1)
+        {
+            
+            for(var i=0;i<attribute.length;i++)
+            {
+                /*
+                 const _attribute=attribute[i];
+                const _value=value[i];
+                valueCondition+= `(instance.${_attribute}==${_value})`;
+                */
+                 rangeCondition += `instance.${attribute[i]} >= float(${lo[i]}) && instance.${attribute[i]} <= float(${hi[i]})`;
+                //valueCondition+= `(instance.${attribute[i]}==float(${value[i]}))`;
+                if(i<attribute.length-1)
+                {
+                    rangeCondition+= `&&`;
+                }
+            }
+        }
+        else{
+            //rangeCondition+= `instance.${attribute[0]}==float(${value[0]})`;
+            rangeCondition += `instance.${attribute[0]} >= float(${lo[0]}) && instance.${attribute[0]} <= float(${hi[0]})`;
+               
+        }
 
+        //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
+        const visibilityCondition = ` prob <  ${visibility}`;
+        this._rules+= `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
+    });
+    //console.log(this._rules);
+    this.saveInFile(JSON.stringify(rules));
+    this.saveInFile(this._rules);
+    this._recomputeTransferFunction(rules); 
+    this._rebuildAttribComputeTree();
+}
 setRules(rules) {
     this._rules = rules.map((rule, index) => {
         const attribute = rule.attribute;
@@ -135,14 +215,18 @@ setRules(rules) {
         const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
         const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
         const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
-        const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
+        //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
+        const visibilityCondition = ` prob <  ${visibility}`;
         return `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
-
+    //console.log(rules);
     this._recomputeTransferFunction(rules);
     this._rebuildAttribCompute();
 }
-
+_getCameraPosition()
+{
+    return [this._camera.position.x,this._camera.position.y,this._camera.position.z];
+}
 _rebuildAttribCompute() {
     const gl = this._gl;
 
@@ -154,10 +238,9 @@ _rebuildAttribCompute() {
     for (const attrib of this._layout) {
         members.push(attrib.type + ' ' + attrib.name + ';');
     }
-
     const instance = members.join('\n');
     const rules = this._rules.join('\n');
-
+    
     this._programs.compute = WebGL.buildPrograms(gl, {
         compute  : SHADERS.AttribCompute
     }, {
@@ -171,17 +254,58 @@ _rebuildAttribCompute() {
 
     this._recomputeMask();
 }
+_rebuildAttribComputeTree() {
+    const gl = this._gl;
 
+    if (this._programs.compute) {
+        gl.deleteProgram(this._programs.compute.program);
+    }
+
+    const members = [];
+    for (const attrib of this._layout) {
+        members.push(attrib.type + ' ' + attrib.name + ';');
+    }
+    const instance = members.join('\n');
+    const rules = this._rules;
+    
+    this._programs.compute = WebGL.buildPrograms(gl, {
+        compute  : SHADERS.AttribCompute
+    }, {
+        instance,
+        rules,
+        rand: MIXINS.rand,
+        localSizeX: this._localSize.x,
+        localSizeY: this._localSize.y,
+        localSizeZ: this._localSize.z,
+    }).compute;
+
+    this._recomputeMask();
+}
 _recomputeMask() {
     const gl = this._gl;
 
     const program = this._programs.compute;
     gl.useProgram(program.program);
 
+    const cameraPos=[this._camera.position.x,this._camera.position.y,this._camera.position.y];
+    gl.uniform3fv(program.uniforms.uCameraPos,cameraPos);
+
     const dimensions = this._volume._currentModality.dimensions;
     gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
     gl.bindImageTexture(0, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
     gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
+
+    /*gl.uniform3fv(program.uniforms.uLightPos,this._lightPos);
+    gl.uniform1f(program.uniforms.uMinDistance, this._minDepth);
+    gl.uniform1f(program.uniforms.uMaxDistance, this._maxDepth);
+    gl.uniform1f(program.uniforms.uKs, this._ks);
+    gl.uniform1f(program.uniforms.uKt, this._kt);*/
+   
+    gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
+    /*gl.activeTexture(gl.TEXTURE2);
+    gl.uniform1i(program.uniforms.uVolume, 2);
+    gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());*/
+
     gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._attrib);
 
     const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
@@ -201,7 +325,7 @@ _recomputeTransferFunction(rules) {
         .flat()
         .map(x => x * 255);
     const data = new Uint8Array(colors);
-
+    
     // upload color strip
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this._colorStrip);
@@ -212,11 +336,10 @@ _recomputeTransferFunction(rules) {
         height  : 1,
         data    : data
     });
-
+   
     // render transfer function
     const program = this._programs.transfer;
     gl.useProgram(program.program);
-
     gl.uniform1i(program.uniforms.uColorStrip, 0);
     gl.uniform1f(program.uniforms.uOffset, 0.5 / rules.length);
     gl.uniform1f(program.uniforms.uFalloffStart, 0.2);
@@ -231,6 +354,7 @@ _recomputeTransferFunction(rules) {
     gl.drawBuffers([ gl.COLOR_ATTACHMENT0 ]);
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 }
+
 
 _resetFrame() {
     const gl = this._gl;
@@ -257,7 +381,6 @@ _integrateFrame() {
     if (!this._mask) {
         return;
     }
-
     const program = this._programs.integrate;
     gl.useProgram(program.program);
 
@@ -265,7 +388,7 @@ _integrateFrame() {
         gl.COLOR_ATTACHMENT0,
         gl.COLOR_ATTACHMENT1
     ]);
-
+    
     gl.activeTexture(gl.TEXTURE2);
     gl.uniform1i(program.uniforms.uVolume, 2);
     gl.bindTexture(gl.TEXTURE_3D, this._mask);
@@ -273,11 +396,11 @@ _integrateFrame() {
     gl.activeTexture(gl.TEXTURE3);
     gl.uniform1i(program.uniforms.uTransferFunction, 3);
     gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
-
+    
     // TODO: calculate correct blur radius (occlusion scale)
     gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
     gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
-    gl.uniform1f(program.uniforms.uVisibility, this.visibility);
+    //gl.uniform1f(program.uniforms.uVisibility, this.visibility);
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
 
     const depthStep = (this._maxDepth - this._minDepth) / this.slices;
@@ -352,8 +475,8 @@ _getAccumulationBufferSpec() {
         height         : this._bufferSize,
         min            : gl.NEAREST,
         mag            : gl.NEAREST,
-        format         : gl.RED,
-        internalFormat : gl.R32F,
+        format         : gl.RG,
+        internalFormat : gl.RG32F,
         type           : gl.FLOAT
     };
 

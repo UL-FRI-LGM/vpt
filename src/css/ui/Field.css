@@ -29,6 +29,6 @@
     color: var(--disabled-color);
 }
 
-.field > .container {
+.field > ._container {
     flex: 1;
 }

@@ -18,7 +18,7 @@ constructor(options) {
 }
 
 add(object) {
-    object.appendTo(this._binds.container);
+    object.appendTo(this._binds._container);
 }
 
 setContracted(contracted) {
