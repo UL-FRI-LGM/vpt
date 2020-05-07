@@ -33,7 +33,7 @@ uniform sampler2D uTransferFunction;
 uniform sampler2D uColor;
 uniform sampler2D uOcclusion;
 
-//uniform float uVisibility;
+uniform float uVisibility;
 
 uniform vec2 uOcclusionScale;
 uniform float uOcclusionDecay;
@@ -42,7 +42,7 @@ in vec2 vPosition2D;
 in vec3 vPosition3D;
 
 layout (location = 0) out vec4 oColor;
-layout (location = 1) out vec2 oOcclusion;
+layout (location = 1) out float oOcclusion;
 
 vec4 getSample(vec3 position) {
     vec4 volumeSample = texture(uVolume, position);
@@ -79,14 +79,14 @@ void main() {
 
     if (any(greaterThan(vPosition3D, vec3(1))) || any(lessThan(vPosition3D, vec3(0)))) {
         oColor = prevColor;
-        oOcclusion.x = occlusion;
+        oOcclusion= occlusion;
     } else {
         vec4 transferSample = getSample(vPosition3D);
         transferSample.rgb *= transferSample.a * occlusion;
 
         oColor = prevColor + transferSample * (1.0 - prevColor.a);
         // TODO: do this calculation right
-        oOcclusion.x = 1.0 - ((1.0 - (occlusion - transferSample.a)) * uOcclusionDecay);
+        oOcclusion = 1.0 - ((1.0 - (occlusion - transferSample.a)) * uOcclusionDecay);
     }
     //oOcclusion.y=computeProbability(vPosition3D,oColor);
 }
@@ -136,9 +136,9 @@ void main() {
 precision mediump float;
 
 layout (location = 0) out vec4 oColor;
-layout (location = 1) out vec2 oOcclusion;
+layout (location = 1) out float oOcclusion;
 
 void main() {
     oColor = vec4(0, 0, 0, 0);
-    oOcclusion = vec2(1.0);
+    oOcclusion = 1.0;
 }

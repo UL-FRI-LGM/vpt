@@ -36,7 +36,6 @@ constructor(gl, volume,camera, environmentTexture, options) {
     this._layout = [];
     this._attrib = gl.createBuffer();
     this._mask = null;
-    //this._probMask =null;
     this._localSize = {
         x: 8,
         y: 8,
@@ -113,19 +112,6 @@ setVolume(volume) {
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
 
-
-    /*if (this._probMask) {
-        gl.deleteTexture(this._probMask);
-    }
-    this._probMask = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_3D, this._probMask);
-    gl.texStorage3D(gl.TEXTURE_3D, 1, gl.Rf,
-        dimensions.width, dimensions.height, dimensions.depth);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);*/
 }
 
 setAttributes(attributes, layout) {
@@ -176,13 +162,8 @@ setHtreeRules(rules)
             
             for(var i=0;i<attribute.length;i++)
             {
-                /*
-                 const _attribute=attribute[i];
-                const _value=value[i];
-                valueCondition+= `(instance.${_attribute}==${_value})`;
-                */
                  rangeCondition += `instance.${attribute[i]} >= float(${lo[i]}) && instance.${attribute[i]} <= float(${hi[i]})`;
-                //valueCondition+= `(instance.${attribute[i]}==float(${value[i]}))`;
+                
                 if(i<attribute.length-1)
                 {
                     rangeCondition+= `&&`;
@@ -190,12 +171,9 @@ setHtreeRules(rules)
             }
         }
         else{
-            //rangeCondition+= `instance.${attribute[0]}==float(${value[0]})`;
             rangeCondition += `instance.${attribute[0]} >= float(${lo[0]}) && instance.${attribute[0]} <= float(${hi[0]})`;
                
         }
-
-        //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
         const visibilityCondition = ` prob <  ${visibility}`;
         this._rules+= `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
@@ -287,6 +265,7 @@ _recomputeMask() {
 
     const cameraPos=[this._camera.position.x,this._camera.position.y,this._camera.position.y];
     gl.uniform3fv(program.uniforms.uCameraPos,cameraPos);
+    gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
 
     const dimensions = this._volume._currentModality.dimensions;
     gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
@@ -298,12 +277,8 @@ _recomputeMask() {
     gl.uniform1f(program.uniforms.uMaxDistance, this._maxDepth);
     gl.uniform1f(program.uniforms.uKs, this._ks);
     gl.uniform1f(program.uniforms.uKt, this._kt);*/
-   
-    gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
-    /*gl.activeTexture(gl.TEXTURE2);
-    gl.uniform1i(program.uniforms.uVolume, 2);
-    gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());*/
 
+    gl.uniform1i(program.uniforms.uNumInstances, this._numberInstance);
     gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._attrib);
 
     const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
@@ -398,7 +373,7 @@ _integrateFrame() {
     // TODO: calculate correct blur radius (occlusion scale)
     gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
     gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
-    //gl.uniform1f(program.uniforms.uVisibility, this.visibility);
+    gl.uniform1f(program.uniforms.uVisibility, this.visibility);
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
 
     const depthStep = (this._maxDepth - this._minDepth) / this.slices;
@@ -473,8 +448,8 @@ _getAccumulationBufferSpec() {
         height         : this._bufferSize,
         min            : gl.NEAREST,
         mag            : gl.NEAREST,
-        format         : gl.RG,
-        internalFormat : gl.RG32F,
+        format         : gl.RED,
+        internalFormat : gl.R32F,
         type           : gl.FLOAT
     };
 
