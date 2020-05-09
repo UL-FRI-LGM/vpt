@@ -162,7 +162,7 @@ setHtreeRules(rules)
             
             for(var i=0;i<attribute.length;i++)
             {
-                 rangeCondition += `instance.${attribute[i]} >= float(${lo[i]}) && instance.${attribute[i]} <= float(${hi[i]})`;
+                 rangeCondition += `(instance.${attribute[i]} >= float(${lo[i]}) && instance.${attribute[i]} <= float(${hi[i]}))`;
                 
                 if(i<attribute.length-1)
                 {
@@ -177,7 +177,7 @@ setHtreeRules(rules)
         const visibilityCondition = ` prob <  ${visibility}`;
         this._rules+= `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
-    //console.log(this._rules);
+    //this.saveInFile(this._rules);
     this._recomputeTransferFunction(rules); 
     this._rebuildAttribComputeTree();
 }
@@ -196,6 +196,7 @@ setRules(rules) {
         return `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
     //console.log(rules);
+   // this.saveInFile(this._rules);
     this._recomputeTransferFunction(rules);
     this._rebuildAttribCompute();
 }

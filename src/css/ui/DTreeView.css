@@ -6,30 +6,20 @@
         max-width: 400px;
         margin: auto;
     }
-    .DtreeView > .tag-_container
+  .tag-container
     {
         display: inline-block;
         clear: both;
         width: 100%;
         margin-top: 20px;
     }
-    .DtreeView >  .doc-item
+    #trash
     {
-        margin: 5px;
-        padding-right: 0.3em;
-        padding-left: 0.3em;
-        padding-top: 0.1em;
-        padding-bottom: 0.1em;
-        background-color: white;
-        border: 1px solid black;
-        cursor: default;
-    }
-    .DtreeView > .item-trash
-    {
-        font-size: 48px;
+        font-size: 30px;
         float: right;
+        color:black;
     }
-    .DtreeView > .item-trash-dropover
+   #trash-dropover
     {
-        color: red;
+        color: red !important;
     }

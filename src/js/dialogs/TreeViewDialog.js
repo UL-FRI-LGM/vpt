@@ -15,12 +15,11 @@ class TreeViewDialog extends AbstractDialog {
       TVDClass=this;
       //this.attributes = [];
       this.rules=[];
-      //this._handleReadJSONButton=this._handleReadJSONButton.bind(this);
-     // this._binds.ReadJSONButton.addEventListener('click', this._handleReadJSONButton);
+      this._createDtree=this._createDtree.bind(this);
+      this._binds.resetTreeButton.addEventListener('click', this._createDtree);
      fetch("tree_layout.json").then(response => response.json()).then(data_schema=>{
       var json =data_schema['stats']['global'];
       nbProperty=0;
-      
       for (var x in json) {
           let p=new Property(x,nbProperty);  
           var d={text: "",id:"", expanded: true,iconCls: "fa fa-folder"};
@@ -40,6 +39,7 @@ class TreeViewDialog extends AbstractDialog {
           p.value=sumValues;
           propertyVList.push(p);
       }
+     
       isDataLoaded=true;
    });
    fetch("tree_layout.json").then(response => response.json()).then(data_schema=>{
@@ -150,11 +150,17 @@ class TreeViewDialog extends AbstractDialog {
       element.setAttribute('id','treeview');
       element.setAttribute('class','theme-light');
     }
+    var propertyListObj={text: "", expanded: true,iconCls: "fa fa-folder"};
+    propertyListObj.items=[];
+    propertyList.forEach(x=>{
+      propertyListObj.items.push(x);
+    });
+    var data=[propertyListObj];
     jQuery(function ($) {
       $("#treeview").shieldTreeView({
           dragDrop: true,
           dragDropScope: "treeview-dd-scope",
-          dataSource: propertyList,
+          dataSource: data,
           events: {
               droppableOver: function(e) {
                   if (!e.valid) {
@@ -189,7 +195,7 @@ class TreeViewDialog extends AbstractDialog {
                       // disable the animation
                       e.skipAnimation = true;
                   }
-              }
+                }
           }
       });
       // setup drag and drop handlers for the elements outside the treeview
@@ -208,9 +214,9 @@ class TreeViewDialog extends AbstractDialog {
           }
       });
       // handle drop on the trash can
-      $(".item-trash").shieldDroppable({
+      $("#trash").shieldDroppable({
           scope: "treeview-dd-scope",
-          hoverCls: "item-trash-dropover",
+          hoverCls: "#trash-dropover",
           tolerance: "touch",
           events: {
               drop: function (e) {
@@ -273,8 +279,8 @@ class TreeViewDialog extends AbstractDialog {
         }).get()
     }
   
-   //console.log(nav);
-   jsonHArr=createJSON(nav,jsonHArr);
+  // console.log(nav[0].child);
+   jsonHArr=createJSON(nav[0].child,jsonHArr);
    jsonView.format(jsonHArr, '.root');
    TVDClass.trigger('treeTopologyChange');
   }

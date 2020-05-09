@@ -17,6 +17,11 @@
           "type": "button",
           "bind": "createTreeButton",
           "label": "Create Tree"
+        },
+        {
+          "type": "button",
+          "bind": "resetTreeButton",
+          "label": "Reset Tree"
         }]
     },
     {
