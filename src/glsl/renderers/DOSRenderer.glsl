@@ -88,7 +88,6 @@ void main() {
         // TODO: do this calculation right
         oOcclusion = 1.0 - ((1.0 - (occlusion - transferSample.a)) * uOcclusionDecay);
     }
-    //oOcclusion.y=computeProbability(vPosition3D,oColor);
 }
 
 // #section DOSRender/vertex
