@@ -39,6 +39,7 @@ static get CLASS_FROM_TYPE() {
         'sidebar'       : Sidebar,
         'slider'        : Slider,
         'slider-multi-track' : SliderMultiTrack,
+        'slider-range-multi-track' : SliderRangeMultiTrack,
         'spacer'        : Spacer,
         'spinner'       : Spinner,
         'status-bar'    : StatusBar,
