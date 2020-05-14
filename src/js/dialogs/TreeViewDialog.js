@@ -665,7 +665,27 @@ class TreeViewDialog extends AbstractDialog {
         div2.addEventListener('click', handleLockChange);
         div_Lock.appendChild(div2);
 
-        const div_slider=createElement('div', {
+
+        //---------------New Slider--------------------------------
+        const slider = UI.create({
+          "type": "slider-multi-track",
+          "bind": "sliderChange",
+          "value": 0.5,
+          "min": 0.00001,
+          "max": 0.99999,
+          "step": 0.1
+        });
+        node.sliderObj= slider.object;
+        const div_slider=slider.object._element;
+        
+        const handleSliderChange = node.sliderChange.bind(node);
+        slider.binds.sliderChange.addEventListener('change', handleSliderChange);
+        //--------------------------------------------------------
+       
+        
+        /*
+
+        /*const div_slider=createElement('div', {
           className: 'treeSlider'
         });
         const handleSliderChange = node.sliderChange.bind(node);
@@ -695,8 +715,8 @@ class TreeViewDialog extends AbstractDialog {
         div3.setAttribute('max',100);
         div3.setAttribute('min',0);
         div3.setAttribute('value',100);
-        div3.setAttribute('step',1);*/
-        div_slider.appendChild(theSlider);
+        div3.setAttribute('step',1);*//*
+        div_slider.appendChild(theSlider);*/
         const div_colorChooser =createElement('div', {
           className:  'treeColor'
         });
@@ -802,6 +822,7 @@ class TreeViewDialog extends AbstractDialog {
             }
           },
           sliderChange: function() {
+            console.log("hi");
             if(this.isDisabled!==true)
             {
               if(exceedMaxRange(this)==true)

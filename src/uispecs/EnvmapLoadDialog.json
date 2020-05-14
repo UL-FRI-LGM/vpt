@@ -114,7 +114,7 @@
       "label": "Multi-track:",
       "children": [
         {
-          "type": "slider-range-multi-track",
+          "type": "slider-multi-track",
           "bind": "midtones",
           "value": 0.5,
           "min": 0.00001,
