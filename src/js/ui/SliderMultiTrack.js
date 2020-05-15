@@ -22,7 +22,7 @@ constructor(options) {
     this._handleMouseUp   = this._handleMouseUp.bind(this);
     this._handleMouseMove = this._handleMouseMove.bind(this);
     this._handleWheel     = this._handleWheel.bind(this);
-
+   
     this._updateUI();
 
     this._element.addEventListener('mousedown', this._handleMouseDown);

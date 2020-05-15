@@ -5,7 +5,7 @@
   padding: 0;
   box-sizing: border-box;
     --locked-color: #6d6a6a;
-    --unlocked-color: #719cbe; 
+    --unlocked-color: #2196f3;
     --empty-color: #a14e4e;
 }
 .treeLock {
