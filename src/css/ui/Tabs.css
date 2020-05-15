@@ -47,12 +47,12 @@
     border-bottom: 1px solid var(--border-color);
 }
 
-.tabs > ._container {
+.tabs > .container {
     display: flex;
     overflow: hidden;
 }
 
-.tabs > ._container > * {
+.tabs > .container > * {
     position: relative;
     flex: 0 0 100%;
     overflow: hidden;

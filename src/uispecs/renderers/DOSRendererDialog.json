@@ -3,7 +3,7 @@
 // #section DOSRendererDialog
 
 {
-  "type": "_panel",
+  "type": "panel",
   "children": [
     {
       "type": "field",

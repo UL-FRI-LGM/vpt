@@ -33,7 +33,7 @@ static get CLASS_FROM_TYPE() {
         'dropdown'      : Dropdown,
         'field'         : Field,
         'file-chooser'  : FileChooser,
-        '_panel'         : Panel,
+        'panel'         : Panel,
         'progress-bar'  : ProgressBar,
         'radio'         : Radio,
         'sidebar'       : Sidebar,
@@ -86,7 +86,7 @@ static create(spec) {
                     break;
                 case 'accordion':
                 case 'field':
-                case '_panel':
+                case 'panel':
                 case 'sidebar':
                     object.add(childObject);
                     break;

@@ -65,8 +65,8 @@ hide() {
     this.setVisible(false);
 }
 
-appendTo(_container) {
-    _container.appendChild(this._element);
+appendTo(container) {
+    container.appendChild(this._element);
 }
 
 detach() {

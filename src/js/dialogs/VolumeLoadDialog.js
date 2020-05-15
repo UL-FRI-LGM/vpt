@@ -104,7 +104,7 @@ _handleLoadDemo() {
 }
 
 _handleTypeChange() {
-    // TODO: switching _panel
+    // TODO: switching panel
     switch (this._binds.type.getValue()) {
         case 'file':
             this._binds.filePanel.show();

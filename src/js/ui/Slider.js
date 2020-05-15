@@ -57,7 +57,7 @@ getValue() {
 }
 
 _setValueByEvent(e) {
-    const rect = this._binds._container.getBoundingClientRect();
+    const rect = this._binds.container.getBoundingClientRect();
     const ratio = (e.pageX - rect.left) / (rect.right - rect.left);
     if (this.logarithmic) {
         const logmin = Math.log(this.min);

@@ -3,7 +3,7 @@
 // #section MCMRendererDialog
 
 {
-  "type": "_panel",
+  "type": "panel",
   "children": [
     {
       "type": "field",
@@ -90,7 +90,7 @@
       "label": "Transfer function",
       "children": [
         {
-          "type": "_panel",
+          "type": "panel",
           "bind": "tf_container"
         }
       ]

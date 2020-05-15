@@ -22,7 +22,7 @@ constructor(options) {
 }
 
 add(object) {
-    object.appendTo(this._binds._container);
+    object.appendTo(this._binds.container);
 }
 
 setContracted(contracted) {

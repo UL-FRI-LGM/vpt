@@ -3,10 +3,10 @@
 // #section AttribLoadDialog
 
 {
-  "type": "_panel",
+  "type": "panel",
   "children": [
     {
-      "type": "_panel",
+      "type": "panel",
       "children": [
         {
           "type": "field",
@@ -31,7 +31,7 @@
       ]
     },
     {
-      "type": "_panel",
+      "type": "panel",
       "bind": "loadButtonAndProgress",
       "visible": false,
       "children": [

@@ -10,7 +10,7 @@
       "type": "tabs",
       "children": {
         "Data": {
-          "type": "_panel",
+          "type": "panel",
           "children": [
             {
               "type": "accordion",
@@ -30,7 +30,7 @@
           ]
         },
         "Settings": {
-          "type": "_panel",
+          "type": "panel",
           "children": [
             {
               "type": "accordion",
@@ -78,7 +78,7 @@
                   ]
                 },
                 {
-                  "type": "_panel",
+                  "type": "panel",
                   "bind": "rendererSettings_container"
                 }
               ]
@@ -113,7 +113,7 @@
                   ]
                 },
                 {
-                  "type": "_panel",
+                  "type": "panel",
                   "bind": "toneMapperSettings_container"
                 }
               ]
@@ -126,15 +126,15 @@
           ]
         },
         "Visibility": {
-          "type": "_panel",
+          "type": "panel",
           "bind": "visibility_container"
         },
         "TreeView": {
-          "type": "_panel",
+          "type": "panel",
           "bind": "TreeViewContainer"
         },
         "About": {
-          "type": "_panel",
+          "type": "panel",
           "bind": "about"
         }
       }

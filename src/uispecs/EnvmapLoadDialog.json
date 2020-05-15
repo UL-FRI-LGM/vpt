@@ -3,7 +3,7 @@
 // #section EnvmapLoadDialog
 
 {
-  "type": "_panel",
+  "type": "panel",
   "children": [
     {
       "type": "field",
@@ -31,7 +31,7 @@
       ]
     },
     {
-      "type": "_panel",
+      "type": "panel",
       "bind": "filePanel",
       "visible": true,
       "children": [
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "type": "_panel",
+      "type": "panel",
       "bind": "urlPanel",
       "visible": false,
       "children": [
@@ -66,7 +66,7 @@
       ]
     },
     {
-      "type": "_panel",
+      "type": "panel",
       "bind": "demoPanel",
       "visible": false,
       "children": [
@@ -83,7 +83,7 @@
       ]
     },
     {
-      "type": "_panel",
+      "type": "panel",
       "bind": "loadButtonAndProgress",
       "visible": false,
       "children": [

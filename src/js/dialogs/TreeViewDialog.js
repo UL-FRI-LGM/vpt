@@ -793,7 +793,7 @@ class TreeViewDialog extends AbstractDialog {
               //=========================
               //if(isSliderUpdated==true)
               {
-                this.sliderValue =this.sliderObj.object.getValue();
+                this.sliderValue =getSliderValue(this);
                 var prevCount=this.visInstances;
                 updateCountFromSliderValue(this);
                 updateSliderTracks(this);
@@ -849,7 +849,7 @@ class TreeViewDialog extends AbstractDialog {
       {
         var element = getLockElement(node);
         element.className='lock';
-        //$(node.sliderObj).bootstrapSlider("disable");
+        node.sliderObj.object.disable();
         node.isDisabled=true;
         node.minSliderValue=node.sliderValue;
         node.maxSliderValue=node.sliderValue;
@@ -858,7 +858,7 @@ class TreeViewDialog extends AbstractDialog {
       {
         var element = getLockElement(node);
         element.className='lock unlocked';
-       //$(node.sliderObj).bootstrapSlider("enable");
+       node.sliderObj.object.enable();
         node.isDisabled=false;
         computeMinMaxRange(node);
       }
@@ -871,7 +871,7 @@ class TreeViewDialog extends AbstractDialog {
       }
       function exceedMinRange(node)
       {
-        var sliderVal =node.sliderObj.object.getValue();
+        var sliderVal =getSliderValue(node);
         //check sliders total if greater than 150 and re-update slider 
         if (sliderVal< node.minSliderValue) {
             return true;
@@ -881,7 +881,7 @@ class TreeViewDialog extends AbstractDialog {
       }
       function exceedMaxRange(node)
       {
-        var sliderVal =node.sliderObj.object.getValue();
+        var sliderVal =getSliderValue(node);
         if (sliderVal > node.maxSliderValue) {
             //setSliderValue(node,node.maxSliderValue);
             return true;
@@ -1420,6 +1420,8 @@ class TreeViewDialog extends AbstractDialog {
       //LockChange
       var element = getLockElement(node);
       element.className='empty';
+      node.sliderObj.object.disable();
+      setSliderValue(node,0);
      // $(node.sliderObj).bootstrapSlider("disable");
      // $(node.sliderObj).bootstrapSlider('setValue', 0);
       node.isDisabled=true;

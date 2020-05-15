@@ -4,7 +4,7 @@
     background: #ccc;
 }
 
-.visibility-group.control-_panel {
+.visibility-group.control-panel {
     position: relative;
     left: 0;
     top: 0;
@@ -14,7 +14,7 @@
     height: 10px;
 }
 
-.visibility-group.control-_panel > img {
+.visibility-group.control-panel > img {
     flex: 1;
     width: 10px;
     height: 10px;

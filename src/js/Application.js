@@ -120,10 +120,10 @@ _handleRendererChange(which) {
     }
     this._renderingContext.chooseRenderer(which);
     const renderer = this._renderingContext.getRenderer();
-    const _container = this._mainDialog.getRendererSettings_container();
+    const container = this._mainDialog.getRendererSettings_container();
     const dialogClass = this._getDialogForRenderer(which);
     this._rendererDialog = new dialogClass(renderer);
-    this._rendererDialog.appendTo(_container);
+    this._rendererDialog.appendTo(container);
 }
 
 _handleToneMapperChange(which) {
@@ -132,10 +132,10 @@ _handleToneMapperChange(which) {
     }
     this._renderingContext.chooseToneMapper(which);
     const toneMapper = this._renderingContext.getToneMapper();
-    const _container = this._mainDialog.getToneMapperSettings_container();
+    const container = this._mainDialog.getToneMapperSettings_container();
     const dialogClass = this._getDialogForToneMapper(which);
     this._toneMapperDialog = new dialogClass(toneMapper);
-    this._toneMapperDialog.appendTo(_container);
+    this._toneMapperDialog.appendTo(container);
 }
 
 _handleVolumeLoad(options) {

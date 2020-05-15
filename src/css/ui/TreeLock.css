@@ -38,19 +38,19 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  margin: -3.5px 0 0 -2px;
+  margin: -4px 0 0 -2px;
   -webkit-transition: all 0.1s ease-in-out;
   transition: all 0.1s ease-in-out;
 }
 .lock:before {
   content: "";
   display: block;
-  width: 12px;
-  height: 7px;
+  width: 10px;
+  height: 5px;
   bottom: 100%;
   position: absolute;
   left: 60%;
-  margin-left: -8px;
+  margin-left: -10px;
   border: 3px solid var(--locked-color);
   border-top-right-radius: 50%;
   border-top-left-radius: 50%;
@@ -99,12 +99,12 @@
 .empty:before {
   content: "";
   display: block;
-  width: 12px;
-  height: 7px;
+  width: 10px;
+  height: 5px;
   bottom: 100%;
   position: absolute;
   left: 60%;
-  margin-left: -8px;
+  margin-left: -10px;
   border: 3px solid var(--empty-color);
   border-top-right-radius: 50%;
   border-top-left-radius: 50%;
