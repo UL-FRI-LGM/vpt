@@ -66,3 +66,7 @@
     border-radius: 50%;
     box-sizing: border-box;
 }
+
+.slider-multi-track .button.disabled {
+    border: 2px solid var(--disabled-color);    
+}
