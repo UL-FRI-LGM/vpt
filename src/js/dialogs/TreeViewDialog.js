@@ -793,12 +793,10 @@ class TreeViewDialog extends AbstractDialog {
               //=========================
               //if(isSliderUpdated==true)
               {
-                this.sliderValue =getSliderValue(this);
-               // console.log(this.sliderValue );
+                this.sliderValue =this.sliderObj.object.getValue();
                 var prevCount=this.visInstances;
                 updateCountFromSliderValue(this);
                 updateSliderTracks(this);
-
                 var amount= this.visInstances-prevCount;
                 updateParentsSliderCountValues(this.parent);
                 if(amount>0)
@@ -809,7 +807,6 @@ class TreeViewDialog extends AbstractDialog {
                 
                // console.log(this);
               }
-              
             }
             else
             {
@@ -865,16 +862,16 @@ class TreeViewDialog extends AbstractDialog {
         node.isDisabled=false;
         computeMinMaxRange(node);
       }
-      function updateSliderTracks(node)
+      function updateSliderTracks(node)//
       {
-        node.occludedInstance=10;// Just for test;
+        node.occludedInstance=50;// node.sliderValue*0.10;
+        node.sliderObj.object.setValue2(100-node.sliderObj.object.getValue());
         node.sliderObj.object.setValue3(node.occludedInstance);
-        node.sliderObj.object.setValue2(100-getSliderValue(node));
 
       }
       function exceedMinRange(node)
       {
-        var sliderVal =getSliderValue(node);
+        var sliderVal =node.sliderObj.object.getValue();
         //check sliders total if greater than 150 and re-update slider 
         if (sliderVal< node.minSliderValue) {
             return true;
@@ -884,7 +881,7 @@ class TreeViewDialog extends AbstractDialog {
       }
       function exceedMaxRange(node)
       {
-        var sliderVal =getSliderValue(node);
+        var sliderVal =node.sliderObj.object.getValue();
         if (sliderVal > node.maxSliderValue) {
             //setSliderValue(node,node.maxSliderValue);
             return true;
