@@ -865,7 +865,7 @@ class TreeViewDialog extends AbstractDialog {
       function updateSliderTracks(node)//
       {
         node.occludedInstance=50;// node.sliderValue*0.10;
-        node.sliderObj.object.setValue2(100-node.sliderObj.object.getValue());
+        node.sliderObj.object.setValue2(node.sliderObj.object.getMaxValue()-node.sliderObj.object.getValue());
         node.sliderObj.object.setValue3(node.occludedInstance);
 
       }

@@ -15,6 +15,7 @@ constructor(options) {
         min         : 0,
         max         : 100,
         step        : 1,
+        disabled     :false,
         logarithmic : false
     }, options);
 
@@ -28,7 +29,20 @@ constructor(options) {
     this._element.addEventListener('mousedown', this._handleMouseDown);
     this._element.addEventListener('wheel', this._handleWheel);
 }
-
+isDisable()
+{
+    return this.disabled;
+}
+disable()
+{
+    this.disabled=true;
+    /* */
+}
+enable()
+{
+    this.disabled=false;
+    /*  */
+}
 destroy() {
     document.removeEventListener('mouseup', this._handleMouseUp);
     document.removeEventListener('mousemove', this._handleMouseMove);
@@ -45,15 +59,16 @@ setValue(value) {
 setValue2(value) {
     this.value2 = CommonUtils.clamp(value, this.min, this.max);
     this._updateUI();
-    this.trigger('change');
 }
 
 setValue3(value) {
     this.value3 = CommonUtils.clamp(value, this.min, this.max);
     this._updateUI();
-    this.trigger('change');
 }
-
+getMaxValue()
+{
+    return this.max;
+}
 _updateUI() {
     if (this.logarithmic) {
         const logmin = Math.log(this.min);
@@ -86,9 +101,7 @@ _setValueByEvent(e) {
         this.setValue(value);
     } else {
         const value = this.min + ratio * (this.max - this.min);
-        this.setValue(value);
-        //this.setValue2(value * 0.5);
-        //this.setValue3(value * 0.3);        
+        this.setValue(value);        
     }
 }
 
