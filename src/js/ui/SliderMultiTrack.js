@@ -52,7 +52,6 @@ class SliderMultiTrack extends UIObject {
 
         super.destroy();
     }
-
     setValue(value) {
         if (!this.enabled) {
             return;
@@ -62,7 +61,6 @@ class SliderMultiTrack extends UIObject {
         this._updateUI();
         this.trigger('change');
     }
-
     setValue2(value) {
         // there is no 'disabled' test because it's just state visualization
         this.value2 = CommonUtils.clamp(value, this.min, this.max);

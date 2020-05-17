@@ -123,10 +123,11 @@ setAttributes(attributes, layout) {
         data   : attributes || new ArrayBuffer()
     });
     this._layout = layout;
+    //console.log(layout);
     //console.log(attributes);
     if(layout) {
         var values = this._getValuesByAttributeName("RealX2", layout, attributes);
-        console.log(values);
+       // console.log(values);
         this._numberInstance=values.length;
     }
 }

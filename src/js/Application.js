@@ -179,7 +179,6 @@ _handleAttribLoad(options) {
         fr.addEventListener('error', reject);
         fr.readAsArrayBuffer(options.attribFile);
     });
-
     const layout = new Promise((resolve, reject) => {
         const fr = new FileReader();
         fr.addEventListener('load', () => {
@@ -190,9 +189,9 @@ _handleAttribLoad(options) {
     });
     Promise.all([attrib, layout]).then(([attrib, layout]) => {
         const renderer = this._renderingContext.getRenderer();
-        renderer.setAttributes(attrib, layout);
-        this._visibilityDialog.setAttributes(layout.map(x => x.name));
-        this._treeViewDialog.setAttributes(layout.map(x => x.name));
+        renderer.setAttributes(attrib, layout.map(function(x) { var v=new Object();v.name=x.name;v.type=x.type; return v;}));
+        this._visibilityDialog.setAttributes(layout.map(x=> x.name));//layout.map(function(x) { var v=new Object();v.name=x.name;v.lowerBound=x.lowerBound;v.upperBound=x.upperBound; return v;}));
+        this._treeViewDialog.setAttributes(attrib,layout);
     });
 }
 
@@ -319,12 +318,6 @@ _updateTreeVisibility()
         }
     }, this._visibilityUpdateInterval);
     
-}
-_handleTreeTopologyChange()
-{
-    //console.log('treeTopologyChange');
-    //var Htree=this._treeViewDialog._getHtree();
-    var HtreeJsonObj=this._treeViewDialog._getHtreeJsonObject();
 }
 
 }

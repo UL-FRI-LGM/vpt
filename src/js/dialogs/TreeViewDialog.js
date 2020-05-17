@@ -3,61 +3,17 @@
 // #include AbstractDialog.js
 
 // #include ../../uispecs/TreeViewDialog.json
-var isDataLoaded=false;
-var isTreeTopologyCreated=false;
 
 class TreeViewDialog extends AbstractDialog {
    
   constructor(options) {
       super(UISPECS.TreeViewDialog, options);
-      this._handleCreateTreeButton=this._handleCreateTreeButton.bind(this);
-      this._binds.createTreeButton.addEventListener('click', this._handleCreateTreeButton);
+      this._handleCreateHTreeButton=this._handleCreateHTreeButton.bind(this);
+      this._binds.createTreeButton.addEventListener('click', this._handleCreateHTreeButton);
       TVDClass=this;
-      //this.attributes = [];
       this.rules=[];
       this._createDtree=this._createDtree.bind(this);
       this._binds.resetTreeButton.addEventListener('click', this._createDtree);
-     fetch("tree_layout.json").then(response => response.json()).then(data_schema=>{
-      var json =data_schema['stats']['global'];
-      nbProperty=0;
-      for (var x in json) {
-          let p=new Property(x,nbProperty);  
-          var d={text: "",id:"", expanded: true,iconCls: "fa fa-folder"};
-          d.text=x;
-          d.id=nbProperty;
-          nbProperty++;
-          propertyList.push(d);
-          var sumValues=0;
-          var index=0;
-          for (var y in json[x]) {
-              let pp=new PropValue(y,json[x][y]);
-              propertyJsonList.push({ "property":x, "hi":y,"lo":json[x][y],"index":index});
-              index++;
-              sumValues+=json[x][y];
-              p.types.push(pp);
-          }
-          p.value=sumValues;
-          propertyVList.push(p);
-      }
-     
-      isDataLoaded=true;
-   });
-   fetch("tree_layout.json").then(response => response.json()).then(data_schema=>{
-      var json =data_schema['elements'];
-      //console.log(json);
-      nbElement=0;
-      for (var x in json) {
-          let e=new Element(nbElement);  
-          nbElement++;
-          for (var y in json[x]) {
-              let pp=new PropElValue(y,json[x][y])
-              e.properties.push(pp);
-              
-             
-          }
-          ElementArr.push(e);
-      }
-    });
   }
   _getGroupOfRules()
   {
@@ -67,18 +23,12 @@ class TreeViewDialog extends AbstractDialog {
     //console.log(this.rules);
     return this.rules;
   }
-  getIndexOfPropertyValue(property,value)
-  {
-    var p=propertyJsonList.find(x => x.property == property && x.value == value );
-    return p.index;
- 
-  }
   extractRulesFromTree(node,attributeList,hiList,loList)
   {
     if(node.children===null)// leaf node
     {
       var obj=new Object();
-      attributeList.push(node.parent.property);
+      attributeList.push(node.parent.name);
       hiList.push(node.hi);
       loList.push(node.lo);
       //--------------------------------------
@@ -97,9 +47,9 @@ class TreeViewDialog extends AbstractDialog {
     }
     else //if(node.children!=null)//not leaf node
     { 
-      if(node.isPropClassName==false && node.isroot==false)
+      if(node.isClassName==false && node.isroot==false)
       {
-        attributeList.push(node.parent.property);
+        attributeList.push(node.parent.node);
         hiList.push(node.hi); //console.log(node.hi);
         loList.push(node.lo); //console.log(node.lo);
       }
@@ -107,7 +57,7 @@ class TreeViewDialog extends AbstractDialog {
         this.extractRulesFromTree(child,attributeList,hiList,loList);
   
       });
-      if(node.isPropClassName==false && node.isroot==false)
+      if(node.isClassName==false && node.isroot==false)
       {
         attributeList.pop();
         hiList.pop();
@@ -116,27 +66,54 @@ class TreeViewDialog extends AbstractDialog {
 
     }
   }
-  setAttributes(attributes)
+  setAttributes(attributes,layout)
   {
-   // this.attributes = attributes;
-  this._createDtree();
+
+   this.layout = layout;
+   //--------------------------------
+   nbProperty=0;
+   layout.forEach(x=> { 
+      var d={text: "",id:"", expanded: true,iconCls: "fa fa-folder",hi:"",lo:"",type:""};
+      d.id=nbProperty;
+      d.text=x.name;
+      d.hi=x.upperBound;
+      d.lo=x.lowerBound;
+      d.type=x.type;
+      nbProperty++;
+      DTree_propertyList.push(d);
+   });
+   //-----------------------------
+   this._createDtree();
+   //----- read elements ------------
+   var csv=new TextDecoder().decode(attributes);
+   elementsArray=this.csvJSON(csv);
+   console.log(elementsArray);
+  }
+//var csv is the CSV file with headers
+ csvJSON(csv){
+  csv=csv.replace(/(\r)/gm, "");
+  var lines=csv.split("\n");
+  var result = [];
+
+  var headers=lines[0].split(",");
+
+  for(var i=1;i<lines.length;i++){
+
+	  var obj = {};
+	  var currentline=lines[i].split(",");
+
+	  for(var j=0;j<headers.length;j++){
+      var header=String(headers[j]).replace(/^\s+|\s+$/gm,'');
+		  obj[header] = currentline[j];
+	  }
+
+	  result.push(obj);
 
   }
-
-  _getHtree()
-  {
-    return Htree;
-  }
-  _getHtreeJsonObject()
-  {
-    return extractInfoTree(Htree);
+  return result; //JavaScript object
+  //return JSON.stringify(result); //string
   }
   _createDtree = function() {
-    if(isDataLoaded==false)
-    {
-      console.log('tree_layout.json file is not found !! ..  ');
-      return;
-    }
     {
       $(".root").empty();
       jsonHArr='';
@@ -150,12 +127,12 @@ class TreeViewDialog extends AbstractDialog {
       element.setAttribute('id','treeview');
       element.setAttribute('class','theme-light');
     }
-    var propertyListObj={text: "", expanded: true,iconCls: "fa fa-folder"};
-    propertyListObj.items=[];
-    propertyList.forEach(x=>{
-      propertyListObj.items.push(x);
+    var DTree_propertyListObj={text: "", expanded: true,iconCls: "fa fa-folder"};
+    DTree_propertyListObj.items=[];
+    DTree_propertyList.forEach(x=>{
+      DTree_propertyListObj.items.push(x);
     });
-    var data=[propertyListObj];
+    var data=[DTree_propertyListObj];
     jQuery(function ($) {
       $("#treeview").shieldTreeView({
           dragDrop: true,
@@ -234,30 +211,10 @@ class TreeViewDialog extends AbstractDialog {
               }
           }
       });
-  });
-  isTreeTopologyCreated=true;
+     });
   }
-  getTreeSize()
-  {
-    return index_counter;
-  }
-  _handleCreateHierarchyJSONFile = function() {
- 
-   // console.log("File has been created"+jsonObject);
-    saveJSON(JSON.stringify(jsonObject ));
-    
-  }
-  _handleCreateTreeButton = function() {
-    if(isDataLoaded==false)
-    {
-      console.log('tree_layout.json file is not found !! ..  ');
-      return;
-    }
-    else if(isTreeTopologyCreated==false)
-    {
-      console.log('Tree topology should be created !! ..  ');
-      return;
-    }
+
+  _handleCreateHTreeButton = function() {
     //var element = document.querySelector(".root");
    // if(element!=null)
     {
@@ -279,12 +236,21 @@ class TreeViewDialog extends AbstractDialog {
         }).get()
     }
   
-  // console.log(nav[0].child);
-   jsonHArr=createJSON(nav[0].child,jsonHArr);
+   //console.log(nav[0].child);
+   jsonHArr=createJSONFromDTree(nav[0].child,jsonHArr);
+   //console.log(jsonHArr);
    jsonView.format(jsonHArr, '.root');
    TVDClass.trigger('treeTopologyChange');
   }
-  }
+}
+//======================================================================================
+var TVDClass;
+var Htree;
+let DTree_propertyList=new Array();
+let elementsArray=new Array();
+var nbProperty=0;
+var jsonHArr ='';
+//*************************************************************************************/
   function removeElement(elementId) {
     // Removes an element from the document
     var element = document.getElementById(elementId);
@@ -297,7 +263,7 @@ class TreeViewDialog extends AbstractDialog {
     var obj=new Object();
     if(node!==null)
     {   
-      if(node.isPropClassName==false && node.isroot==false)
+      if(node.isClassName==false && node.isroot==false)
       {
         obj.attribute = node.parent.property;
         obj.ind = index_counter;
@@ -337,181 +303,60 @@ class TreeViewDialog extends AbstractDialog {
        "someinnerhtml";
     a.click();
   }
-  var TVDClass;
-  var Htree;
-  class Property  {
-    constructor(name,id) {
-    this.name = name;//string
-    this.id=id;//int
-    this.types=[]; //PropValue
-    }
-    }
-    class PropValue  {
-    constructor(hi,lo,valueIndex) {
-    this.lo=lo;//int
-    this.hi=hi;//int
-    this.valueIndex=valueIndex;
-    }
-    }
-    
-    /*class HNode  {
-    constructor(property,value) {
-    this.children = [];//string
-    this.property=property;//int
-    this.elem=[]; //html elem
-    }
-    }*/
-    class PropElValue  {
-      constructor(property,value) {
-      this.property=property;
-      this.value=value;
-      }
-      }
-    class Element  {
-    constructor(id) {
-    this.id = id;//string
-    this.properties=[]; //PropValue
-    }
-    }
-    let propertyList=new Array();
-    let propertyVList=new Array();
-    let propertyJsonList=new Array();
-    let ElementArr=new Array();
-    var nbProperty=0;
-    var nbElement=0;
-    var jsonHArr ='';
-    //************************* */
-    function createJSON(nav,jsonHArr)
+  function createJSONFromDTree(nav)
   {
    
-     jsonHArr+='{';
+     var obj=new Array();
      for (n = 0; n< nav.length; n++) {
-          jsonHArr+=createJSONHierarchyTree(nav[n],'');
-          if(n+1 < nav.length)
-                jsonHArr+=',';
+          obj.push(createJSONHierarchyTree(nav[n]));
       }
-     jsonHArr+='}';
-     //console.log(jsonHArr);
-     return jsonHArr;
+     //console.log(obj);
+     return obj;
   }
-  function createJSONHierarchyTree(nav,jsonHArr)
+  function createJSONHierarchyTree(nav)
   {
           //console.log(nav);
+          
           if (nav!== null)
           { 
+            var obj=new Object();
               
-              var name=nav['suiTreeviewListItem']['text'];
-              var id=nav['suiTreeviewListItem']['id'];
-              var arrTypes=propertyVList[id].types;
-              var child=nav['child'];
-              jsonHArr+= getString(name)+':';
-              if(child.length!==0)
-              { 
-                  jsonHArr+='{'+getStringPropNode(child,arrTypes,0,arrTypes.length,'')+'}';
-              }
-              else
-              {
-                  jsonHArr+='['+ getStringOfPropElement(arrTypes)+']';
-              }
-              
+            obj.name=nav['suiTreeviewListItem']['text'];
+            //obj.id=nav['suiTreeviewListItem']['id'];
+            obj.lo=Math.floor(nav['suiTreeviewListItem']['lo']);
+            obj.hi=Math.ceil(nav['suiTreeviewListItem']['hi']);
+            obj.type=nav['suiTreeviewListItem']['type'];
+            //---------------------------------------
+            obj.groups=[]; 
+            var r=(obj.hi-obj.lo)/4; //just for now divide it to 4 groups
+            var lo=obj.lo;
+            var hi=obj.lo+r;
+            for(var i=1;i<=4;i++) 
+            { 
+              var group=new Object();
+              group.lo=lo;
+              group.hi=hi;
+              group.name=('['+lo+'~'+hi+']').replace(/^\s+|\s+$/gm,'');;
+              obj.groups.push(group);
+              lo=hi;
+              hi=lo+r;
+            }
+            //------------------------------------------
+            obj.children=[];
+            if(nav['child'].length!==0)
+            { 
+              nav['child'].forEach(x=>{
+                obj.children.push(createJSONHierarchyTree(x));
+              });
+            }
+            return obj;
           }
-          return jsonHArr;
+          return null;
   }
-  function getStringPropNode(child,arrTypes,k,length,jsonHArr)
-  {
-      if(k<length)
-      {
-          jsonHArr+=getString(arrTypes[k].hi)+':{';
-          for (j = 0; j < child.length; j++) {
-              jsonHArr+=createJSONHierarchyTree(child[j],'');
-              //console.log(jsonHArr);
-              if(j+1 < child.length)
-                jsonHArr+=',';
-          }
-          if(k+1 < arrTypes.length){
-              jsonHArr+='},';
-              jsonHArr+=getStringPropNode(child,arrTypes,k+1,length,'');
-          }
-          else
-              jsonHArr+='}';
-      }
-      return jsonHArr;
-  }
-  function getStringOfPropElement(arr)
-  {
-      var s=getString(arr[0].hi);
-      for (i = 1; i < arr.length; i++) {
-         s += ','+getString(arr[i].hi);
-      }
-      return s;
-  }
-  function getString(s)
-  {
-      return '\"'+s+'\"';
-  }
-  /*function createJSONHierarchyTree(nav,jsonHArr)
-  {
-          //console.log(nav);
-          if (nav!== null)
-          { 
-              
-              var name=nav['suiTreeviewListItem']['text'];
-              var id=nav['suiTreeviewListItem']['id'];
-              var arrTypes=propertyVList[id].types;
-              var child=nav['child'];
-              jsonHArr+= getString(name)+':';
-              if(child.length!==0)
-              { 
-                  jsonHArr+='{'+getStringPropNode(child,arrTypes,0,arrTypes.length,'')+'}';
-              }
-              else
-              {
-                  jsonHArr+='{'+ getStringOfPropElement(arrTypes)+'}';
-              }
-              
-          }
-          return jsonHArr;
-  }
-  function getStringPropNode(child,arrTypes,k,length,jsonHArr)
-  {
-      if(k<length)
-      {
-          jsonHArr+=getString(arrTypes[k].hi)+':{';
-          for (j = 0; j < child.length; j++) {
-              jsonHArr+=createJSONHierarchyTree(child[j],'');
-              //console.log(jsonHArr);
-              if(j+1 < child.length)
-                jsonHArr+=',';
-          }
-          if(k+1 < arrTypes.length){
-              jsonHArr+='},';
-              jsonHArr+=getStringPropNode(child,arrTypes,k+1,length,'');
-          }
-          else
-              jsonHArr+='}';
-      }
-      return jsonHArr;
-  }
-  function getStringOfPropElement(arr)
-  {
-      var s=getString(arr[0].hi)+':'+getString(arr[0].lo);
-      for (i = 1; i < arr.length; i++) {
-         s += ','+getString(arr[i].hi)+':'+getString(arr[i].lo);
-      }
-      return s;
-  }
-  function getString(s)
-  {
-      return '\"'+s+'\"';
-  }*/
-  /*********************************** */
+//================================================================================================
   (function() {
       'use strict';
-      /**
-       * Create html element
-       * @param {String} storageType html element 
-       * @param {Object} config
-       */
+
       function  createElement(storageType, config) {
         const htmlElement = document.createElement(storageType);
       
@@ -538,11 +383,7 @@ class TreeViewDialog extends AbstractDialog {
         return htmlElement; 
       }
      
-      
-      /**
-       * @param {Object} node
-       * @return {HTMLElement}
-       */
+
       function createExpandedElement(node) {
         const iElem = createElement('i');
         if (node.expanded) {
@@ -560,7 +401,7 @@ class TreeViewDialog extends AbstractDialog {
         caretElem.addEventListener('click', handleClick);
         const propertyElem = createElement('div', {
           className: 'property',
-          content: node.property,
+          content: node.name,
         });
         const div_Lock =createElement('div', {
           className:  'treeLock'
@@ -585,7 +426,7 @@ class TreeViewDialog extends AbstractDialog {
         });
         
         const div_slider=node.sliderObj.object._element;
-        
+        updateSliderTracks(node);
         const handleSliderChange = node.sliderChange.bind(node);
         node.sliderObj.binds.sliderChange.addEventListener('change', handleSliderChange);
         //--------------------------------------------------------
@@ -610,10 +451,11 @@ class TreeViewDialog extends AbstractDialog {
           //lineChildren = [caretElem,typeElem]
           lineChildren = [caretElem,propertyElem]
         }
-        else if (node.property === null) {
+        /*else if (node.name === null) {
           //lineChildren = [caretElem,typeElem];//,div_slider,div_Lock]
           lineChildren = [caretElem,propertyElem,div_slider,div_colorChooser,div_Lock];
-        } else {
+        } */
+        else {
           //lineChildren = [caretElem,propertyElem];//,div_slider,div_Lock]
           lineChildren = [caretElem,propertyElem,div_slider,div_colorChooser,div_Lock];
         }
@@ -628,6 +470,7 @@ class TreeViewDialog extends AbstractDialog {
         }
         return lineElem;
       }
+
       function clone(obj) {
         if (null == obj || "object" != typeof obj) return obj;
         var copy = new obj.constructor();
@@ -636,10 +479,8 @@ class TreeViewDialog extends AbstractDialog {
         }
         return copy;
     }
-      /**
-       * @param {Object} node
-       * @return {HTMLElement}
-       */
+
+    
       function createNotExpandedElement(node) {
         const caretElem = createElement('div', {
           className: 'empty-icon',
@@ -647,7 +488,7 @@ class TreeViewDialog extends AbstractDialog {
       
         const propertyElem = createElement('div', {
           className: 'property',
-          content: node.property
+          content: node.name
         });
         const div_Lock =createElement('div', {
           className:  'treeLock'
@@ -669,9 +510,8 @@ class TreeViewDialog extends AbstractDialog {
           "max": 99.999,
           "step": 1.000
         });
-        
         const div_slider=node.sliderObj.object._element;
-        
+        updateSliderTracks(node);
         const handleSliderChange = node.sliderChange.bind(node);
         node.sliderObj.binds.sliderChange.addEventListener('change', handleSliderChange);
         //--------------------------------------------------------
@@ -703,13 +543,11 @@ class TreeViewDialog extends AbstractDialog {
       }
       
       
-      /**
-       * create tree node
-       * @return {Object}
-       */
+ 
       function createNode() {
         return {
-          property: null,
+          //property: null,
+          name:null,
           nInstances: 0,
           visInstances: 0,
           occludedInstance:0,
@@ -730,7 +568,7 @@ class TreeViewDialog extends AbstractDialog {
           //HIcontrol:[],
           //elementsList:[],
           isDisabled:false,
-          isPropClassName:false,
+          isClassName:false,
          // isPropertyTree:false,
           isroot:false,
           isEmpty:false,
@@ -804,7 +642,7 @@ class TreeViewDialog extends AbstractDialog {
                 else
                     decreaseChildrenSliderCountValues(this,amount*-1);
                 TVDClass.trigger('treeSliderChange');
-                
+                //this.sliderObject.object.triggerChange();
                // console.log(this);
               }
             }
@@ -907,7 +745,7 @@ class TreeViewDialog extends AbstractDialog {
                 min+=item.minSliderValue*(item.nInstances/item.parent.nInstances);
                 max+=item.maxSliderValue*(item.nInstances/item.parent.nInstances);
           });
-          if(node.children[0].isPropClassName==true)
+          if(node.children[0].isClassName==true)
           {
             min=min/node.children.length;
             max=max/node.children.length;
@@ -979,7 +817,7 @@ class TreeViewDialog extends AbstractDialog {
         node.children.forEach((item) => {
           sum=sum + item.visInstances;
         });
-        if(node.children[0].isPropClassName==true)
+        if(node.children[0].isClassName==true)
           {
             sum=sum/node.children.length;
           }
@@ -1174,10 +1012,6 @@ class TreeViewDialog extends AbstractDialog {
       }
       
       
-      /**
-       * Return variable storageType
-       * @param {*} val
-       */
       function getType(val) {
         let storageType = typeof val;
         if (Array.isArray(val)) {
@@ -1189,108 +1023,69 @@ class TreeViewDialog extends AbstractDialog {
       }
       
       
-      /**
-       * Recursively traverse json object
-       * @param {Object} obj parsed json object
-       * @param {Object} parent of object tree
-       */
-      function traverseObject(obj, parent) {
-        for (let property in obj) {
+      function traverseObject_groups(parent,groups,children,hasChildren) {
+        groups.forEach(x=>{
           const child = createNode();
-          //child.isPropertyTree=isPropertyTree;
           child.parent = parent;
-          child.storageType = getType(obj[property]);
-          if(Array.isArray(obj))
+          child.lo=x.lo;
+          child.hi=x.hi;
+          child.depth = parent.depth + 1;
+          child.expanded = false;
+          child.isroot=false;
+          child.name = x.name;
+          if(hasChildren==true)
           {
-            child.property = obj[property];
+              child.children = [];
+              parent.children.push(child);
+              traverseObject(children, child);
+              child.elem = createExpandedElement(child);
           }
           else{
-            child.property = property;
+            parent.children.push(child);
+            child.elem = createNotExpandedElement(child);
           }
-          if(child.parent.isPropClassName!==true)
-          {
-             child.isPropClassName=true;
-          }
+          
+        });
+      }
+      
+      function traverseObject(obj, parent) {
+        //console.log(obj);
+        obj.forEach(x=>{
+          const child = createNode();
+          child.parent = parent;
+          child.lo=x.lo;
+          child.hi=x.hi;
           child.depth = parent.depth + 1;
           child.expanded = false;
           child.isroot=false
-          if (typeof obj[property] === 'object') {
-            child.children = [];
-            parent.children.push(child);
-            traverseObject(obj[property], child);
-            /*
-              child.maxSliderValue = //  should be computed from element list
-            }*/
-            child.elem = createExpandedElement(child);
-          } else {
-            
-            //child.maxSliderValue = //  should be computed from element list
-            child.elem = createNotExpandedElement(child);
-            parent.children.push(child);
-          }
-        }
+          child.name = x.name;
+          child.isClassName=true;
+          child.children = [];
+          //console.log(child);
+          parent.children.push(child);
+          if(x.children.length>0)
+            traverseObject_groups(child,x.groups, x.children,true);
+          else
+            traverseObject_groups(child,x.groups, x.children,false);
+          child.elem = createExpandedElement(child);
+        });
       }
-      function getPropertyLowValue(property,hi)
-      {
-        var p=propertyJsonList.find(x => x.property == property && x.hi == hi );
-
-        return p.lo;
-
-      }
-      /*function getCountElementArr(properities)
-      {
-  
-      }*/
-      /*function getValueFromPropArr(node,_type)
-      {
-        var _name=node.parent.property;
-        for (var i=0 ; i < propertyVList.length ; i++)
-        {
-            if (propertyVList[i].name == _name) {
-             
-                for (var j=0 ; j < propertyVList[i].types.length ; j++)
-                {
-                  //console.log(propertyVList[i].types);
-                  if (propertyVList[i].types[j].type == _type) {
-                    //console.log(propertyVList[i].types[j].value);
-                    return propertyVList[i].types[j].value;
-                  }
-                }
-            }
-        }
-       
-      }*/
-      /**
-       * Create root of a tree
-       * @param {Object} obj Json object
-       * @return {Object}
-       */
       function createTree(obj) {
         const tree = createNode();
         tree.storageType = getType(obj);
-        //tree.isPropertyTree=isPropertyTree;
         tree.sliderValue = 100;
-        //tree.nInstances = nbElement;
         tree.children = [];
         tree.expanded = true;
         tree.isroot=true;
-        tree.isPropClassName=false;
+        tree.isClassName=false;
         traverseObject(obj, tree);
-        
         tree.elem = createExpandedElement(tree);
+        console.log(tree);
         return tree;
       } 
-      /**
-       * Recursively traverse Tree object
-       * @param {Object} node
-       * @param {Callback} callback
-       */
+
       function traverseTree(node, callback) {
         callback(node);
-       // node.sliderObj=$('.slider').last().bootstrapSlider({
-        //  rangeHighlights: [{ "start": 0, "end": node.occludedInstance, "class": "occluded" },
-        //                    { "start": node.sliderValue, "end": 100, "class": "discarded" }]});//.on('change',sliderHasChanged);
-        
         if (node.children !== null) {
           node.children.forEach((item) => {
             
@@ -1298,15 +1093,7 @@ class TreeViewDialog extends AbstractDialog {
           });
         }
       }
-      /*function sliderHasChanged()
-      {
-          console.log(this);
-      }*/
-      /**
-       * Render Treeee object
-       * @param {Object} tree
-       * @param {String} targetElem
-       */
+
       function render(tree, targetElem,i) {
         let rootElem;
         if (targetElem) {
@@ -1327,63 +1114,44 @@ class TreeViewDialog extends AbstractDialog {
      
    /* Export jsonView object */
    window.jsonView = {
-    /**
-     * Render JSON into DOM container
-     * @param {String} jsonData
-     * @param {String} targetElem
-     */
     format: function(jsonData, targetElem) {
       let parsedData = jsonData;
       if (typeof jsonData === 'string' || jsonData instanceof String) 
           parsedData = JSON.parse(jsonData);
      
       Htree = createTree(parsedData,false);
-      render(Htree, targetElem,0);
-      Htree.nInstances=nbElement;
+      Htree.nInstances=elementsArray.length;
       Htree.visInstances=Htree.nInstances;
-      
-      findHiLoValues(Htree);
-      countElementsOfthisClass(Htree,[],[]); 
+      render(Htree, targetElem,0);
+      console.log("count");
+      countElementsOfthisClass(Htree,[],[],[]); 
     }
   }
-  function findHiLoValues(node)
-  {
-    if(node.isPropClassName!=true&&node.isroot!=true){
-      node.hi=node.property;
-      node.lo=getPropertyLowValue(node.parent.property,node.property);
 
-    }
-    if(node.children!=null)
-    {
-      node.children.forEach((child) => {
-        findHiLoValues(child);
-      });
-    }
-  }
-  function countElementsOfthisClass(node,className,problist)
+  function countElementsOfthisClass(node,className,hiList,loList)
   {
-   if(node.isPropClassName==true){
+   if(node.isClassName==true){
          
-          className.push(node.property);
-          node.nInstances=countElements(className,problist);
+          className.push(node.name);
+          node.nInstances=countElements(className,hiList,loList);
           node.visInstances=node.nInstances;
           if(node.nInstances==0)
           {
             LockedEmptyNode(node);
           }
           node.children.forEach((item) => {
-            countElementsOfthisClass(item,className,problist);
+            countElementsOfthisClass(item,className,hiList,loList);
           });
           className.pop();
     }
     else if(node.children!=null)
     {
-      if(node.property!=null)
+      if(node.isroot==false)
       {
         
-        problist.push(node.hi);
-        problist.push(node.lo);
-        node.nInstances=countElements(className,problist);
+        hiList.push(node.hi);
+        loList.push(node.lo);
+        node.nInstances=countElements(className,hiList,loList);
         node.visInstances=node.nInstances;
         if(node.nInstances==0)
         {
@@ -1391,28 +1159,39 @@ class TreeViewDialog extends AbstractDialog {
         }
       }
       node.children.forEach((item) => {
-        countElementsOfthisClass(item,className,problist);
+        countElementsOfthisClass(item,className,hiList,loList);
       });
-      if(node.property!=null)
+      if(node.name!=null)
       {
-        problist.pop();
-        problist.pop();
+        hiList.pop();
+        loList.pop();
       }
 
     }
     else {
       
-      problist.push(node.hi);
-      problist.push(node.lo);
-      node.nInstances=countElements(className,problist);
+      hiList.push(node.hi);
+      loList.push(node.lo);
+      node.nInstances=countElements(className,hiList,loList);
       node.visInstances=node.nInstances;
       if(node.nInstances==0)
       {
         LockedEmptyNode(node);
       }
-      problist.pop();
-      problist.pop();
+      hiList.pop();
+      loList.pop();
     }
+  }
+  function countElements(className,hiList,loList)
+  {
+    var el=clone(elementsArray);
+    for(var j=0;j<className.length;j++)
+    {
+        if(hiList[j]==null)
+          break;
+        el=el.filter(x => x[className[j]]< hiList[j] && x[className[j]]>= loList[j])
+    }
+    return el.length;
   }
   function LockedEmptyNode(node)
   {
@@ -1428,7 +1207,8 @@ class TreeViewDialog extends AbstractDialog {
       node.minSliderValue=0;
       node.maxSliderValue=0;
   }
-  function countElements(className,problist)
+
+  /*function countElements(className,problist)
   {
     var count=0;
     for(var i=0;i<nbElement;i++)
@@ -1440,10 +1220,10 @@ class TreeViewDialog extends AbstractDialog {
       {
         
         var propExist=false;
-        for(var k=0;k<ElementArr[i].properties.length;k++)
+        for(var k=0;k<elementsArray[i].properties.length;k++)
         {//console.log(className);
-          var el_property=ElementArr[i].properties[k].property;
-          var el_val=ElementArr[i].properties[k].value;
+          var el_property=elementsArray[i].properties[k].property;
+          var el_val=elementsArray[i].properties[k].value;
           if (className[jj]==el_property && el_val < problist[j] && el_val >= problist[j+1] ) {
             propExist=true;
             break;
@@ -1462,7 +1242,7 @@ class TreeViewDialog extends AbstractDialog {
       }
     }
     return count;
-  }
+  }*/
   /*function connectTrees(HItree,node)
   {
       if (node !== null) {
