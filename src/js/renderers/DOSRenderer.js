@@ -178,6 +178,7 @@ setHtreeRules(rules)
         const visibilityCondition = ` prob <  ${visibility}`;
         this._rules+= `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
+   // console.log(rules);
     //this.saveInFile(this._rules);
     this._recomputeTransferFunction(rules); 
     this._rebuildAttribComputeTree();
@@ -192,7 +193,6 @@ setRules(rules) {
         const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
         const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
         const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
-        //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
         const visibilityCondition = ` prob <  ${visibility}`;
         return `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });

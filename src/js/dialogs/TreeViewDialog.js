@@ -31,6 +31,7 @@ class TreeViewDialog extends AbstractDialog {
       attributeList.push(node.parent.name);
       hiList.push(node.hi);
       loList.push(node.lo);
+      //console.log(node.parent.name);
       //--------------------------------------
       obj.attribute =JSON.parse(JSON.stringify(attributeList));;
       obj.hi =JSON.parse(JSON.stringify(hiList));  
@@ -49,7 +50,7 @@ class TreeViewDialog extends AbstractDialog {
     { 
       if(node.isClassName==false && node.isroot==false)
       {
-        attributeList.push(node.parent.node);
+        attributeList.push(node.parent.name);//console.log(node.hi);
         hiList.push(node.hi); //console.log(node.hi);
         loList.push(node.lo); //console.log(node.lo);
       }
@@ -87,7 +88,7 @@ class TreeViewDialog extends AbstractDialog {
    //----- read elements ------------
    var csv=new TextDecoder().decode(attributes);
    elementsArray=this.csvJSON(csv);
-   console.log(elementsArray);
+   //console.log(elementsArray);
   }
 //var csv is the CSV file with headers
  csvJSON(csv){
@@ -948,28 +949,13 @@ var jsonHArr ='';
                 });
               }
         }
-             /**
-       * Return slider value
-       * @param {Object} obj
-       * @return {Object}
-       */ 
-      function getSlider(obj) {
-      //  console.log(obj);
-        return (obj.elem.children[2].children[0]);
-      }
-      function getSliderCurrentValue(obj) {
-    
-        return parseInt(getSlider(obj).value);
-      }
+
       function setColorValue(obj,newValue)
       {
         getColor(obj).value = newValue;
         obj.color=newValue;
       }
-                 /**
-       * set slider value
-       * @param {Object} obj
-       */ 
+ 
       function setSliderValue(node,newValue) {
         //$(obj.sliderObj).bootstrapSlider('setValue',newValue);
         //getSlider(obj).value = newValue;
@@ -978,40 +964,7 @@ var jsonHArr ='';
         node.sliderValue=newValue;
         updateSliderTracks(node);
       }
-                 /**
-       * Return slider max value
-       * @param {Object} obj
-       * @return {number}
-       */ 
-      function getSliderMaxValue(obj) {
-        return parseInt(getSlider(obj).max);
-      }
-             /**
-       * Return value
-       * @param {Object} obj
-       * @return {number}
-       */ 
-      function getSumOfChildValues(obj) {
-        var sum=0;
-        obj.children.forEach((item) => {
-          sum=sum + item.maxSliderValue;
-        });
-        return sum;
-      }
-      /**
-       * Return object length
-       * @param {Object} obj
-       * @return {number}
-       */
-      function getLength(obj) {
-        let length = 0;
-        for (let property in obj) {
-          length += 1;
-        };
-        return length;
-      }
-      
-      
+
       function getType(val) {
         let storageType = typeof val;
         if (Array.isArray(val)) {
@@ -1080,7 +1033,7 @@ var jsonHArr ='';
         tree.isClassName=false;
         traverseObject(obj, tree);
         tree.elem = createExpandedElement(tree);
-        console.log(tree);
+        //console.log(tree);
         return tree;
       } 
 
@@ -1123,7 +1076,6 @@ var jsonHArr ='';
       Htree.nInstances=elementsArray.length;
       Htree.visInstances=Htree.nInstances;
       render(Htree, targetElem,0);
-      console.log("count");
       countElementsOfthisClass(Htree,[],[],[]); 
     }
   }
@@ -1201,84 +1153,8 @@ var jsonHArr ='';
       element.className='empty';
       node.sliderObj.object.disable();
       setSliderValue(node,0);
-     // $(node.sliderObj).bootstrapSlider("disable");
-     // $(node.sliderObj).bootstrapSlider('setValue', 0);
       node.isDisabled=true;
       node.minSliderValue=0;
       node.maxSliderValue=0;
   }
-
-  /*function countElements(className,problist)
-  {
-    var count=0;
-    for(var i=0;i<nbElement;i++)
-    {
-      //var incCount=true;
-      var AllPropExist=true;
-      var jj=0;
-      for(var j=0;j<problist.length-1;j+=2)
-      {
-        
-        var propExist=false;
-        for(var k=0;k<elementsArray[i].properties.length;k++)
-        {//console.log(className);
-          var el_property=elementsArray[i].properties[k].property;
-          var el_val=elementsArray[i].properties[k].value;
-          if (className[jj]==el_property && el_val < problist[j] && el_val >= problist[j+1] ) {
-            propExist=true;
-            break;
-          }
-        }
-        if(propExist==false)
-        {
-          AllPropExist=false;
-          break;
-        }
-        jj++;
-      }
-      if(AllPropExist==true)
-      {
-        count++;
-      }
-    }
-    return count;
-  }*/
-  /*function connectTrees(HItree,node)
-  {
-      if (node !== null) {
-        searchANDLink(HItree,node,node.property);
-        if(node.children!=null)
-        {
-          node.children.forEach((child) => {
-            connectTrees(HItree,child);
-          });
-        }
-  
-      }
-  }
-  function searchANDLink(HInode,node,property)
-  {
-      
-        if (HInode !== null) {
-         
-            if(HInode.property==property)
-            {
-              //console.log(Hnode.property);
-              HInode.control=node;
-              node.HIcontrol.push(HInode);
-            }
-            else
-             {
-               if (HInode.children !== null)
-               {
-                HInode.children.forEach((child) => {
-                  searchANDLink(child,node,property);
-                });
-  
-               }
-                
-            }
-        }
-    
-  }*/
   })();
