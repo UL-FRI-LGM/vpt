@@ -145,6 +145,18 @@ _handleVolumeLoad(options) {
             this._renderingContext.setVolume(reader);
             this._renderingContext.getRenderer().setAttributes(null, null);
             this._visibilityDialog.reset();
+            if (reader.readAttributes) {
+                reader.readAttributes({
+                    onData: attributes => {
+                        reader.readLayout({
+                            onData: layout => {
+                                this._renderingContext.getRenderer().setAttributes(attributes, layout);
+                                this._visibilityDialog.setAttributes(layout.map(x => x.name));
+                            }
+                        });
+                    }
+                });
+            }
         }
     } else if (options.type === 'url') {
         const readerClass = this._getReaderForFileType(options.filetype);
