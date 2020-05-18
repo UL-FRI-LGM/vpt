@@ -37,4 +37,22 @@ readBlock(block, handlers) {
     });
 }
 
+readAttributes(handlers) {
+    this._zipReader.readFile('attributes.raw', {
+        onData: data => {
+            handlers.onData && handlers.onData(data);
+        }
+    });
+}
+
+readLayout(handlers) {
+    this._zipReader.readFile('layout.json', {
+        onData: data => {
+            const decoder = new TextDecoder('utf-8');
+            const json = JSON.parse(decoder.decode(data));
+            handlers.onData && handlers.onData(json);
+        }
+    });
+}
+
 }
