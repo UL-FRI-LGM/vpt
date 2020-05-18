@@ -10,27 +10,27 @@
       "type": "tabs",
       "children": {
         "Data": {
-          "type": "panel",
+          "type": "_panel",
           "children": [
             {
               "type": "accordion",
-              "bind": "volumeLoadContainer",
+              "bind": "volumeLoad_container",
               "label": "Volume"
             },
             {
               "type": "accordion",
-              "bind": "attribLoadContainer",
+              "bind": "attribLoad_container",
               "label": "Attributes"
             },
             {
               "type": "accordion",
-              "bind": "envmapLoadContainer",
+              "bind": "envmapLoad_container",
               "label": "Environment"
             }
           ]
         },
         "Settings": {
-          "type": "panel",
+          "type": "_panel",
           "children": [
             {
               "type": "accordion",
@@ -78,8 +78,8 @@
                   ]
                 },
                 {
-                  "type": "panel",
-                  "bind": "rendererSettingsContainer"
+                  "type": "_panel",
+                  "bind": "rendererSettings_container"
                 }
               ]
             },
@@ -113,24 +113,28 @@
                   ]
                 },
                 {
-                  "type": "panel",
-                  "bind": "toneMapperSettingsContainer"
+                  "type": "_panel",
+                  "bind": "toneMapperSettings_container"
                 }
               ]
             },
             {
               "type": "accordion",
-              "bind": "renderingContextSettingsContainer",
+              "bind": "renderingContextSettings_container",
               "label": "Context"
             }
           ]
         },
         "Visibility": {
-          "type": "panel",
-          "bind": "visibilityContainer"
+          "type": "_panel",
+          "bind": "visibility_container"
+        },
+        "TreeView": {
+          "type": "_panel",
+          "bind": "TreeViewContainer"
         },
         "About": {
-          "type": "panel",
+          "type": "_panel",
           "bind": "about"
         }
       }

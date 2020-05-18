@@ -24,6 +24,14 @@ _handleChange() {
     this._renderer.slices = this._binds.slices.getValue();
     this._renderer.occlusionScale = this._binds.occlusionScale.getValue();
     this._renderer.occlusionDecay = this._binds.occlusionDecay.getValue();
+    
+    this._renderer._ks = this._binds.ks.getValue();
+    this._renderer._kt = this._binds.kt.getValue();
+
+    const position = this._binds.position.getValue();
+    this._renderer._lightPos[0] = position.x;
+    this._renderer._lightPos[1] = position.y;
+    this._renderer._lightPos[2] = position.z;
     this._renderer.reset();
 }
 

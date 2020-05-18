@@ -3,11 +3,11 @@
 // #section VisibilityDialog
 
 {
-  "type": "panel",
+  "type": "_panel",
   "children": [
     {
-      "type": "panel",
-      "bind": "groupContainer"
+      "type": "_panel",
+      "bind": "group_container"
     },
     {
       "type": "button",

@@ -3,14 +3,14 @@
 // #section VisibilityGroup
 
 {
-  "type": "panel",
+  "type": "_panel",
   "children": [
     {
-      "type": "panel",
+      "type": "_panel",
       "bind": "controlPanel"
     },
     {
-      "type": "panel",
+      "type": "_panel",
       "children": [
         {
           "type": "field",

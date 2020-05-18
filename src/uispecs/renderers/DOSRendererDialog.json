@@ -3,7 +3,7 @@
 // #section DOSRendererDialog
 
 {
-  "type": "panel",
+  "type": "_panel",
   "children": [
     {
       "type": "field",
@@ -52,6 +52,49 @@
           "value": 0.9,
           "min": 0,
           "max": 1
+        }
+      ]
+    },
+    {
+      "type": "accordion",
+      "label": "Probability parameter",
+      "children": [
+        {
+          "type": "field",
+          "label": "Light Position:",
+          "children": [
+            {
+              "type": "vector",
+              "bind": "position",
+              "value": 0.5
+            }
+          ]
+        },
+        {
+          "type": "field",
+          "label": "ks:",
+          "children": [
+            {
+              "type": "spinner",
+              "bind": "ks",
+              "value": 0.1,
+              "step": 0.01,
+               "min": 0
+            }
+          ]
+        },
+        {
+          "type": "field",
+          "label": "kt:",
+          "children": [
+            {
+              "type": "spinner",
+              "bind": "kt",
+              "value": 0.1,
+              "step": 0.01,
+               "min": 0
+            }
+          ]
         }
       ]
     }

@@ -20,7 +20,10 @@ constructor() {
     this._handleEnvmapLoad = this._handleEnvmapLoad.bind(this);
     this._handleVisibilityRetopo = this._handleVisibilityRetopo.bind(this);
     this._handleVisibilityChange = this._handleVisibilityChange.bind(this);
-
+    
+    this._handleTreeSliderChange = this._handleTreeSliderChange.bind(this);
+    //this._handleTreeTopologyChange=this._handleTreeTopologyChange.bind(this);
+    
     this._visibilityUpdatePending = false;
     this._visibilityUpdateInterval = 200;
     this._visibilityUpdateTimeout = null;
@@ -49,25 +52,30 @@ constructor() {
     this._statusBar.appendTo(document.body);
 
     this._volumeLoadDialog = new VolumeLoadDialog();
-    this._volumeLoadDialog.appendTo(this._mainDialog.getVolumeLoadContainer());
+    this._volumeLoadDialog.appendTo(this._mainDialog.getVolumeLoad_container());
     this._volumeLoadDialog.addEventListener('load', this._handleVolumeLoad);
 
     this._attribLoadDialog = new AttribLoadDialog();
-    this._attribLoadDialog.appendTo(this._mainDialog.getAttribLoadContainer());
+    this._attribLoadDialog.appendTo(this._mainDialog.getAttribLoad_container());
     this._attribLoadDialog.addEventListener('load', this._handleAttribLoad);
 
     this._envmapLoadDialog = new EnvmapLoadDialog();
-    this._envmapLoadDialog.appendTo(this._mainDialog.getEnvmapLoadContainer());
+    this._envmapLoadDialog.appendTo(this._mainDialog.getEnvmapLoad_container());
     this._envmapLoadDialog.addEventListener('load', this._handleEnvmapLoad);
 
+    this._treeViewDialog = new TreeViewDialog();
+    this._treeViewDialog.appendTo(this._mainDialog.getTreeViewContainer());
+    this._treeViewDialog.addEventListener('treeSliderChange', this._handleTreeSliderChange);
+    this._treeViewDialog.addEventListener('treeTopologyChange', this._handleTreeSliderChange);
+    
     this._visibilityDialog = new VisibilityDialog();
-    this._visibilityDialog.appendTo(this._mainDialog.getVisibilityContainer());
+    this._visibilityDialog.appendTo(this._mainDialog.getVisibility_container());
     this._visibilityDialog.addEventListener('retopo', this._handleVisibilityRetopo);
     this._visibilityDialog.addEventListener('change', this._handleVisibilityChange);
 
     this._renderingContextDialog = new RenderingContextDialog();
     this._renderingContextDialog.appendTo(
-        this._mainDialog.getRenderingContextSettingsContainer());
+        this._mainDialog.getRenderingContextSettings_container());
     this._renderingContextDialog.addEventListener('resolution', options => {
         this._renderingContext.setResolution(options.resolution);
     });
@@ -112,10 +120,10 @@ _handleRendererChange(which) {
     }
     this._renderingContext.chooseRenderer(which);
     const renderer = this._renderingContext.getRenderer();
-    const container = this._mainDialog.getRendererSettingsContainer();
+    const _container = this._mainDialog.getRendererSettings_container();
     const dialogClass = this._getDialogForRenderer(which);
     this._rendererDialog = new dialogClass(renderer);
-    this._rendererDialog.appendTo(container);
+    this._rendererDialog.appendTo(_container);
 }
 
 _handleToneMapperChange(which) {
@@ -124,10 +132,10 @@ _handleToneMapperChange(which) {
     }
     this._renderingContext.chooseToneMapper(which);
     const toneMapper = this._renderingContext.getToneMapper();
-    const container = this._mainDialog.getToneMapperSettingsContainer();
+    const _container = this._mainDialog.getToneMapperSettings_container();
     const dialogClass = this._getDialogForToneMapper(which);
     this._toneMapperDialog = new dialogClass(toneMapper);
-    this._toneMapperDialog.appendTo(container);
+    this._toneMapperDialog.appendTo(_container);
 }
 
 _handleVolumeLoad(options) {
@@ -192,11 +200,11 @@ _handleAttribLoad(options) {
         fr.addEventListener('error', reject);
         fr.readAsText(options.layoutFile);
     });
-
     Promise.all([attrib, layout]).then(([attrib, layout]) => {
         const renderer = this._renderingContext.getRenderer();
         renderer.setAttributes(attrib, layout);
         this._visibilityDialog.setAttributes(layout.map(x => x.name));
+        this._treeViewDialog.setAttributes(layout.map(x => x.name));
     });
 }
 
@@ -259,6 +267,20 @@ _handleVisibilityChange(options) {
     this._throttleVisibility();
 }
 
+_handleTreeSliderChange(options) {
+    this._throttleTreeVisibility();
+}
+_throttleTreeVisibility() {
+    if (this._loadingDiv) {
+        return;
+    }
+
+    if (!this._visibilityUpdateTimeout) {
+        this._updateTreeVisibility();
+    } else {
+        this._visibilityUpdatePending = true;
+    }
+}
 _getReaderForFileType(type) {
     switch (type) {
         case 'bvp'  : return BVPReader;
@@ -285,6 +307,36 @@ _getDialogForToneMapper(toneMapper) {
         case 'reinhard' : return ReinhardToneMapperDialog;
         case 'artistic' : return ArtisticToneMapperDialog;
     }
+}
+_updateTreeVisibility()
+{
+    //console.log('treeSliderChange');
+    //var Htree=this._treeViewDialog._getHtree();
+    var tree_rules=this._treeViewDialog._getGroupOfRules();
+    const renderer = this._renderingContext.getRenderer();
+    renderer.setHtreeRules(tree_rules);
+    renderer.reset();
+
+    if (this._visibilityUpdateTimeout) {
+        clearTimeout(this._visibilityUpdateTimeout);
+        this._visibilityUpdateTimeout = null;
+    }
+
+    this._visibilityUpdateTimeout = setTimeout(() => {
+        this._visibilityUpdateTimeout = null;
+
+        if (this._visibilityUpdatePending) {
+            this._visibilityUpdatePending = false;
+            this._updateTreeVisibility();
+        }
+    }, this._visibilityUpdateInterval);
+    
+}
+_handleTreeTopologyChange()
+{
+    //console.log('treeTopologyChange');
+    //var Htree=this._treeViewDialog._getHtree();
+    var HtreeJsonObj=this._treeViewDialog._getHtreeJsonObject();
 }
 
 }

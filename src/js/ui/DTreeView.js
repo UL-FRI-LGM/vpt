@@ -2,12 +2,12 @@
 
 // #include UIObject.js
 
-// #include ../../html/ui/TreeView.html
+// #include ../../html/ui/DTreeView.html
 
-class TreeView extends UIObject {
+class DTreeView extends UIObject {
 
 constructor(options) {
-    super(TEMPLATES.TreeView, options);
+    super(TEMPLATES.DTreeView, options);
 
     Object.assign(this, {
         label      : ''
@@ -24,3 +24,4 @@ setEnabled(enabled) {
 }
 
 }
+

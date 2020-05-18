@@ -3,7 +3,7 @@
 // #section EAMRendererDialog
 
 {
-  "type": "panel",
+  "type": "_panel",
   "children": [
     {
       "type": "field",
@@ -36,8 +36,8 @@
       "label": "Transfer function",
       "children": [
         {
-          "type": "panel",
-          "bind": "tfcontainer"
+          "type": "_panel",
+          "bind": "tf_container"
         }
       ]
     }

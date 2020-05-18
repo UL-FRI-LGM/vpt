@@ -61,7 +61,7 @@ _addGroup() {
 
     this.groups.push(group);
 
-    this._binds.groupContainer.add(object);
+    this._binds.group_container.add(object);
     binds.spacer._element.classList.add('visibility-group');
 
     const controlPanel = DOMUtils.instantiate(TEMPLATES.VisibilityGroupControlPanel);
@@ -107,7 +107,7 @@ _moveUp(group) {
     this.groups[index] = this.groups[index - 1];
     this.groups[index - 1] = temp;
 
-    this._binds.groupContainer._element.insertBefore(
+    this._binds.group_container._element.insertBefore(
         group.object._element, group.object._element.previousSibling);
 
     this.trigger('retopo');
@@ -123,7 +123,7 @@ _moveDown(group) {
     this.groups[index] = this.groups[index + 1];
     this.groups[index + 1] = temp;
 
-    this._binds.groupContainer._element.insertBefore(
+    this._binds.group_container._element.insertBefore(
         group.object._element.nextSibling, group.object._element);
 
     this.trigger('retopo');

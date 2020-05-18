@@ -50,10 +50,10 @@
     color: var(--text-color);
 }
 
-.accordion > .container {
+.accordion > ._container {
     overflow: hidden;
 }
 
-.accordion.contracted > .container {
+.accordion.contracted > ._container {
     height: 0;
 }

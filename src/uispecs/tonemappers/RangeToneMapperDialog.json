@@ -3,7 +3,7 @@
 // #section RangeToneMapperDialog
 
 {
-  "type": "panel",
+  "type": "_panel",
   "children": [
     {
       "type": "field",

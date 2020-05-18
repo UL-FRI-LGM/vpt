@@ -3,7 +3,7 @@
 // #section VolumeLoadDialog
 
 {
-  "type": "panel",
+  "type": "_panel",
   "children": [
     {
       "type": "field",
@@ -31,7 +31,7 @@
       ]
     },
     {
-      "type": "panel",
+      "type": "_panel",
       "bind": "filePanel",
       "visible": true,
       "children": [
@@ -46,7 +46,7 @@
           ]
         },
         {
-          "type": "panel",
+          "type": "_panel",
           "bind": "rawSettingsPanel",
           "visible": false,
           "children": [
@@ -92,7 +92,7 @@
       ]
     },
     {
-      "type": "panel",
+      "type": "_panel",
       "bind": "urlPanel",
       "visible": false,
       "children": [
@@ -110,7 +110,7 @@
       ]
     },
     {
-      "type": "panel",
+      "type": "_panel",
       "bind": "demoPanel",
       "visible": false,
       "children": [
@@ -127,7 +127,7 @@
       ]
     },
     {
-      "type": "panel",
+      "type": "_panel",
       "bind": "loadButtonAndProgress",
       "visible": false,
       "children": [

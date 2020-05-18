@@ -53,4 +53,11 @@
     overflow: hidden;
     text-overflow: clip;
     white-space: nowrap;
+    padding-left: 20px;
+}
+
+.radio input[type="radio"] {
+  position: absolute;
+  margin-top: 4px \9;
+  margin-left: 0px;
 }

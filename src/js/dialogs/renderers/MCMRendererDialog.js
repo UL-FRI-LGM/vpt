@@ -23,7 +23,7 @@ constructor(renderer, options) {
     this._binds.steps.addEventListener('input', this._handleChange);
 
     this._tfwidget = new TransferFunctionWidget();
-    this._binds.tfcontainer.add(this._tfwidget);
+    this._binds.tf_container.add(this._tfwidget);
     this._tfwidget.addEventListener('change', this._handleTFChange);
 }
 
