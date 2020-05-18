@@ -18,7 +18,7 @@
 // #include Tabs.js
 // #include Textbox.js
 // #include TreeView.js
-// #include DTreeView.js
+// #include DynamicTreeView.js
 // #include VectorSpinner.js
 // #include Vector2Spinner.js
 
@@ -48,7 +48,7 @@ static get CLASS_FROM_TYPE() {
         'vector'        : VectorSpinner,
         'vector2'       : Vector2Spinner,
         'treeView'      : TreeView,
-        'DtreeView'      : DTreeView,
+        'dynamic-tree-view'      : DynamicTreeView,
     };
 }
 

@@ -40,8 +40,8 @@ constructor() {
     });
     CommonUtils.trigger('resize', window);
 
-    document.body.addEventListener('dragover', e => e.preventDefault());
-    document.body.addEventListener('drop', this._handleFileDrop);
+    //document.body.addEventListener('dragover', e => e.preventDefault());
+    //document.body.addEventListener('drop', this._handleFileDrop);
 
     this._mainDialog = new MainDialog();
     if (!this._renderingContext.hasComputeCapabilities()) {

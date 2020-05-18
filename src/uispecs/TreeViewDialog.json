@@ -10,8 +10,8 @@
       "label": "Hierarchy abstract",
       "children": [
         {
-          "type": "DtreeView",
-          "label": "DTree"
+          "type": "dynamic-tree-view",
+          "bind": "dynamicTree"
         },
         {
           "type": "button",

@@ -1,0 +1,136 @@
+/* #package css/main */
+
+#property-tree-container {
+    width: 300px;
+}
+
+.property-tree-node {
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.property-header {
+    border-top: 1px solid gray;
+    border-right: 1px solid gray;
+    border-left: 1px solid gray;
+    height: 30px;
+    background-color: lightgray;
+}
+
+.property-header:hover {
+    border-top: 1px solid #1a73e8;
+    border-right: 1px solid #1a73e8;
+    border-left: 1px solid #1a73e8;
+    cursor: move;
+}
+
+.bottom-border {
+    border-bottom: 1px solid gray;
+}
+
+.bottom-border:hover {
+    border-bottom: 1px solid #1a73e8;
+}
+
+.property-name {
+    float: left;
+    line-height: 26px;
+    vertical-align: middle;
+    margin: 2px;
+}
+
+.property-collapse-button {
+    width: 15px;
+    height: 15px;
+    background-color: blue;
+    float: right;
+}
+
+.property-delete-button {
+    width: 15px;
+    height: 15px;
+    background-color: red;
+    float: right;
+}
+
+.property-range, .property-enum {
+    clear: both;
+    height: 20px;
+    padding: 2px;
+}
+
+.property-enum {
+    height: auto;
+}
+
+.property-range-label, .property-enum-label {
+    width: 60px;
+    float: left;
+}
+
+.property-range input {
+    width: 50px;
+    float: left;
+    height: 18px;
+}
+
+.property-range-delete-button {
+    width: 15px;
+    height: 15px;
+    background-color: red;
+    float: right;
+}
+
+.property-range-add-button {
+    width: 15px;
+    height: 15px;
+    float: right;
+}
+
+.property-values-wrapper {
+    transition: height 0.45s ease-out;
+    border-bottom: 1px solid gray;
+    border-right: 1px solid gray;
+    border-left: 1px solid gray;
+}
+
+.collapsed {
+    display: none;
+}
+
+.property-subnodes-wrapper {
+    margin-left: 20px;
+    clear: both;
+}
+
+.add-button {
+    background: url("../images/icons/addition-sign.svg") no-repeat;
+    background-size: 10px;
+    background-position: 2px 50%;
+    cursor: pointer;
+}
+
+.delete-button {
+    background: url("../images/icons/cross.svg") no-repeat;
+    background-size: 8px;
+    background-position: 2px 50%;
+    cursor: pointer;
+}
+
+.right-button {
+    background: url("../images/icons/arrow-angle-pointing-to-right.svg") no-repeat;
+    background-size: 10px;
+    background-position: 2px 50%;
+    cursor: pointer;
+}
+
+.down-button {
+    background: url("../images/icons/arrow-angle-pointing-to-bottom.svg") no-repeat;
+    background-size: 10px;
+    background-position: 2px 50%;
+    cursor: pointer;
+}
+
+.draggable * {
+    pointer-events: all;
+}
