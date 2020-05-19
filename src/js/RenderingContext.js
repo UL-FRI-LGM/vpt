@@ -14,8 +14,9 @@ class RenderingContext extends EventEmitter {
 
 constructor(options) {
     super();
-
+    
     this._render = this._render.bind(this);
+    
     this._webglcontextlostHandler = this._webglcontextlostHandler.bind(this);
     this._webglcontextrestoredHandler = this._webglcontextrestoredHandler.bind(this);
 
@@ -24,6 +25,7 @@ constructor(options) {
         _filter     : 'linear'
     }, options);
 
+    
     this._canvas = document.createElement('canvas');
     this._canvas.addEventListener('webglcontextlost', this._webglcontextlostHandler);
     this._canvas.addEventListener('webglcontextrestored', this._webglcontextrestoredHandler);

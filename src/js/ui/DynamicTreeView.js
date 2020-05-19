@@ -27,8 +27,8 @@ class DynamicTreeView extends UIObject {
             header.removeChild(header.lastChild);
         }
 
+        var selectWrapper = this.createElement("div");
         var select = this.createElement("select");
-        header.appendChild(select);
         for (var i = 0; i < properties.length; i++) {
             var prop = properties[i];
             var option = this.createElement("option");
@@ -36,33 +36,52 @@ class DynamicTreeView extends UIObject {
             option.value = prop.text;
             select.appendChild(option);
         }
+        selectWrapper.appendChild(select);
+        header.appendChild(selectWrapper);
 
+        var buttonWrapper = this.createElement("div", "button");
         var addButton = this.createElement("input");
         addButton.type = "button";
         addButton.onclick = function () {
             var value = select.options[select.selectedIndex].value;
 
-            // TODO: enum values
+            // TODO: implement enum values
             _this.addFloatProperty(value);
         };
         addButton.value = "Add";
-        header.appendChild(addButton);
+        buttonWrapper.appendChild(addButton);
+        header.appendChild(buttonWrapper);
 
+        buttonWrapper = this.createElement("div", "button");
         var collapseAllButton = this.createElement("input");
         collapseAllButton.type = "button";
         collapseAllButton.onclick = function () {
             _this.collapseAll();
         };
-        collapseAllButton.value = "Collapse All";
-        header.appendChild(collapseAllButton);
+        collapseAllButton.value = "Collapse";
+        buttonWrapper.appendChild(collapseAllButton);
+        header.appendChild(buttonWrapper);
 
+        buttonWrapper = this.createElement("div", "button");
         var expandAllButton = this.createElement("input");
         expandAllButton.type = "button";
         expandAllButton.onclick = function () {
             _this.expandAll();
         };
-        expandAllButton.value = "Expand All";
-        header.appendChild(expandAllButton);
+        expandAllButton.value = "Expand";
+        buttonWrapper.appendChild(expandAllButton);
+        header.appendChild(buttonWrapper);
+
+        buttonWrapper = this.createElement("div", "button");
+        var jsonButton = this.createElement("input");
+        jsonButton.type = "button";
+        jsonButton.onclick = function () {
+            var json = _this.getJSON();
+            console.log(JSON.stringify(json));
+        };
+        jsonButton.value = "JSON";
+        buttonWrapper.appendChild(jsonButton);
+        header.appendChild(buttonWrapper);
     }
 
     setProperties(properties) {
@@ -102,20 +121,21 @@ class DynamicTreeView extends UIObject {
 
         var node = _this.createElement("div", "property-tree-node draggable", "node_" + _this.nodes.length);
         node.draggable = true;
-        node.addEventListener('dragstart', function (ev) {
-            console.log("start");
+        node.addEventListener('dragstart', function (ev) {            
             ev.dataTransfer.setData("text/plain", ev.target.id);
         });
         node.addEventListener('drop', function (ev) {
-            console.log("drop");
             ev.preventDefault();
-            var data = ev.dataTransfer.getData("text/plain");
-            var header = ev.target;
-            let subnodes = header.parentElement.querySelector('.property-subnodes-wrapper');
-            subnodes.appendChild(document.getElementById(data));
+            var data = ev.dataTransfer.getData("text/plain"); 
+            var source = document.getElementById(data);           
+            var target = ev.target;
+
+            if(target !== null && source != target.parentElement) {
+                let subnodes = target.parentElement.querySelector('.property-subnodes-wrapper');
+                subnodes.appendChild(source);
+            }
         });
-        node.addEventListener('dragover', function (ev) {
-            console.log("over");
+        node.addEventListener('dragover', function (ev) {            
             ev.preventDefault();
         });
         _this.nodes.push(node);
@@ -194,13 +214,6 @@ class DynamicTreeView extends UIObject {
         values.appendChild(range);
     }
 
-    createElement(type, className = "") {
-        var elem = document.createElement(type);
-        elem.className = className;
-
-        return elem;
-    }
-
     addEnum(node, values) {
         var _this = this;
         var enumValue = _this.createElement("div", "property-enum");
@@ -221,6 +234,20 @@ class DynamicTreeView extends UIObject {
 
         let valuesWrapper = node.querySelector('.property-values-wrapper');
         valuesWrapper.appendChild(enumValue);
+    }
+
+    createElement(type, className = null, id = null) {
+        var elem = document.createElement(type);
+
+        if (className != null) {
+            elem.className = className;
+        }
+
+        if (id != null) {
+            elem.id = id;
+        }
+
+        return elem;
     }
 
     addSubNode(parent, node) {
@@ -274,13 +301,12 @@ class DynamicTreeView extends UIObject {
     getJSON(node = null) {
         if (node == null) {
             node = document.getElementById('property-tree-container');
-            var json = [];            
-            
-            var nodes = node.querySelectorAll('.property-tree-node');            
-            for (var i = 0; i < nodes.length; i++) {
-                var child = nodes[i];                
+            var json = [];
+
+            for (var i = 0; i < node.childNodes.length; i++) {
+                var child = node.childNodes[i];                
                 var subnode = this.getJSON(child);
-                json.push(subnode);                
+                json.push(subnode);
             }
 
             return json;
@@ -297,9 +323,9 @@ class DynamicTreeView extends UIObject {
             json.name = name.innerText;
             json.type = "float";
             for (var i = 0; i < values.childElementCount; i++) {
-                var group = {};                
+                var group = {};
                 var child = values.childNodes[i];
-                var label = child.querySelector('.property-range-label');                
+                var label = child.querySelector('.property-range-label');
                 var min = child.querySelector('.property-range-min');
                 group.lo = parseInt(min.value);
                 gmin = Math.min(group.lo, gmin);
@@ -322,7 +348,10 @@ class DynamicTreeView extends UIObject {
 
             return json;
         }
+    }
 
+    loadJSON() {
+        // TODO: implement
     }
 
     reset() {

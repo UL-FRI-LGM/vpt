@@ -1,7 +1,29 @@
 /* #package css/main */
 
 #property-tree-container {
-    width: 300px;
+    width: 100%;
+    padding: 5px;
+}
+
+#property-tree-header {
+    height: 24px;
+    padding: 5px;
+}
+
+#property-tree-header select {
+    width: 100px;
+    height: 24px;
+    float: left;
+}
+
+#property-tree-header .button {
+    float: left;
+    width: auto;    
+    margin-left: 2px;
+}
+
+#property-tree-header .button > input {
+    padding: 4px;
 }
 
 .property-tree-node {
@@ -129,8 +151,4 @@
     background-size: 10px;
     background-position: 2px 50%;
     cursor: pointer;
-}
-
-.draggable * {
-    pointer-events: all;
 }

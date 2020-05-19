@@ -116,7 +116,7 @@ class TreeViewDialog extends AbstractDialog {
   }
 
   _createAbstractTree = function () {
-    /* TEST purposes only!!!
+    /*// TEST purposes only!!!
     propertyList = [];
     propertyList.push({ text: "aaa", hi: 100, lo: 0 });
     propertyList.push({ text: "bbb", hi: 111, lo: 0 });
@@ -125,22 +125,22 @@ class TreeViewDialog extends AbstractDialog {
     */
 
     this._binds.dynamicTree.reset();
-    this._binds.dynamicTree.createHeader(propertyList);   
+    this._binds.dynamicTree.createHeader(propertyList);
   }
 
   _handleCreateHTreeButton = function () {
     // this is wrong! there should be only one .root in the document, so the .root should be id not a className
-    var roots = document.getElementsByClassName(".root"); 
-    for(var i = 0; i < roots.length; i++) {
-      var root = roots[i];
-       while(root.firstChild) {
-         root.removeChild(root.lastChild);
-       }
+    var roots = document.getElementsByClassName("root");    
+    for (var i = 0; i < roots.length; i++) {
+      var root = roots[i];      
+      while (root.firstChild) {        ;
+        root.removeChild(root.lastChild);
+      }
     }
 
     Htree = null;
 
-    var json = this._binds.dynamicTree.getJSON();    
+    var json = this._binds.dynamicTree.getJSON();
     jsonHArr = JSON.stringify(json);
 
     jsonView.format(jsonHArr, '.root');
@@ -804,7 +804,7 @@ function createJSONHierarchyTree(nav) {
     obj.color = newValue;
   }
 
-  function setSliderValue(node, newValue) {    
+  function setSliderValue(node, newValue) {
     node.sliderObj.object.setValue(newValue);
     node.sliderValue = newValue;
     updateSliderTracks(node);
@@ -845,8 +845,7 @@ function createJSONHierarchyTree(nav) {
     });
   }
 
-  function traverseObject(obj, parent) {
-    console.log(obj);    
+  function traverseObject(obj, parent) {    
     obj.forEach(x => {
       const child = createNode();
       child.parent = parent;

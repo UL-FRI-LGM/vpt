@@ -39,7 +39,7 @@ constructor() {
         this._renderingContext.resize(width, height);
     });
     CommonUtils.trigger('resize', window);
-
+    
     //document.body.addEventListener('dragover', e => e.preventDefault());
     //document.body.addEventListener('drop', this._handleFileDrop);
 
