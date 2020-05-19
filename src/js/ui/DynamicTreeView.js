@@ -14,22 +14,22 @@ class DynamicTreeView extends UIObject {
         }, options);
 
         this.nodes = [];
-        
+
         this.headerId = "property-tree-header";
-        this.containerId = "property-tree-container";        
+        this.containerId = "property-tree-container";
     }
 
     createHeader(properties) {
         var _this = this;
 
-        var header = document.getElementById(this.headerId);                
+        var header = document.getElementById(this.headerId);
         while (header.firstChild) {
             header.removeChild(header.lastChild);
         }
 
         var select = this.createElement("select");
         header.appendChild(select);
-        for(var i = 0; i < properties.length; i++) {
+        for (var i = 0; i < properties.length; i++) {
             var prop = properties[i];
             var option = this.createElement("option");
             option.innerText = prop.text;
@@ -39,7 +39,7 @@ class DynamicTreeView extends UIObject {
 
         var addButton = this.createElement("input");
         addButton.type = "button";
-        addButton.onclick = function() {
+        addButton.onclick = function () {
             var value = select.options[select.selectedIndex].value;
 
             // TODO: enum values
@@ -50,7 +50,7 @@ class DynamicTreeView extends UIObject {
 
         var collapseAllButton = this.createElement("input");
         collapseAllButton.type = "button";
-        collapseAllButton.onclick = function() {
+        collapseAllButton.onclick = function () {
             _this.collapseAll();
         };
         collapseAllButton.value = "Collapse All";
@@ -58,7 +58,7 @@ class DynamicTreeView extends UIObject {
 
         var expandAllButton = this.createElement("input");
         expandAllButton.type = "button";
-        expandAllButton.onclick = function() {
+        expandAllButton.onclick = function () {
             _this.expandAll();
         };
         expandAllButton.value = "Expand All";
@@ -100,12 +100,12 @@ class DynamicTreeView extends UIObject {
     createNodeDiv(property) {
         var _this = this;
 
-        var node = _this.createElement("div", "property-tree-node draggable", "node_" + _this.nodes.length);        
-        node.draggable = true;                                    
-        node.addEventListener('dragstart', function (ev) {            
+        var node = _this.createElement("div", "property-tree-node draggable", "node_" + _this.nodes.length);
+        node.draggable = true;
+        node.addEventListener('dragstart', function (ev) {
             console.log("start");
             ev.dataTransfer.setData("text/plain", ev.target.id);
-        });        
+        });
         node.addEventListener('drop', function (ev) {
             console.log("drop");
             ev.preventDefault();
@@ -120,7 +120,7 @@ class DynamicTreeView extends UIObject {
         });
         _this.nodes.push(node);
 
-        var header = _this.createElement("div", "property-header bottom-border");        
+        var header = _this.createElement("div", "property-header bottom-border");
         node.appendChild(header);
 
         var name = _this.createElement("div", "property-name");
@@ -164,12 +164,12 @@ class DynamicTreeView extends UIObject {
         label.innerText = "Range:";
         range.appendChild(label);
 
-        var min = _this.createElement("input");
+        var min = _this.createElement("input", "property-range-min");
         min.type = "number";
         min.value = minValue;
         range.appendChild(min);
 
-        var max = _this.createElement("input");
+        var max = _this.createElement("input", "property-range-max");
         max.type = "number";
         max.value = maxValue;
         range.appendChild(max);
@@ -180,8 +180,8 @@ class DynamicTreeView extends UIObject {
         };
         range.appendChild(addButton);
 
-        let values = node.querySelector('.property-values-wrapper');                
-        if (values.childElementCount > 0) {            
+        let values = node.querySelector('.property-values-wrapper');
+        if (values.childElementCount > 0) {
             var deleteButton = _this.createElement("div", "property-range-delete-button delete-button");
             deleteButton.onclick = function () {
                 var parent = this.parentNode.parentNode;
@@ -268,6 +268,72 @@ class DynamicTreeView extends UIObject {
     collapseAll() {
         for (var i = 0; i < this.nodes.length; i++) {
             this.collapse(this.nodes[i]);
+        }
+    }
+
+    getJSON(node = null) {
+        if (node == null) {
+            node = document.getElementById('property-tree-container');
+            var json = [];            
+            
+            var nodes = node.querySelectorAll('.property-tree-node');            
+            for (var i = 0; i < nodes.length; i++) {
+                var child = nodes[i];                
+                var subnode = this.getJSON(child);
+                json.push(subnode);                
+            }
+
+            return json;
+        } else {
+
+            var values = node.querySelector('.property-values-wrapper');
+
+            var json = {};
+
+            json.groups = [];
+            var gmin = Number.MAX_SAFE_INTEGER;
+            var gmax = -Number.MAX_SAFE_INTEGER;
+            var name = node.querySelector('.property-name');
+            json.name = name.innerText;
+            json.type = "float";
+            for (var i = 0; i < values.childElementCount; i++) {
+                var group = {};                
+                var child = values.childNodes[i];
+                var label = child.querySelector('.property-range-label');                
+                var min = child.querySelector('.property-range-min');
+                group.lo = parseInt(min.value);
+                gmin = Math.min(group.lo, gmin);
+                var max = child.querySelector('.property-range-max');
+                group.hi = parseInt(max.value);
+                group.name = "[" + group.lo + " - " + group.hi + "]";
+                gmax = Math.max(group.hi, gmax);
+                json.groups.push(group);
+            }
+            json.hi = gmax;
+            json.lo = gmin;
+
+            json.children = [];
+            var subnodes = node.querySelector('.property-subnodes-wrapper');
+            for (var i = 0; i < subnodes.childElementCount; i++) {
+                var child = subnodes.childNodes[i];
+                var subnode = this.getJSON(child);
+                json.children.push(subnode);
+            }
+
+            return json;
+        }
+
+    }
+
+    reset() {
+        var container = document.getElementById(this.containerId);
+        while (container.firstChild) {
+            container.removeChild(container.lastChild);
+        }
+
+        var header = document.getElementById(this.headerId);
+        while (header.firstChild) {
+            header.removeChild(header.lastChild);
         }
     }
 }

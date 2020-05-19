@@ -69,6 +69,7 @@ class TreeViewDialog extends AbstractDialog {
   setAttributes(attributes, layout) {
 
     this.layout = layout;
+    propertyList = [];
     //--------------------------------
     nbProperty = 0;
     layout.forEach(x => {
@@ -115,150 +116,33 @@ class TreeViewDialog extends AbstractDialog {
   }
 
   _createAbstractTree = function () {
+    /* TEST purposes only!!!
+    propertyList = [];
     propertyList.push({ text: "aaa", hi: 100, lo: 0 });
     propertyList.push({ text: "bbb", hi: 111, lo: 0 });
     propertyList.push({ text: "ccc", hi: 222, lo: 0 });
     propertyList.push({ text: "ddd", hi: 333, lo: 0 });
-
-    this._binds.dynamicTree.createHeader(propertyList);
-    //this._binds.dynamicTree.setProperties(propertyList);
-
-    /*
-    for (var i = 0; i < propertyList.length; i++) {
-      var prop = propertyList[i];
-
-      this._binds.dynamicTree.addFloatProperty(prop.text, prop.lo, prop.hi);
-    }
     */
-  }
 
-  /*
-  _createDtree = function () {
-    {
-      $(".root").empty();
-      jsonHArr = '';
-      Htree = null;
-    }
-    var element = document.querySelector(".sui-treeview");
-    if (element != null) {
-      $(".sui-treeview").empty();
-      //element.attributes.empty();
-      element.setAttribute('id', 'treeview');
-      element.setAttribute('class', 'theme-light');
-    }
-    var DTree_propertyListObj = { text: "", expanded: true, iconCls: "fa fa-folder" };
-    DTree_propertyListObj.items = [];
-    DTree_propertyList.forEach(x => {
-      DTree_propertyListObj.items.push(x);
-    });
-    var data = [DTree_propertyListObj];
-    jQuery(function ($) {
-      $("#treeview").shieldTreeView({
-        dragDrop: true,
-        dragDropScope: "treeview-dd-scope",
-        dataSource: data,
-        events: {
-          droppableOver: function (e) {
-            if (!e.valid) {
-              // if an invalid draggable item is over a tree item,
-              // re-validate it - i.e. if it is a doc-item, allow the drop
-              if ($(e.draggable).hasClass('doc-item')) {
-                e.valid = true;
-              }
-            }
-          },
-          drop: function (e) {
-            var valid = e.valid;
-            if (!valid) {
-              // if not valid, it means something different than a tree node
-              // is being dropped - in this case, check for a doc item and 
-              // set valid to true if so
-              if ($(e.draggable).hasClass('doc-item')) {
-                valid = true;
-              }
-            }
-            if (valid) {
-              if (e.sourceNode) {
-                // dropping a treeview node - move it
-                this.append(e.sourceNode, e.targetNode);
-              }
-              else {
-                // dragging a doc item - insert a new one
-                // and remove the dragged element
-                this.append({ text: $(e.draggable).html() }, e.targetNode);
-                $(e.draggable).remove();
-              }
-              // disable the animation
-              e.skipAnimation = true;
-            }
-          }
-        }
-      });
-      // setup drag and drop handlers for the elements outside the treeview
-      $(".doc-item").shieldDraggable({
-        scope: "treeview-dd-scope",
-        helper: function () {
-          return $(this.element).clone().appendTo(document.body);
-        },
-        events: {
-          stop: function (e) {
-            // always cancel the movement of the item;
-            // if a drop over a valid target ocurred, we will handle that 
-            // in the respective drop handler
-            e.preventDefault();
-          }
-        }
-      });
-      // handle drop on the trash can
-      $("#trash").shieldDroppable({
-        scope: "treeview-dd-scope",
-        hoverCls: "#trash-dropover",
-        tolerance: "touch",
-        events: {
-          drop: function (e) {
-            if ($(e.draggable).hasClass('sui-treeview-item-text')) {
-              // dropped a treeview item - delete it
-              $("#treeview").swidget("TreeView").remove($(e.draggable).closest('.sui-treeview-item'));
-            }
-            else {
-              // dropped a doc-item, just delete it from the DOM
-              $(e.draggable).remove();
-            }
-            // disable animation of the droppable, so that it
-            // does not get animated if cancelled
-            e.skipAnimation = true;
-          }
-        }
-      });
-    });
+    this._binds.dynamicTree.reset();
+    this._binds.dynamicTree.createHeader(propertyList);   
   }
-*/
 
   _handleCreateHTreeButton = function () {
-    //var element = document.querySelector(".root");
-    // if(element!=null)
-    {
-      $(".root").empty();
-      jsonHArr = '';
-      Htree = null;
+    // this is wrong! there should be only one .root in the document, so the .root should be id not a className
+    var roots = document.getElementsByClassName(".root"); 
+    for(var i = 0; i < roots.length; i++) {
+      var root = roots[i];
+       while(root.firstChild) {
+         root.removeChild(root.lastChild);
+       }
     }
 
-    var element = document.querySelector(".sui-treeview-list");
-    element.id = "Dtreeview"
-    var nav = getNav($('#Dtreeview'));
-    function getNav($ul) {
-      return $ul.children('li').map(function () {
-        var $this = $(this), obj = $this.data(), $ul = $this.children('ul');
-        if ($ul.length) {
-          obj.child = getNav($ul)
-        }
-        return obj;
-      }).get()
-    }
+    Htree = null;
 
-    //console.log(nav[0].child);
-    jsonHArr = createJSONFromDTree(nav[0].child, jsonHArr);
-    //console.log(jsonHArr);
+    var json = this._binds.dynamicTree.getJSON();    
+    jsonHArr = JSON.stringify(json);
+
     jsonView.format(jsonHArr, '.root');
     TVDClass.trigger('treeTopologyChange');
   }
@@ -920,10 +804,7 @@ function createJSONHierarchyTree(nav) {
     obj.color = newValue;
   }
 
-  function setSliderValue(node, newValue) {
-    //$(obj.sliderObj).bootstrapSlider('setValue',newValue);
-    //getSlider(obj).value = newValue;
-
+  function setSliderValue(node, newValue) {    
     node.sliderObj.object.setValue(newValue);
     node.sliderValue = newValue;
     updateSliderTracks(node);
@@ -965,7 +846,7 @@ function createJSONHierarchyTree(nav) {
   }
 
   function traverseObject(obj, parent) {
-    //console.log(obj);
+    console.log(obj);    
     obj.forEach(x => {
       const child = createNode();
       child.parent = parent;
