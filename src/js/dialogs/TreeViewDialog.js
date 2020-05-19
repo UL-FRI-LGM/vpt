@@ -1,6 +1,8 @@
 // #package js/main
 
+
 // #include AbstractDialog.js
+// #include ../loaders/AttributesParser.js
 
 // #include ../../uispecs/TreeViewDialog.json
 
@@ -85,9 +87,16 @@ class TreeViewDialog extends AbstractDialog {
     //-----------------------------
     this._createAbstractTree();
     //----- read elements ------------
-    var csv = new TextDecoder().decode(attributes);
-    elementsArray = this.csvJSON(csv);
-    //console.log(elementsArray);
+    //console.log(attributes);
+    //console.log(layout);
+
+    // CSV parsing
+    //var csv = new TextDecoder().decode(attributes);
+    //elementsArray = this.csvJSON(csv);
+
+    // RAW parsing
+    elementsArray = this.rawToJson(attributes, layout);
+    console.log(elementsArray);
   }
 
   //var csv is the CSV file with headers
@@ -115,6 +124,22 @@ class TreeViewDialog extends AbstractDialog {
     //return JSON.stringify(result); //string
   }
 
+  rawToJson(attributes, layout) {
+    var result = [];
+    var parser = new AttributesParser();
+    
+    for (var i = 0; i < layout.length; i++) {
+      var property = layout[i];
+      var obj = {};
+
+      obj[property.name] = parser.parseValuesFromAttributeRawFile(i, layout.length, attributes, true);
+
+      result.push(obj);
+    }
+
+    return result;
+  }
+
   _createAbstractTree = function () {
     /*// TEST purposes only!!!
     propertyList = [];
@@ -130,10 +155,11 @@ class TreeViewDialog extends AbstractDialog {
 
   _handleCreateHTreeButton = function () {
     // this is wrong! there should be only one .root in the document, so the .root should be id not a className
-    var roots = document.getElementsByClassName("root");    
+    var roots = document.getElementsByClassName("root");
     for (var i = 0; i < roots.length; i++) {
-      var root = roots[i];      
-      while (root.firstChild) {        ;
+      var root = roots[i];
+      while (root.firstChild) {
+        ;
         root.removeChild(root.lastChild);
       }
     }
@@ -845,7 +871,7 @@ function createJSONHierarchyTree(nav) {
     });
   }
 
-  function traverseObject(obj, parent) {    
+  function traverseObject(obj, parent) {
     obj.forEach(x => {
       const child = createNode();
       child.parent = parent;
