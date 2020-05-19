@@ -6,17 +6,6 @@
 precision mediump sampler3D;
 layout (local_size_x = @localSizeX, local_size_y = @localSizeY, local_size_z = @localSizeZ) in;
 
-/*struct Instance {
-    @instance
-    /* float Label
-       float RealX1
-    *
-};*/
-
-/*layout (std430, binding = 0) buffer bAttributes {
-    Instance sInstances[];
-};*/
-
 uniform ivec3 imageSize;
 layout (r32ui, binding = 0) restrict readonly highp uniform uimage3D iID;
 //layout (rgba8, binding = 1) restrict writeonly highp uniform image3D oMask;

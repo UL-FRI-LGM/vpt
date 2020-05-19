@@ -95,7 +95,9 @@ class TreeViewDialog extends AbstractDialog {
     //elementsArray = this.csvJSON(csv);
 
     // RAW parsing
-    elementsArray = this.rawToJson(attributes, layout);
+    const attributeArray = this.rawToJson(attributes, layout);
+
+    elementsArray= this.attributeToElementsArray(attributeArray);
     console.log(elementsArray);
   }
 
@@ -125,21 +127,32 @@ class TreeViewDialog extends AbstractDialog {
   }
 
   rawToJson(attributes, layout) {
-    var result = [];
+   // var result = [];
     var parser = new AttributesParser();
-    
+    var obj = {};
     for (var i = 0; i < layout.length; i++) {
       var property = layout[i];
-      var obj = {};
-
       obj[property.name] = parser.parseValuesFromAttributeRawFile(i, layout.length, attributes, true);
-
-      result.push(obj);
+    //  result.push(obj);
     }
 
-    return result;
+    return obj;
   }
-
+  attributeToElementsArray(attributeArray)
+  {
+    //console.log(attributeArray);
+    var res = [];
+    Object.keys(attributeArray).forEach(k => {
+      Object.keys(attributeArray[k]).forEach(v => {
+        if(!res[v]) {
+          res[v] = { id: v };
+        }
+        // add property 'k' to this record
+        res[v][k] = attributeArray[k][v];
+      });
+    });
+    return res;
+  }
   _createAbstractTree = function () {
     /*// TEST purposes only!!!
     propertyList = [];
