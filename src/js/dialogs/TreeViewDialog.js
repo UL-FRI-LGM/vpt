@@ -78,8 +78,8 @@ class TreeViewDialog extends AbstractDialog {
       var d = { text: "", id: "", expanded: true, iconCls: "fa fa-folder", hi: "", lo: "", type: "" };
       d.id = nbProperty;
       d.text = x.name;
-      d.hi = x.upperBound;
-      d.lo = x.lowerBound;
+      d.hi = x.hi;
+      d.lo = x.lo;
       d.type = x.type;
       nbProperty++;
       propertyList.push(d);
@@ -96,7 +96,6 @@ class TreeViewDialog extends AbstractDialog {
 
     // RAW parsing
     const attributeArray = this.rawToJson(attributes, layout);
-
     elementsArray= this.attributeToElementsArray(attributeArray);
     console.log(elementsArray);
   }
@@ -133,9 +132,12 @@ class TreeViewDialog extends AbstractDialog {
     for (var i = 0; i < layout.length; i++) {
       var property = layout[i];
       obj[property.name] = parser.parseValuesFromAttributeRawFile(i, layout.length, attributes, true);
+      //find max min
+      layout[i].hi=Math.max.apply(null, obj[property.name]);
+      layout[i].lo=Math.min.apply(null,obj[property.name]);
     //  result.push(obj);
     }
-
+    console.log(layout);
     return obj;
   }
   attributeToElementsArray(attributeArray)

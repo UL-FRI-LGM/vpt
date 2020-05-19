@@ -201,7 +201,7 @@ _handleAttribLoad(options) {
     });
     Promise.all([attrib, layout]).then(([attrib, layout]) => {
         const renderer = this._renderingContext.getRenderer();
-        renderer.setAttributes(attrib, layout.map(function(x) { var v=new Object();v.name=x.name;v.type=x.type; return v;}));
+        renderer.setAttributes(attrib, layout);//.map(function(x) { var v=new Object();v.name=x.name;v.type=x.type; return v;}));
         this._visibilityDialog.setAttributes(layout.map(x=> x.name));//layout.map(function(x) { var v=new Object();v.name=x.name;v.lowerBound=x.lowerBound;v.upperBound=x.upperBound; return v;}));
         this._treeViewDialog.setAttributes(attrib,layout);
     });
