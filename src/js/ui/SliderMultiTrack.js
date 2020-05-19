@@ -57,9 +57,13 @@ class SliderMultiTrack extends UIObject {
             return;
         }
 
-        this.value = CommonUtils.clamp(value, this.min, this.max);
-        this._updateUI();
-        this.trigger('change');
+        var newValue = CommonUtils.clamp(value, this.min, this.max);
+
+        if(this.value != newValue) {
+            this.value = newValue;
+            this._updateUI();
+            this.trigger('change');
+        }
     }
     setValue2(value) {
         // there is no 'disabled' test because it's just state visualization
