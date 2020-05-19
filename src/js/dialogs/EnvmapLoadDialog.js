@@ -14,8 +14,7 @@ class EnvmapLoadDialog extends AbstractDialog {
         this._handleFileChange = this._handleFileChange.bind(this);
         this._handleURLChange = this._handleURLChange.bind(this);
         this._handleDemoChange = this._handleDemoChange.bind(this);
-        this._handleEnabledChange = this._handleEnabledChange.bind(this);
-
+        
         this._demos = [];
 
         this._addEventListeners();
@@ -28,8 +27,6 @@ class EnvmapLoadDialog extends AbstractDialog {
         this._binds.file.addEventListener('change', this._handleFileChange);
         this._binds.url.addEventListener('input', this._handleURLChange);
         this._binds.demo.addEventListener('change', this._handleDemoChange);
-
-        this._binds.enabledCheckbox.addEventListener('change', this._handleEnabledChange);
     }
 
     _loadDemoJson() {
@@ -134,14 +131,6 @@ class EnvmapLoadDialog extends AbstractDialog {
                 const demo = this._binds.demo.getValue();
                 this._binds.loadButtonAndProgress.setVisible(!!demo);
                 break;
-        }
-    }
-
-    _handleEnabledChange() {           
-        if(this._binds.enabledCheckbox.isChecked()) {
-            this._binds.multiTrackSlider.enable();
-        } else {
-            this._binds.multiTrackSlider.disable();
         }
     }
 

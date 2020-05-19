@@ -76,7 +76,8 @@ _handleMouseUp(e) {
 }
 
 _handleMouseMove(e) {
-    e.preventDefault();
+    // Drag&Drop functionality for the whole page is disabled by this row!!!
+    //e.preventDefault();
 
     const x = typeof e.pageX !== 'undefined' ? e.pageX : e.touches[0].pageX;
     const y = typeof e.pageY !== 'undefined' ? e.pageY : e.touches[0].pageY;

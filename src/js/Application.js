@@ -39,9 +39,9 @@ constructor() {
         this._renderingContext.resize(width, height);
     });
     CommonUtils.trigger('resize', window);
-
-    document.body.addEventListener('dragover', e => e.preventDefault());
-    document.body.addEventListener('drop', this._handleFileDrop);
+    
+    //document.body.addEventListener('dragover', e => e.preventDefault());
+    //document.body.addEventListener('drop', this._handleFileDrop);
 
     this._mainDialog = new MainDialog();
     if (!this._renderingContext.hasComputeCapabilities()) {
@@ -153,6 +153,18 @@ _handleVolumeLoad(options) {
             this._renderingContext.setVolume(reader);
             this._renderingContext.getRenderer().setAttributes(null, null);
             this._visibilityDialog.reset();
+            if (reader.readAttributes) {
+                reader.readAttributes({
+                    onData: attributes => {
+                        reader.readLayout({
+                            onData: layout => {
+                                this._renderingContext.getRenderer().setAttributes(attributes, layout);
+                                this._visibilityDialog.setAttributes(layout.map(x => x.name));
+                            }
+                        });
+                    }
+                });
+            }
         }
     } else if (options.type === 'url') {
         const readerClass = this._getReaderForFileType(options.filetype);
