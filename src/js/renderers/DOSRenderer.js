@@ -265,6 +265,42 @@ _recomputeMask() {
     const program = this._programs.compute;
     gl.useProgram(program.program);
 
+    const dimensions = this._volume._currentModality.dimensions;
+    gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
+    gl.bindImageTexture(0, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
+    gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
+
+    gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._attrib);
+
+    const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
+    const groupsY = Math.ceil(dimensions.height / this._localSize.y);
+    const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
+    gl.dispatchCompute(groupsX, groupsY, groupsZ);
+}
+_rebuildProbCompute() {
+    const gl = this._gl;
+
+    if (this._programs.compute) {
+        gl.deleteProgram(this._programs.compute.program);
+    }
+
+    
+    this._programs.compute = WebGL.buildPrograms(gl, {
+        compute  : SHADERS.ProbCompute
+    }, {
+        localSizeX: this._localSize.x,
+        localSizeY: this._localSize.y,
+        localSizeZ: this._localSize.z,
+    }).compute;
+
+    this._recomputeProbability();
+}
+_recomputeProbability() {
+    const gl = this._gl;
+
+    const program = this._programs.compute;
+    gl.useProgram(program.program);
+
     const cameraPos=[this._camera.position.x,this._camera.position.y,this._camera.position.y];
     gl.uniform3fv(program.uniforms.uCameraPos,cameraPos);
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
@@ -272,7 +308,7 @@ _recomputeMask() {
     const dimensions = this._volume._currentModality.dimensions;
     gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
     gl.bindImageTexture(0, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
-    gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
+    
 
     /*gl.uniform3fv(program.uniforms.uLightPos,this._lightPos);
     gl.uniform1f(program.uniforms.uMinDistance, this._minDepth);
@@ -281,14 +317,24 @@ _recomputeMask() {
     gl.uniform1f(program.uniforms.uKt, this._kt);*/
 
     gl.uniform1i(program.uniforms.uNumInstances, this._numberInstance);
-    gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._attrib);
+    //----------------------------------------------------------
+    const atomicCounterBuffer1 = gl.createBuffer();
+    const atomicCounterData= gl.sizeof(gl.UNSIGNED_INT)*2.0;//this._numberInstance;//4=sizeof(GL_UNSIGNED_INT);
+    gl.bindBuffer(gl.ATOMIC_COUNTER_BUFFER, atomicCounterBuffer1);
+    gl.bufferData(gl.ATOMIC_COUNTER_BUFFER, atomicCounterData,null, gl.DYNAMIC_COPY);
+    
+    const counters=gl.MapBuffer(gl.ATOMIC_COUNTER_BUFFER,gl.MAP_WRITE_ONLY);
+    counters[0]=0;
+    counters[1]=0;
+    gl.UnmapBuffer(gl.ATOMIC_COUNTER_BUFFER);
 
+    gl.bindBufferBase(gl.ATOMIC_COUNTER_BUFFER, 0, atomicCounterBuffer1);
+   // --------------------------------------------------------------
     const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
     const groupsY = Math.ceil(dimensions.height / this._localSize.y);
     const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
     gl.dispatchCompute(groupsX, groupsY, groupsZ);
 }
-
 _recomputeTransferFunction(rules) {
     const gl = this._gl;
 
