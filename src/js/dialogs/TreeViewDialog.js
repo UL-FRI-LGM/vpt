@@ -140,6 +140,7 @@ class TreeViewDialog extends AbstractDialog {
     console.log(layout);
     return obj;
   }
+
   attributeToElementsArray(attributeArray)
   {
     //console.log(attributeArray);
@@ -556,12 +557,13 @@ function createJSONHierarchyTree(nav) {
       },
       sliderChange: function () {
         if (this.isDisabled !== true) {
-          if (exceedMaxRange(this) == true) {
-            setSliderValue(this, this.maxSliderValue);
-          }
-          else if (exceedMinRange(this) == true) {
-            setSliderValue(this, this.minSliderValue);
-          }
+          // the MAX and MIN range will never be exceeded, this is checked inside the slider
+          //if (exceedMaxRange(this) == true) {
+          //  setSliderValue(this, this.maxSliderValue);
+          //}
+          //else if (exceedMinRange(this) == true) {
+          //  setSliderValue(this, this.minSliderValue);
+          //}
           //=========================
           //if(isSliderUpdated==true)
           {
@@ -575,6 +577,7 @@ function createJSONHierarchyTree(nav) {
               increaseChildrenSliderCountValues(this, amount);
             else
               decreaseChildrenSliderCountValues(this, amount * -1);
+              
             TVDClass.trigger('treeSliderChange');
             //this.sliderObject.object.triggerChange();
             // console.log(this);

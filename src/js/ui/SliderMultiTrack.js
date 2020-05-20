@@ -16,7 +16,8 @@ class SliderMultiTrack extends UIObject {
             max: 100,
             step: 1,
             enabled: true,
-            logarithmic: false
+            logarithmic: false,
+            focused: false
         }, options);
 
         this._handleMouseDown = this._handleMouseDown.bind(this);
@@ -29,7 +30,7 @@ class SliderMultiTrack extends UIObject {
         this._element.addEventListener('mousedown', this._handleMouseDown);
         this._element.addEventListener('wheel', this._handleWheel);
 
-        this.enable();        
+        this.enable();
     }
 
     isDisable() {
@@ -38,12 +39,12 @@ class SliderMultiTrack extends UIObject {
 
     disable() {
         this.enabled = false;
-        this._binds.button.classList.toggle('disabled', true);        
+        this._binds.button.classList.toggle('disabled', true);
     }
 
     enable() {
         this.enabled = true;
-        this._binds.button.classList.toggle('disabled', false);        
+        this._binds.button.classList.toggle('disabled', false);
     }
 
     destroy() {
@@ -59,9 +60,10 @@ class SliderMultiTrack extends UIObject {
 
         var newValue = CommonUtils.clamp(value, this.min, this.max);
 
-        if(this.value != newValue) {
-            this.value = newValue;
-            this._updateUI();
+        this.value = newValue;
+        this._updateUI();
+
+        if (this.focused) {
             this.trigger('change');
         }
     }
@@ -117,16 +119,21 @@ class SliderMultiTrack extends UIObject {
         }
     }
 
-    _handleMouseDown(e) {        
+    _handleMouseDown(e) {
+        this.focused = true;
+        
         if (!this.enabled) {
             return;
-        }        
+        }
+        
         document.addEventListener('mouseup', this._handleMouseUp);
         document.addEventListener('mousemove', this._handleMouseMove);
         this._setValueByEvent(e);
     }
 
     _handleMouseUp(e) {
+        this.focused = false;
+
         if (!this.enabled) {
             return;
         }
