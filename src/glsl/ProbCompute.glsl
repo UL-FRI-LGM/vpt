@@ -3,38 +3,30 @@
 // #section ProbCompute/compute
 
 #version 310 es
-precision mediump sampler3D;
 layout (local_size_x = @localSizeX, local_size_y = @localSizeY, local_size_z = @localSizeZ) in;
 
 uniform ivec3 imageSize;
-layout (r32ui, binding = 0) restrict readonly highp uniform uimage3D iID;
-//layout (rgba8, binding = 1) restrict writeonly highp uniform image3D oMask;
 uniform int uNumInstances;
-uniform vec3 uCameraPos;
-uniform mat4 uMvpInverseMatrix;
+uniform uint start;
+uniform uint end;
+uniform int uMax_nAtomic;
 
-/*layout(binding = 2) uniform sampler3D uVolume;
-float max_gm=5.0;
-float min_gm=0.0;
-uniform float uKt;
-uniform float uKs;
-uniform vec3 uLightPos;
-uniform float uMinDistance;
-uniform float uMaxDistance;*/
-/*@rand
-vec2 rules(Instance instance, uint id) {
-    if (id == 0u) { return vec2(0.5); }
-    float prob= (rand(vec2(float(id))).x);
-    @rules
-    return vec2(0.5);
-}*/
+
+layout (binding=0 , offset=0) uniform atomic_uint counter[8];//[uMaxACSize]
+layout (r32ui, binding = 1) restrict readonly highp uniform uimage3D iID;
 
 void main() {
     ivec3 voxel = ivec3(gl_GlobalInvocationID);
+    uint id = imageLoad(iID, voxel).r;
     if (voxel.x < imageSize.x && voxel.y < imageSize.y && voxel.z < imageSize.z) {
-        uint id = imageLoad(iID, voxel).r;
-        
-
+        if(id>=start && id< end)
+        {
+            float p=1.0;//TODO: compute prbability
+            uint index=id-start;
+           // atomicCounterAddARB(counter[index],p); //accumulate prbability 
+            atomicCounterIncrement(counter[index]);
+            atomicCounterIncrement(counter[++index]);//accumulate number of Voxels
+        }
     }
 
 }

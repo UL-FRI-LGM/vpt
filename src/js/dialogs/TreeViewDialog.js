@@ -97,7 +97,7 @@ class TreeViewDialog extends AbstractDialog {
     // RAW parsing
     const attributeArray = this.rawToJson(attributes, layout);
     elementsArray= this.attributeToElementsArray(attributeArray);
-    console.log(elementsArray);
+    //console.log(elementsArray);
   }
 
   //var csv is the CSV file with headers
@@ -137,7 +137,7 @@ class TreeViewDialog extends AbstractDialog {
       layout[i].lo=Math.min.apply(null,obj[property.name]);
     //  result.push(obj);
     }
-    console.log(layout);
+    //console.log(layout);
     return obj;
   }
 

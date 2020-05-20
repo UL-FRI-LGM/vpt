@@ -37,6 +37,7 @@ constructor(gl, volume,camera, environmentTexture, options) {
     this._layout = [];
     this._attrib = gl.createBuffer();
     this._mask = null;
+    this._prob = null;
     this._localSize = {
         x: 8,
         y: 8,
@@ -124,14 +125,23 @@ setAttributes(attributes, layout) {
         data   : attributes || new ArrayBuffer()
     });
     this._layout = layout;
-    //console.log(layout);
-    //console.log(attributes);
     if(layout) {
         var parser = new AttributesParser();
         var values = parser.getValuesByAttributeName("RealX2", layout, attributes);
-       // console.log(values);
         this._numberInstance=values.length;
     }
+    //=========================================
+    if(this._prob)
+    {
+        gl.deleteBuffer(this._prob);
+    }
+    var prob_buffer=new ArrayBuffer(this._numberInstance);
+    WebGL.createBuffer(gl, {
+        target : gl.SHADER_STORAGE_BUFFER,
+        buffer : this._prob,
+        data   : prob_buffer
+    });
+    //=========================================
 }
 saveInFile(data) {
     // this function just to test the content of long variables 
@@ -183,7 +193,7 @@ setHtreeRules(rules)
    // console.log(rules);
     //this.saveInFile(this._rules);
     this._recomputeTransferFunction(rules); 
-    this._rebuildAttribComputeTree();
+    this._rebuildAttribCompute();
 }
 setRules(rules) {
     this._rules = rules.map((rule, index) => {
@@ -201,6 +211,8 @@ setRules(rules) {
     //console.log(rules);
    // this.saveInFile(this._rules);
     this._recomputeTransferFunction(rules);
+    this._rebuildProbCompute();
+    //console.log(this._prob);
     this._rebuildAttribCompute();
 }
 _getCameraPosition()
@@ -219,34 +231,7 @@ _rebuildAttribCompute() {
         members.push(attrib.type + ' ' + attrib.name + ';');
     }
     const instance = members.join('\n');
-    const rules = this._rules.join('\n');
-    
-    this._programs.compute = WebGL.buildPrograms(gl, {
-        compute  : SHADERS.AttribCompute
-    }, {
-        instance,
-        rules,
-        rand: MIXINS.rand,
-        localSizeX: this._localSize.x,
-        localSizeY: this._localSize.y,
-        localSizeZ: this._localSize.z,
-    }).compute;
-
-    this._recomputeMask();
-}
-_rebuildAttribComputeTree() {
-    const gl = this._gl;
-
-    if (this._programs.compute) {
-        gl.deleteProgram(this._programs.compute.program);
-    }
-
-    const members = [];
-    for (const attrib of this._layout) {
-        members.push(attrib.type + ' ' + attrib.name + ';');
-    }
-    const instance = members.join('\n');
-    const rules = this._rules;
+    const rules = this._rules;//.join('\n');
     
     this._programs.compute = WebGL.buildPrograms(gl, {
         compute  : SHADERS.AttribCompute
@@ -285,8 +270,6 @@ _rebuildProbCompute() {
     if (this._programs.compute) {
         gl.deleteProgram(this._programs.compute.program);
     }
-
-    
     this._programs.compute = WebGL.buildPrograms(gl, {
         compute  : SHADERS.ProbCompute
     }, {
@@ -294,49 +277,66 @@ _rebuildProbCompute() {
         localSizeY: this._localSize.y,
         localSizeZ: this._localSize.z,
     }).compute;
-
     this._recomputeProbability();
 }
 _recomputeProbability() {
+
     const gl = this._gl;
 
     const program = this._programs.compute;
     gl.useProgram(program.program);
 
-    const cameraPos=[this._camera.position.x,this._camera.position.y,this._camera.position.y];
-    gl.uniform3fv(program.uniforms.uCameraPos,cameraPos);
-    gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
-
     const dimensions = this._volume._currentModality.dimensions;
     gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
-    gl.bindImageTexture(0, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
+    gl.bindImageTexture(1, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
     
-
-    /*gl.uniform3fv(program.uniforms.uLightPos,this._lightPos);
-    gl.uniform1f(program.uniforms.uMinDistance, this._minDepth);
-    gl.uniform1f(program.uniforms.uMaxDistance, this._maxDepth);
-    gl.uniform1f(program.uniforms.uKs, this._ks);
-    gl.uniform1f(program.uniforms.uKt, this._kt);*/
-
     gl.uniform1i(program.uniforms.uNumInstances, this._numberInstance);
-    //----------------------------------------------------------
-    const atomicCounterBuffer1 = gl.createBuffer();
-    const atomicCounterData= gl.sizeof(gl.UNSIGNED_INT)*2.0;//this._numberInstance;//4=sizeof(GL_UNSIGNED_INT);
-    gl.bindBuffer(gl.ATOMIC_COUNTER_BUFFER, atomicCounterBuffer1);
-    gl.bufferData(gl.ATOMIC_COUNTER_BUFFER, atomicCounterData,null, gl.DYNAMIC_COPY);
+    console.log(gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS));
+    const Max_nAtomic=gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS);
+    console.log(Max_nAtomic);
+    gl.uniform1i(program.uniforms.uMax_nAtomic, Max_nAtomic);
+     // --------------------------------------------------------------
     
-    const counters=gl.MapBuffer(gl.ATOMIC_COUNTER_BUFFER,gl.MAP_WRITE_ONLY);
-    counters[0]=0;
-    counters[1]=0;
-    gl.UnmapBuffer(gl.ATOMIC_COUNTER_BUFFER);
+    for (let start=0; start+Max_nAtomic < this._numberInstance; start+=Max_nAtomic) {
+        let end=start+Max_nAtomic;
+        if(end>= this._numberInstance)
+            end= this._numberInstance;
 
-    gl.bindBufferBase(gl.ATOMIC_COUNTER_BUFFER, 0, atomicCounterBuffer1);
-   // --------------------------------------------------------------
-    const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
-    const groupsY = Math.ceil(dimensions.height / this._localSize.y);
-    const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
-    gl.dispatchCompute(groupsX, groupsY, groupsZ);
+        gl.uniform1ui(program.uniforms.start, start);
+        gl.uniform1ui(program.uniforms.end, end);
+
+        const atomicCounter= gl.createBuffer();
+        gl.bindBuffer(gl.ATOMIC_COUNTER_BUFFER, atomicCounter);
+        gl.bufferData(gl.ATOMIC_COUNTER_BUFFER, new Uint32Array(Max_nAtomic),gl.DYNAMIC_COPY);
+        gl.bindBufferBase(gl.ATOMIC_COUNTER_BUFFER, 0, atomicCounter);
+
+        gl.bufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, new Uint32Array(Max_nAtomic));// clear counter
+
+        const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
+        const groupsY = Math.ceil(dimensions.height / this._localSize.y);
+        const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
+        gl.dispatchCompute(groupsX, groupsY, groupsZ);
+        
+
+        gl.memoryBarrier(gl.ATOMIC_COUNTER_BARRIER_BIT);
+        const result  = new Uint32Array(Max_nAtomic);
+        gl.getBufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, result);
+
+        //console.log(start+'---'+end);
+        console.log(result);
+        gl.deleteBuffer(atomicCounter);
+
+        /** comput avarage
+        var j=0;
+        for(var i=start;i+1<end;i++)
+        {
+            this._prob[i]=result[j]/result[j+1];
+            j+=2;
+        }
+        */
+    }
 }
+
 _recomputeTransferFunction(rules) {
     const gl = this._gl;
 
@@ -510,3 +510,24 @@ _getAccumulationBufferSpec() {
 }
 
 }
+  // const cameraPos=[this._camera.position.x,this._camera.position.y,this._camera.position.y];
+    //gl.uniform3fv(program.uniforms.uCameraPos,cameraPos);
+    //gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
+    /*gl.uniform3fv(program.uniforms.uLightPos,this._lightPos);
+    gl.uniform1f(program.uniforms.uMinDistance, this._minDepth);
+    gl.uniform1f(program.uniforms.uMaxDistance, this._maxDepth);
+    gl.uniform1f(program.uniforms.uKs, this._ks);
+    gl.uniform1f(program.uniforms.uKt, this._kt);
+    
+    //--------------------
+
+    /*uniform vec3 uCameraPos;
+uniform mat4 uMvpInverseMatrix;
+layout(binding = 2) uniform sampler3D uVolume;
+float max_gm=5.0;
+float min_gm=0.0;
+uniform float uKt;
+uniform float uKs;
+uniform vec3 uLightPos;
+uniform float uMinDistance;
+uniform float uMaxDistance;*/

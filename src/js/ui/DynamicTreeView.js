@@ -331,7 +331,7 @@ class DynamicTreeView extends UIObject {
                 gmin = Math.min(group.lo, gmin);
                 var max = child.querySelector('.property-range-max');
                 group.hi = parseInt(max.value);
-                group.name = "[" + group.lo + " - " + group.hi + "]";
+                group.name = "[" + group.lo + "~" + group.hi + "]";
                 gmax = Math.max(group.hi, gmax);
                 json.groups.push(group);
             }
