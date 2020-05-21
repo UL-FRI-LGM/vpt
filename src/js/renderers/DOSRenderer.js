@@ -211,7 +211,7 @@ setRules(rules) {
     //console.log(rules);
    // this.saveInFile(this._rules);
     this._recomputeTransferFunction(rules);
-    this._rebuildProbCompute();
+    //this._rebuildProbCompute();
     //console.log(this._prob);
     this._rebuildAttribCompute();
 }
@@ -273,6 +273,7 @@ _rebuildProbCompute() {
     this._programs.compute = WebGL.buildPrograms(gl, {
         compute  : SHADERS.ProbCompute
     }, {
+        computeProbability: MIXINS.computeProbability,
         localSizeX: this._localSize.x,
         localSizeY: this._localSize.y,
         localSizeZ: this._localSize.z,
@@ -291,9 +292,8 @@ _recomputeProbability() {
     gl.bindImageTexture(1, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
     
     gl.uniform1i(program.uniforms.uNumInstances, this._numberInstance);
-    console.log(gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS));
+    //console.log(gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS));
     const Max_nAtomic=gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS);
-    console.log(Max_nAtomic);
     gl.uniform1i(program.uniforms.uMax_nAtomic, Max_nAtomic);
      // --------------------------------------------------------------
     
@@ -323,7 +323,7 @@ _recomputeProbability() {
         gl.getBufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, result);
 
         //console.log(start+'---'+end);
-        console.log(result);
+      //  console.log(result);
         gl.deleteBuffer(atomicCounter);
 
         /** comput avarage

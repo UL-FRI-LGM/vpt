@@ -11,8 +11,9 @@ uniform uint start;
 uniform uint end;
 uniform int uMax_nAtomic;
 
+@computeProbability //TODO: need to change
 
-layout (binding=0 , offset=0) uniform atomic_uint counter[8];//[uMaxACSize]
+layout (binding=0 , offset=0) uniform atomic_uint counter[8];//counter[uMaxACSize]
 layout (r32ui, binding = 1) restrict readonly highp uniform uimage3D iID;
 
 void main() {
@@ -21,10 +22,12 @@ void main() {
     if (voxel.x < imageSize.x && voxel.y < imageSize.y && voxel.z < imageSize.z) {
         if(id>=start && id< end)
         {
-            float p=1.0;//TODO: compute prbability
+            int p=1;//TODO: computePrbability(pos, color);
             uint index=id-start;
-           // atomicCounterAddARB(counter[index],p); //accumulate prbability 
-            atomicCounterIncrement(counter[index]);
+            for(int i=0;i<p;i++) // the loop replace the use of atomicCounterAddARB(counter[index],p);  
+            {
+                atomicCounterIncrement(counter[index]); //accumulate prbability
+            }
             atomicCounterIncrement(counter[++index]);//accumulate number of Voxels
         }
     }

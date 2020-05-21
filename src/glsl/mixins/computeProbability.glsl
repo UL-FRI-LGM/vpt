@@ -1,7 +1,7 @@
 // #package glsl/mixins
 
 // #section computeProbability
-
+/*
 vec3 gradient(vec3 pos) { //gradient without normlization
 	float h=1;
     vec3 positive = vec3(
@@ -45,16 +45,18 @@ float normlized_gradient_magnitud(vec3 pos)
 float normlized_distance(vec3 pos)
 { 
      return  (distance(pos,uCameraPos)-uMinDistance)/(uMaxDistance-uMinDistance);
-}
-float computeProbability(vec3 pos,float color_a)
+}*/
+uint computeProbability(vec3 pos,float color_a)
 {
     //float color_a=0.0;//can we assume ??
     // pos: current sample position
     // color: current sample color
     // ks & kt two parameters allow intuitive control of the visualization
-    float GP=normlized_gradient_magnitud( pos);
+    /*float GP=normlized_gradient_magnitud( pos);
     float SP=shadingIntensity( pos );
     float DP=normlized_distance(pos );
     float exponent=pow((uKt*SP*(1.0-DP)*(1.0-color_a)),uKs);
-    return pow(GP,exponent);
+    float prob= pow(GP,exponent);*/
+    /**   convert prob value to uint **/
+    return uint(1.0);
 }
