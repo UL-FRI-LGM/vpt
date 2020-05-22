@@ -37,7 +37,7 @@ constructor(gl, volume,camera, environmentTexture, options) {
     this._layout = [];
     this._attrib = gl.createBuffer();
     this._mask = null;
-    this._prob = null;
+    this._avgProbability = null;
     this._localSize = {
         x: 8,
         y: 8,
@@ -129,18 +129,9 @@ setAttributes(attributes, layout) {
         var parser = new AttributesParser();
         var values = parser.getValuesByAttributeName("RealX2", layout, attributes);
         this._numberInstance=values.length;
+        //TODO: recall _rebuildProbCompute() everytime camera is changed
+        this._rebuildProbCompute(); // compute avg probability for evey instance
     }
-    //=========================================
-    if(this._prob)
-    {
-        gl.deleteBuffer(this._prob);
-    }
-    var prob_buffer=new ArrayBuffer(this._numberInstance);
-    WebGL.createBuffer(gl, {
-        target : gl.SHADER_STORAGE_BUFFER,
-        buffer : this._prob,
-        data   : prob_buffer
-    });
     //=========================================
 }
 saveInFile(data) {
@@ -211,8 +202,8 @@ setRules(rules) {
     //console.log(rules);
    // this.saveInFile(this._rules);
     this._recomputeTransferFunction(rules);
-    //this._rebuildProbCompute();
-    //console.log(this._prob);
+    
+    //console.log(this._avgProbability);
     this._rebuildAttribCompute();
 }
 _getCameraPosition()
@@ -258,6 +249,7 @@ _recomputeMask() {
     gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
 
     gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._attrib);
+    gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, this._avgProbability);
 
     const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
     const groupsY = Math.ceil(dimensions.height / this._localSize.y);
@@ -283,7 +275,7 @@ _rebuildProbCompute() {
 _recomputeProbability() {
 
     const gl = this._gl;
-
+    var avgProbArray=new Float32Array(this._numberInstance);
     const program = this._programs.compute;
     gl.useProgram(program.program);
 
@@ -296,10 +288,12 @@ _recomputeProbability() {
     const Max_nAtomic=gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS);
     gl.uniform1i(program.uniforms.uMax_nAtomic, Max_nAtomic);
      // --------------------------------------------------------------
-    
-    for (let start=0; start+Max_nAtomic < this._numberInstance; start+=Max_nAtomic) {
-        let end=start+Max_nAtomic;
-        if(end>= this._numberInstance)
+    var stepSize=Math.floor(Max_nAtomic/2.0);
+    let start=0;
+    let end=start+stepSize;
+    for (; end < this._numberInstance; start+=stepSize) {
+        end=start+stepSize;
+        if(end> this._numberInstance)
             end= this._numberInstance;
 
         gl.uniform1ui(program.uniforms.start, start);
@@ -310,6 +304,8 @@ _recomputeProbability() {
         gl.bufferData(gl.ATOMIC_COUNTER_BUFFER, new Uint32Array(Max_nAtomic),gl.DYNAMIC_COPY);
         gl.bindBufferBase(gl.ATOMIC_COUNTER_BUFFER, 0, atomicCounter);
 
+        
+        gl.clear(gl.COLOR_BUFFER_BIT);
         gl.bufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, new Uint32Array(Max_nAtomic));// clear counter
 
         const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
@@ -317,26 +313,39 @@ _recomputeProbability() {
         const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
         gl.dispatchCompute(groupsX, groupsY, groupsZ);
         
-
+      
         gl.memoryBarrier(gl.ATOMIC_COUNTER_BARRIER_BIT);
         const result  = new Uint32Array(Max_nAtomic);
         gl.getBufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, result);
-
-        //console.log(start+'---'+end);
-      //  console.log(result);
+        //console.log(result);
         gl.deleteBuffer(atomicCounter);
 
-        /** comput avarage
+        /***** comput avarage  ****/
         var j=0;
-        for(var i=start;i+1<end;i++)
+        for(var i=start;i<end;i++)
         {
-            this._prob[i]=result[j]/result[j+1];
+            avgProbArray[i]=parseFloat(result[j])/parseFloat(result[j+1]);
             j+=2;
         }
-        */
     }
+    //console.log(avgProbArray);
+    this._createAvgProbBuffer(avgProbArray);
 }
-
+_createAvgProbBuffer(avgProbArray)
+{
+    const gl = this._gl;
+    var prob_buffer=avgProbArray.buffer;
+    if(this._avgProbability)
+    {
+        gl.deleteBuffer(this._avgProbability);
+    }
+    
+    WebGL.createBuffer(gl, {
+        target : gl.SHADER_STORAGE_BUFFER,
+        buffer : this._avgProbability,
+        data   : prob_buffer
+    });
+}
 _recomputeTransferFunction(rules) {
     const gl = this._gl;
 

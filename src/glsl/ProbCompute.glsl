@@ -20,10 +20,11 @@ void main() {
     ivec3 voxel = ivec3(gl_GlobalInvocationID);
     uint id = imageLoad(iID, voxel).r;
     if (voxel.x < imageSize.x && voxel.y < imageSize.y && voxel.z < imageSize.z) {
+        //if
         if(id>=start && id< end)
         {
-            int p=1;//TODO: computePrbability(pos, color);
-            uint index=id-start;
+            int p=5;//TODO: computeProbability(pos, color);
+            int index=(int(id-start))*2;
             for(int i=0;i<p;i++) // the loop replace the use of atomicCounterAddARB(counter[index],p);  
             {
                 atomicCounterIncrement(counter[index]); //accumulate prbability
