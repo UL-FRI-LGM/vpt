@@ -282,11 +282,19 @@ _recomputeProbability() {
     const dimensions = this._volume._currentModality.dimensions;
     gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
     gl.bindImageTexture(1, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
-    
+    gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
     gl.uniform1i(program.uniforms.uNumInstances, this._numberInstance);
     //console.log(gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS));
     const Max_nAtomic=gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS);
     gl.uniform1i(program.uniforms.uMax_nAtomic, Max_nAtomic);
+
+    const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
+    const groupsY = Math.ceil(dimensions.height / this._localSize.y);
+    const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
+    console.log('groupsX'+groupsX);
+    console.log('groupsY'+groupsY);
+    console.log('groupsZ'+groupsZ);
+    gl.uniform3i(program.uniforms.uVoxelLength, groupsX, groupsY, groupsZ);
      // --------------------------------------------------------------
     var stepSize=Math.floor(Max_nAtomic/2.0);
     let start=0;
@@ -308,16 +316,13 @@ _recomputeProbability() {
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.bufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, new Uint32Array(Max_nAtomic));// clear counter
 
-        const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
-        const groupsY = Math.ceil(dimensions.height / this._localSize.y);
-        const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
         gl.dispatchCompute(groupsX, groupsY, groupsZ);
         
       
         gl.memoryBarrier(gl.ATOMIC_COUNTER_BARRIER_BIT);
         const result  = new Uint32Array(Max_nAtomic);
         gl.getBufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, result);
-        //console.log(result);
+        console.log(result);
         gl.deleteBuffer(atomicCounter);
 
         /***** comput avarage  ****/
@@ -328,7 +333,7 @@ _recomputeProbability() {
             j+=2;
         }
     }
-    //console.log(avgProbArray);
+    console.log(avgProbArray);
     this._createAvgProbBuffer(avgProbArray);
 }
 _createAvgProbBuffer(avgProbArray)

@@ -67,7 +67,7 @@ class TreeViewDialog extends AbstractDialog {
 
     }
   }
-
+//instance.sort((a, b) => parseFloat(a.avgProb) - parseFloat(b.avgProb));
   setAttributes(attributes, layout) {
 
     this.layout = layout;

@@ -46,17 +46,18 @@ float normlized_distance(vec3 pos)
 { 
      return  (distance(pos,uCameraPos)-uMinDistance)/(uMaxDistance-uMinDistance);
 }*/
-uint computeProbability(vec3 pos,float color_a)
+uint computeProbability(vec3 pos)
 {
     //float color_a=0.0;//can we assume ??
     // pos: current sample position
-    // color: current sample color
+    // accColor.a: previously accumulated opacity value
     // ks & kt two parameters allow intuitive control of the visualization
-    /*float GP=normlized_gradient_magnitud( pos);
+    float GP=normlized_gradient_magnitud( pos);
     float SP=shadingIntensity( pos );
     float DP=normlized_distance(pos );
-    float exponent=pow((uKt*SP*(1.0-DP)*(1.0-color_a)),uKs);
-    float prob= pow(GP,exponent);*/
+    //float exponent=pow((uKt*SP*(1.0-DP)*(1.0-accColor.a)),uKs);
+    float exponent=pow(uKt*SP*(1.0-DP),uKs);
+    float prob= pow(GP,exponent); //
     /**   convert prob value to uint **/
     return uint(1.0);
 }
