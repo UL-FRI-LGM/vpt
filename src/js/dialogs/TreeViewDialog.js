@@ -68,7 +68,7 @@ class TreeViewDialog extends AbstractDialog {
     }
   }
 //instance.sort((a, b) => parseFloat(a.avgProb) - parseFloat(b.avgProb));
-  setAttributes(attributes, layout) {
+  setAttributes(layout,elementsJSON) {
 
     this.layout = layout;
     propertyList = [];
@@ -94,9 +94,8 @@ class TreeViewDialog extends AbstractDialog {
     //var csv = new TextDecoder().decode(attributes);
     //elementsArray = this.csvJSON(csv);
 
-    // RAW parsing
-    const attributeArray = this.rawToJson(attributes, layout);
-    elementsArray= this.attributeToElementsArray(attributeArray);
+  
+    elementsArray= elementsJSON;
     //console.log(elementsArray);
   }
 
@@ -125,37 +124,9 @@ class TreeViewDialog extends AbstractDialog {
     //return JSON.stringify(result); //string
   }
 
-  rawToJson(attributes, layout) {
-   // var result = [];
-    var parser = new AttributesParser();
-    var obj = {};
-    for (var i = 0; i < layout.length; i++) {
-      var property = layout[i];
-      obj[property.name] = parser.parseValuesFromAttributeRawFile(i, layout.length, attributes, true);
-      //find max min
-      layout[i].hi=Math.max.apply(null, obj[property.name]);
-      layout[i].lo=Math.min.apply(null,obj[property.name]);
-    //  result.push(obj);
-    }
-    //console.log(layout);
-    return obj;
-  }
 
-  attributeToElementsArray(attributeArray)
-  {
-    //console.log(attributeArray);
-    var res = [];
-    Object.keys(attributeArray).forEach(k => {
-      Object.keys(attributeArray[k]).forEach(v => {
-        if(!res[v]) {
-          res[v] = { id: v };
-        }
-        // add property 'k' to this record
-        res[v][k] = attributeArray[k][v];
-      });
-    });
-    return res;
-  }
+
+ 
   _createAbstractTree = function () {
     /*// TEST purposes only!!!
     propertyList = [];

@@ -37,7 +37,10 @@ constructor(gl, volume,camera, environmentTexture, options) {
     this._layout = [];
     this._attrib = gl.createBuffer();
     this._mask = null;
+    this._elements=[];
+    this.visStatusArr=null;
     this._avgProbability = null;
+    this._visibilityStatus = null;
     this._localSize = {
         x: 8,
         y: 8,
@@ -116,7 +119,7 @@ setVolume(volume) {
 
 }
 
-setAttributes(attributes, layout) {
+setAttributes(attributes, layout,elements) {
     const gl = this._gl;
 
     WebGL.createBuffer(gl, {
@@ -129,24 +132,15 @@ setAttributes(attributes, layout) {
         var parser = new AttributesParser();
         var values = parser.getValuesByAttributeName("RealX2", layout, attributes);
         this._numberInstance=values.length;
+        this.initInstancesArray();
         //TODO: recall _rebuildProbCompute() everytime camera is changed
+        this._elements=elements;
+        //console.log(this._elements);
         this._rebuildProbCompute(); // compute avg probability for evey instance
+        
     }
+   
     //=========================================
-}
-saveInFile(data) {
-    // this function just to test the content of long variables 
-    let bl = new Blob([data], {
-       type: "text/html"
-    });
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(bl);
-    a.download = "data.txt";
-    a.hidden = true;
-    document.body.appendChild(a);
-    a.innerHTML =
-       "someinnerhtml";
-    a.click();
 }
 setHtreeRules(rules)
 {
@@ -184,9 +178,45 @@ setHtreeRules(rules)
    // console.log(rules);
     //this.saveInFile(this._rules);
     this._recomputeTransferFunction(rules); 
-    this._rebuildAttribCompute();
+    this._rebuildAttribCompute(true);
 }
-setRules(rules) {
+initInstancesArray()
+{
+    this.visStatusArr =new Uint8Array(this._numberInstance);
+}
+clearVisStatusArray()
+{
+    for(var i=0;i<this._numberInstance;i++)
+    {
+        this.visStatusArr[i]=0;
+    }
+}
+setRules(rules) { 
+//setRulesBasedAvgProb(rules) {
+    this.clearVisStatusArray();//defult 0=visible .. 1=invisible
+    this._rules = rules.map((rule, index) => {
+        const attribute = rule.attribute;
+        const lo = rule.range.x.toFixed(4);
+        const hi = rule.range.y.toFixed(4);
+        var instancesStRule=this._getRuleElements([attribute], [hi], [lo]);
+        this._sort_by_key(instancesStRule,'avgProb');
+        //console.log(instances);
+        const visibility = (rule.visibility / 100).toFixed(4);
+        this.updateVisStatusArray(instancesStRule,visibility);
+        const phi = (index / rules.length) * 2 * Math.PI;
+        const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
+        const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
+        const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
+       // const visibilityCondition = ` prob == uint(0)`;
+        return `if (${rangeCondition}) { return vec2(${tfx}, ${tfy}); }`;
+    });
+    //console.log(this.visStatusArr);
+    this._recomputeTransferFunction(rules);
+    this._createVisibilityStatusBuffer();
+    this._rebuildAttribCompute(false);
+}
+
+/*setRules(rules) {
     this._rules = rules.map((rule, index) => {
         const attribute = rule.attribute;
         const lo = rule.range.x.toFixed(4);
@@ -199,18 +229,32 @@ setRules(rules) {
         const visibilityCondition = ` prob <  ${visibility}`;
         return `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
-    //console.log(rules);
-   // this.saveInFile(this._rules);
     this._recomputeTransferFunction(rules);
-    
-    //console.log(this._avgProbability);
     this._rebuildAttribCompute();
+}*/
+updateVisStatusArray(instancesStRule,visibility)
+{
+    var numberRemoved=instancesStRule.length-(Math.floor(instancesStRule.length*visibility));
+    for(var i=0;i<numberRemoved;i++)
+    {
+        //console.log(instances[i]['id']);
+        this.visStatusArr[instancesStRule[i]['id']]=1;
+    }
+}
+_sort_by_key(array, key)
+{
+ return array.sort(function(a, b)
+ {
+  var x = a[key]; 
+  var y = b[key];
+  return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+ });
 }
 _getCameraPosition()
 {
     return [this._camera.position.x,this._camera.position.y,this._camera.position.z];
 }
-_rebuildAttribCompute() {
+_rebuildAttribCompute(isTreeRules) {
     const gl = this._gl;
 
     if (this._programs.compute) {
@@ -222,8 +266,14 @@ _rebuildAttribCompute() {
         members.push(attrib.type + ' ' + attrib.name + ';');
     }
     const instance = members.join('\n');
-    const rules = this._rules;//.join('\n');
-    
+
+    var temp;
+    if(isTreeRules)
+        temp = this._rules;
+    else
+        temp = this._rules.join('\n');
+    const rules =temp;
+
     this._programs.compute = WebGL.buildPrograms(gl, {
         compute  : SHADERS.AttribCompute
     }, {
@@ -249,7 +299,7 @@ _recomputeMask() {
     gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
 
     gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._attrib);
-    gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, this._avgProbability);
+    gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, this._visibilityStatus);
 
     const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
     const groupsY = Math.ceil(dimensions.height / this._localSize.y);
@@ -291,9 +341,7 @@ _recomputeProbability() {
     const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
     const groupsY = Math.ceil(dimensions.height / this._localSize.y);
     const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
-    console.log('groupsX'+groupsX);
-    console.log('groupsY'+groupsY);
-    console.log('groupsZ'+groupsZ);
+
     gl.uniform3i(program.uniforms.uVoxelLength, groupsX, groupsY, groupsZ);
      // --------------------------------------------------------------
     var stepSize=Math.floor(Max_nAtomic/2.0);
@@ -322,35 +370,64 @@ _recomputeProbability() {
         gl.memoryBarrier(gl.ATOMIC_COUNTER_BARRIER_BIT);
         const result  = new Uint32Array(Max_nAtomic);
         gl.getBufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, result);
-        console.log(result);
+        //console.log(result);
         gl.deleteBuffer(atomicCounter);
 
         /***** comput avarage  ****/
         var j=0;
         for(var i=start;i<end;i++)
         {
+            
             avgProbArray[i]=parseFloat(result[j])/parseFloat(result[j+1]);
+            this._elements[i].avgProb=avgProbArray[i];
             j+=2;
         }
     }
-    console.log(avgProbArray);
-    this._createAvgProbBuffer(avgProbArray);
+    console.log('avg Probabilities..');
+    console.log(this._elements);
+    //this._createAvgProbBuffer(avgProbArray);  
 }
-_createAvgProbBuffer(avgProbArray)
+_getRuleElements(className, hiList, loList) {
+    var el = this.clone(this._elements);
+    for (var j = 0; j < className.length; j++) {
+      if (hiList[j] == null)
+        break;
+      el = el.filter(x => x[className[j]] < hiList[j] && x[className[j]] >= loList[j])
+    }
+    
+    return el.map(function(x) { 
+        var v=new Object();
+        v.id=x.id;
+        v.avgProb=x.avgProb; 
+        return v;});
+}
+clone(obj) {
+    if (null == obj || "object" != typeof obj) return obj;
+    var copy = new obj.constructor();
+    for (var attr in obj) {
+      if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+    }
+    return copy;
+}
+_createVisibilityStatusBuffer()
 {
     const gl = this._gl;
-    var prob_buffer=avgProbArray.buffer;
-    if(this._avgProbability)
+    //console.log(this.visStatusArr);
+    const visStatus_buffer=this.visStatusArr.buffer;
+    console.log(visStatus_buffer);
+    if(this._visibilityStatus)
     {
-        gl.deleteBuffer(this._avgProbability);
+        gl.deleteBuffer(this._visibilityStatus);
     }
     
     WebGL.createBuffer(gl, {
         target : gl.SHADER_STORAGE_BUFFER,
-        buffer : this._avgProbability,
-        data   : prob_buffer
+        buffer : this._visibilityStatus,
+        data   : visStatus_buffer,
+        hint : gl.DYNAMIC_COPY
     });
 }
+
 _recomputeTransferFunction(rules) {
     const gl = this._gl;
 

@@ -222,8 +222,17 @@ _updateMvpInverseMatrix() {
         this._renderer.setMvpInverseMatrix(mvpit);
         this._renderer.reset();
     }
+    this._rebuildProbCompute();
 }
-
+_rebuildProbCompute()
+{
+    const renderer = this.getRenderer();
+    if(renderer!=undefined)
+    {
+       // renderer._rebuildProbCompute();
+       // console.log('rebuildProbCompute');
+    }
+}
 _render() {
     const gl = this._gl;
     if (!gl || !this._renderer || !this._toneMapper) {
