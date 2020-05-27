@@ -38,9 +38,9 @@ constructor(gl, volume,camera, environmentTexture, options) {
     this._attrib = gl.createBuffer();
     this._mask = null;
     this._elements=[];
-    this.visStatusArr=null;
+    this.visStatusArr= null;
     this._avgProbability = null;
-    this._visibilityStatus = null;
+    this._visibilityStatus = gl.createBuffer();
     this._localSize = {
         x: 8,
         y: 8,
@@ -182,7 +182,7 @@ setHtreeRules(rules)
 }
 initInstancesArray()
 {
-    this.visStatusArr =new Uint8Array(this._numberInstance);
+    this.visStatusArr = new Uint8Array(this._numberInstance);
 }
 clearVisStatusArray()
 {
@@ -210,7 +210,7 @@ setRules(rules) {
        // const visibilityCondition = ` prob == uint(0)`;
         return `if (${rangeCondition}) { return vec2(${tfx}, ${tfy}); }`;
     });
-    //console.log(this.visStatusArr);
+    //console.log(this.visStatusArr);    
     this._recomputeTransferFunction(rules);
     this._createVisibilityStatusBuffer();
     this._rebuildAttribCompute(false);
@@ -384,7 +384,7 @@ _recomputeProbability() {
         }
     }
     console.log('avg Probabilities..');
-    console.log(this._elements);
+    //console.log(this._elements);
     //this._createAvgProbBuffer(avgProbArray);  
 }
 _getRuleElements(className, hiList, loList) {
@@ -412,14 +412,15 @@ clone(obj) {
 _createVisibilityStatusBuffer()
 {
     const gl = this._gl;
-    //console.log(this.visStatusArr);
-    const visStatus_buffer=this.visStatusArr.buffer;
-    console.log(visStatus_buffer);
-    if(this._visibilityStatus)
-    {
-        gl.deleteBuffer(this._visibilityStatus);
-    }
     
+    var visStatus_buffer = this.visStatusArr.buffer;
+    
+    //console.log(visStatus_buffer);
+    //if(this._visibilityStatus)
+    //{
+    //    gl.deleteBuffer(this._visibilityStatus);
+    //}
+
     WebGL.createBuffer(gl, {
         target : gl.SHADER_STORAGE_BUFFER,
         buffer : this._visibilityStatus,
