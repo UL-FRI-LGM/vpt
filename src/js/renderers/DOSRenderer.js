@@ -127,10 +127,11 @@ setAttributes(attributes, layout,elements) {
         buffer : this._attrib,
         data   : attributes || new ArrayBuffer()
     });
-    this._layout = layout;
+    this._layout = layout;    
     if(layout) {
         var parser = new AttributesParser();
-        var values = parser.getValuesByAttributeName("RealX2", layout, attributes);
+        //var values = parser.getValuesByAttributeName("RealX2", layout, attributes);
+        var values = parser.parseValuesFromAttributeRawFile(0, layout.length, attributes);
         this._numberInstance=values.length;
         this.initInstancesArray();
         //TODO: recall _rebuildProbCompute() everytime camera is changed
@@ -182,7 +183,7 @@ setHtreeRules(rules)
 }
 initInstancesArray()
 {
-    this.visStatusArr = new Uint8Array(this._numberInstance);
+    this.visStatusArr = new Uint32Array(this._numberInstance);
 }
 clearVisStatusArray()
 {
@@ -197,7 +198,7 @@ setRules(rules) {
     this._rules = rules.map((rule, index) => {
         const attribute = rule.attribute;
         const lo = rule.range.x.toFixed(4);
-        const hi = rule.range.y.toFixed(4);
+        const hi = rule.range.y.toFixed(4);                
         var instancesStRule=this._getRuleElements([attribute], [hi], [lo]);
         this._sort_by_key(instancesStRule,'avgProb');
         //console.log(instances);
@@ -233,11 +234,10 @@ setRules(rules) {
     this._rebuildAttribCompute();
 }*/
 updateVisStatusArray(instancesStRule,visibility)
-{
-    var numberRemoved=instancesStRule.length-(Math.floor(instancesStRule.length*visibility));
+{    
+    var numberRemoved = instancesStRule.length-(Math.round(instancesStRule.length*visibility));
     for(var i=0;i<numberRemoved;i++)
     {
-        //console.log(instances[i]['id']);
         this.visStatusArr[instancesStRule[i]['id']]=1;
     }
 }
@@ -392,7 +392,7 @@ _getRuleElements(className, hiList, loList) {
     for (var j = 0; j < className.length; j++) {
       if (hiList[j] == null)
         break;
-      el = el.filter(x => x[className[j]] < hiList[j] && x[className[j]] >= loList[j])
+      el = el.filter(x => x[className[j]] <= hiList[j] && x[className[j]] >= loList[j])
     }
     
     return el.map(function(x) { 
@@ -415,12 +415,8 @@ _createVisibilityStatusBuffer()
     
     var visStatus_buffer = this.visStatusArr.buffer;
     
-    //console.log(visStatus_buffer);
-    //if(this._visibilityStatus)
-    //{
-    //    gl.deleteBuffer(this._visibilityStatus);
-    //}
-
+    console.log(visStatus_buffer);
+    
     WebGL.createBuffer(gl, {
         target : gl.SHADER_STORAGE_BUFFER,
         buffer : this._visibilityStatus,
