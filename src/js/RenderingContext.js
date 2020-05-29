@@ -229,7 +229,7 @@ _rebuildProbCompute()
     const renderer = this.getRenderer();
     if(renderer!=undefined)
     {
-       // renderer._rebuildProbCompute();
+       //renderer._rebuildProbCompute();
        // console.log('rebuildProbCompute');
     }
 }

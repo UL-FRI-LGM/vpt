@@ -990,7 +990,7 @@ function createJSONHierarchyTree(nav) {
     for (var j = 0; j < className.length; j++) {
       if (hiList[j] == null)
         break;
-      el = el.filter(x => x[className[j]] < hiList[j] && x[className[j]] >= loList[j])
+      el = el.filter(x => x[className[j]] <= hiList[j] && x[className[j]] >= loList[j])
     }
     return el.length;
   }

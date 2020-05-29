@@ -19,10 +19,13 @@ layout (r32ui, binding = 1) restrict readonly highp uniform uimage3D iID;
 
 vec3 getPosition3D(ivec3 voxel)
 {
-    vec3 pos= vec3(voxel.x*uVoxelLength.x,voxel.y*uVoxelLength.y,voxel.z*uVoxelLength.z );
-    pos= vec3(pos.x/float(imageSize.x) ,pos.y /float(imageSize.y), pos.z /float(imageSize.z));// between 0-1
+    float vx = 1.0 / float(imageSize.x);
+    float vy = 1.0 / float(imageSize.y);
+    float vz = 1.0 / float(imageSize.z);
+    vec3 pos= vec3(float(voxel.x) * vx,float( voxel.y) * vy, float(voxel.z) * vz); // corner
+    pos += vec3(vx * 0.5, vy * 0.5, vz * 0.5); // center
     vec4 dirty = uMvpInverseMatrix * vec4(pos, 1);
-    return (dirty.xyz / dirty.w);
+    return (dirty.xyz / dirty.w); // division by 1?
 }
 void atomicCounterAdd(int index, int p)
 {
@@ -30,6 +33,10 @@ void atomicCounterAdd(int index, int p)
     {
         atomicCounterIncrement(counter[index]); //accumulate prbability
     }
+}
+int convertProbToInt(float x)
+{
+    return int(round(x*100.0));
 }
 void main() {
     ivec3 voxel = ivec3(gl_GlobalInvocationID);
@@ -39,7 +46,7 @@ void main() {
         if(id>=start && id< end)
         {
             vec3 pos = getPosition3D(voxel);
-            int p= int(floor(pos.z));//TODO: later use computeProbability(pos);
+             int p = convertProbToInt(pos.z);//TODO: later use computeProbability(pos);
             int index=(int(id-start))*2;
             atomicCounterAdd(index, p);
             atomicCounterIncrement(counter[++index]);//accumulate number of Voxels

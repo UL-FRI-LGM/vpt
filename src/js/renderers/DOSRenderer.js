@@ -144,17 +144,21 @@ setAttributes(attributes, layout,elements) {
 }
 setHtreeRules(rules)
 {
-    
+    this.clearVisStatusArray();
     this._rules='';
     var _x = rules.map((rule, index) => {
         const attribute = rule.attribute;
         const hi = rule.hi;
         const lo = rule.lo;
+        var instancesStRule=this._getRuleElements(attribute, hi, lo);
+        this._sort_by_key(instancesStRule,'avgProb');
         const visibility = (rule.visibility / 100).toFixed(4);
+        this.updateVisStatusArray(instancesStRule,visibility);
         const phi = (index / rules.length) * 2 * Math.PI;
         const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
         const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
         var rangeCondition = '';
+        
         if(attribute.length>1)
         {
             
@@ -172,27 +176,26 @@ setHtreeRules(rules)
             rangeCondition += `instance.${attribute[0]} >= float(${lo[0]}) && instance.${attribute[0]} <= float(${hi[0]})`;
                
         }
-        const visibilityCondition = ` prob <  ${visibility}`;
+        const visibilityCondition = `visStatus> uint(0)`;
         this._rules+= `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
-   // console.log(rules);
-    //this.saveInFile(this._rules);
-    this._recomputeTransferFunction(rules); 
+    //console.log(this.visStatusArr);    
+    this._recomputeTransferFunction(rules);
+    this._createVisibilityStatusBuffer();
     this._rebuildAttribCompute(true);
 }
 initInstancesArray()
 {
-    this.visStatusArr = new Uint8Array(this._numberInstance);
+    this.visStatusArr = new Uint32Array(this._numberInstance);
 }
 clearVisStatusArray()
 {
     for(var i=0;i<this._numberInstance;i++)
     {
-        this.visStatusArr[i]=0;
+        this.visStatusArr[i]=1;
     }
 }
 setRules(rules) { 
-//setRulesBasedAvgProb(rules) {
     this.clearVisStatusArray();//defult 0=visible .. 1=invisible
     this._rules = rules.map((rule, index) => {
         const attribute = rule.attribute;
@@ -200,15 +203,16 @@ setRules(rules) {
         const hi = rule.range.y.toFixed(4);
         var instancesStRule=this._getRuleElements([attribute], [hi], [lo]);
         this._sort_by_key(instancesStRule,'avgProb');
-        //console.log(instances);
+        //console.log(instancesStRule);
         const visibility = (rule.visibility / 100).toFixed(4);
         this.updateVisStatusArray(instancesStRule,visibility);
         const phi = (index / rules.length) * 2 * Math.PI;
         const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
         const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
         const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
-       // const visibilityCondition = ` prob == uint(0)`;
-        return `if (${rangeCondition}) { return vec2(${tfx}, ${tfy}); }`;
+        const visibilityCondition = `visStatus> uint(0)`;
+       return `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
+   
     });
     //console.log(this.visStatusArr);    
     this._recomputeTransferFunction(rules);
@@ -235,10 +239,17 @@ setRules(rules) {
 updateVisStatusArray(instancesStRule,visibility)
 {
     var numberRemoved=instancesStRule.length-(Math.floor(instancesStRule.length*visibility));
+    //console.log('instances.length'+instancesStRule.length);
+    //console.log('numberRemoved'+numberRemoved);
     for(var i=0;i<numberRemoved;i++)
     {
-        //console.log(instances[i]['id']);
-        this.visStatusArr[instancesStRule[i]['id']]=1;
+        if(this.visStatusArr[instancesStRule[i]['id']]==1)
+            this.visStatusArr[instancesStRule[i]['id']]=0;
+    }
+    for(var i=numberRemoved;i<instancesStRule.length;i++)
+    {
+        if(this.visStatusArr[instancesStRule[i]['id']]==1)
+            this.visStatusArr[instancesStRule[i]['id']]=2;
     }
 }
 _sort_by_key(array, key)
@@ -334,16 +345,9 @@ _recomputeProbability() {
     gl.bindImageTexture(1, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
     gl.uniform1i(program.uniforms.uNumInstances, this._numberInstance);
-    //console.log(gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS));
-    const Max_nAtomic=gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS);
+    const Max_nAtomic= 8; //gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS);
     gl.uniform1i(program.uniforms.uMax_nAtomic, Max_nAtomic);
-
-    const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
-    const groupsY = Math.ceil(dimensions.height / this._localSize.y);
-    const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
-
-    gl.uniform3i(program.uniforms.uVoxelLength, groupsX, groupsY, groupsZ);
-     // --------------------------------------------------------------
+     // -     // --------------------------------------------------------------
     var stepSize=Math.floor(Max_nAtomic/2.0);
     let start=0;
     let end=start+stepSize;
@@ -364,6 +368,10 @@ _recomputeProbability() {
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.bufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, new Uint32Array(Max_nAtomic));// clear counter
 
+        const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
+        const groupsY = Math.ceil(dimensions.height / this._localSize.y);
+        const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
+
         gl.dispatchCompute(groupsX, groupsY, groupsZ);
         
       
@@ -377,13 +385,13 @@ _recomputeProbability() {
         var j=0;
         for(var i=start;i<end;i++)
         {
-            
-            avgProbArray[i]=parseFloat(result[j])/parseFloat(result[j+1]);
+            var prob_float=parseFloat(result[j])/100.0;
+            avgProbArray[i]=prob_float/parseFloat(result[j+1]);
             this._elements[i].avgProb=avgProbArray[i];
             j+=2;
         }
     }
-    console.log('avg Probabilities..');
+    console.log('avg Probabilities is computed..');
     //console.log(this._elements);
     //this._createAvgProbBuffer(avgProbArray);  
 }
@@ -392,7 +400,7 @@ _getRuleElements(className, hiList, loList) {
     for (var j = 0; j < className.length; j++) {
       if (hiList[j] == null)
         break;
-      el = el.filter(x => x[className[j]] < hiList[j] && x[className[j]] >= loList[j])
+      el = el.filter(x => x[className[j]] <= hiList[j] && x[className[j]] >= loList[j])
     }
     
     return el.map(function(x) { 
