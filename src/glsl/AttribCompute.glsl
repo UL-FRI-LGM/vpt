@@ -9,32 +9,34 @@ layout (local_size_x = @localSizeX, local_size_y = @localSizeY, local_size_z = @
 struct Instance {
     @instance
 };
-
 layout (std430, binding = 0) buffer bAttributes {
     Instance sInstances[];
 };
-layout (std430, binding = 1) buffer avgProbability {
-    float data[];
-}avgProb;
+layout (std430, binding = 1) buffer visibilityStatus {
+    uint vData[];
+};
 
 uniform ivec3 imageSize;
 layout (r32ui, binding = 0) restrict readonly highp uniform uimage3D iID;
 layout (rgba8, binding = 1) restrict writeonly highp uniform image3D oMask;
 
 @rand
-vec2 rules(Instance instance, uint id) {
+vec2 rules(Instance instance,uint visStatus, uint id) {
     if (id == 0u) { return vec2(0.5); }
-    float prob= (rand(vec2(float(id))).x); // prob=avgProb.data[id];
-    @rules
+    //float prob= (rand(vec2(float(id))).x); 
+    @rules 
     return vec2(0.5);
 }
 
 void main() {
     ivec3 voxel = ivec3(gl_GlobalInvocationID);
     if (voxel.x < imageSize.x && voxel.y < imageSize.y && voxel.z < imageSize.z) {
+
         uint id = imageLoad(iID, voxel).r;
         Instance instance = sInstances[id];
-        vec2 mask = rules(instance, id);
+        uint visStatus= vData[id] ;
+
+        vec2 mask = rules(instance,visStatus, id);
         imageStore(oMask, voxel, vec4(mask, 0, 0));
 
     }

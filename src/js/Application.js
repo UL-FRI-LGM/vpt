@@ -94,7 +94,6 @@ constructor() {
     this._mainDialog.trigger('rendererchange', this._mainDialog.getSelectedRenderer());
     this._mainDialog.trigger('tonemapperchange', this._mainDialog.getSelectedToneMapper());
 }
-
 _handleFileDrop(e) {
     e.preventDefault();
     const files = e.dataTransfer.files;
@@ -199,11 +198,14 @@ _handleAttribLoad(options) {
         fr.addEventListener('error', reject);
         fr.readAsText(options.layoutFile);
     });
+    
     Promise.all([attrib, layout]).then(([attrib, layout]) => {
+       
+        const elementsJSON=this.getElementsAttribJSON(attrib, layout);//get also min/max
         const renderer = this._renderingContext.getRenderer();
-        renderer.setAttributes(attrib, layout);//.map(function(x) { var v=new Object();v.name=x.name;v.type=x.type; return v;}));
+        renderer.setAttributes(attrib, layout.map(function(x) { var v=new Object();v.name=x.name;v.type=x.type; return v;}),elementsJSON);
         this._visibilityDialog.setAttributes(layout.map(x=> x.name));//layout.map(function(x) { var v=new Object();v.name=x.name;v.lowerBound=x.lowerBound;v.upperBound=x.upperBound; return v;}));
-        this._treeViewDialog.setAttributes(attrib,layout);
+        this._treeViewDialog.setAttributes(layout,elementsJSON);
     });
 }
 
@@ -330,6 +332,44 @@ _updateTreeVisibility()
         }
     }, this._visibilityUpdateInterval);
     
+}
+
+getElementsAttribJSON(attrib, layout)
+{
+    // RAW parsing
+    const attributeArray = this.rawToJson(attrib, layout);
+    elementsArray= this.attributeToElementsArray(attributeArray);
+    return elementsArray;
+}
+rawToJson(attributes, layout) {
+    // var result = [];
+     var parser = new AttributesParser();
+     var obj = {};
+     for (var i = 0; i < layout.length; i++) {
+       var property = layout[i];
+       obj[property.name] = parser.parseValuesFromAttributeRawFile(i, layout.length, attributes, true);
+       //find max min
+       layout[i].hi=Math.max.apply(null, obj[property.name]);
+       layout[i].lo=Math.min.apply(null,obj[property.name]);
+     //  result.push(obj);
+     }
+     //console.log(layout);
+     return obj;
+}
+attributeToElementsArray(attributeArray)
+{
+  //console.log(attributeArray);
+  var res = [];
+  Object.keys(attributeArray).forEach(k => {
+    Object.keys(attributeArray[k]).forEach(v => {
+      if(!res[v]) {
+        res[v] = { id: v };
+      }
+      // add property 'k' to this record
+      res[v][k] = attributeArray[k][v];
+    });
+  });
+  return res;
 }
 
 }
