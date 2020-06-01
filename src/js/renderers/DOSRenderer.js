@@ -42,8 +42,8 @@ constructor(gl, volume,camera, environmentTexture, options) {
     this._avgProbability = null;
     this._visibilityStatus = gl.createBuffer();
     this._localSize = {
-        x: 8,
-        y: 8,
+        x: 128,
+        y: 1,
         z: 1,
     };
 
@@ -345,53 +345,77 @@ _recomputeProbability() {
     gl.bindImageTexture(1, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
     gl.uniform1i(program.uniforms.uNumInstances, this._numberInstance);
-    const Max_nAtomic= 8; //gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS);
+    const Max_nAtomic= this._numberInstance * 2; //gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS);
     gl.uniform1i(program.uniforms.uMax_nAtomic, Max_nAtomic);
      // -     // --------------------------------------------------------------
     var stepSize=Math.floor(Max_nAtomic/2.0);
     let start=0;
-    let end=start+stepSize;
+    let end=0;
+    
+    gl.uniform1f(program.uniforms.vx, 1.0 / dimensions.width);
+    gl.uniform1f(program.uniforms.vy, 1.0 / dimensions.height);
+    gl.uniform1f(program.uniforms.vz, 1.0 / dimensions.depth);
+    
+    //const atomicCounter = gl.createBuffer();
+    const ssbo = gl.createBuffer();
+
+    //gl.bindBuffer(gl.ATOMIC_COUNTER_BUFFER, atomicCounter);
+    gl.bindBuffer(gl.SHADER_STORAGE_BUFFER, ssbo);
+
+    const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
+    const groupsY = Math.ceil(dimensions.height / this._localSize.y);
+    const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
+    
+    var t0 = performance.now();
+
     for (; end < this._numberInstance; start+=stepSize) {
-        end=start+stepSize;
-        if(end> this._numberInstance)
-            end= this._numberInstance;
+        end = start+stepSize;
+
+        if (end > this._numberInstance)
+            end = this._numberInstance;
 
         gl.uniform1ui(program.uniforms.start, start);
         gl.uniform1ui(program.uniforms.end, end);
+    
+        const result  = new Uint32Array(Max_nAtomic);
+        //gl.bufferData(gl.ATOMIC_COUNTER_BUFFER, result, gl.DYNAMIC_COPY);
+        gl.bufferData(gl.SHADER_STORAGE_BUFFER, result, gl.DYNAMIC_COPY);
+        //gl.bindBufferBase(gl.ATOMIC_COUNTER_BUFFER, 0, atomicCounter);
+        gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, ssbo);
 
-        const atomicCounter= gl.createBuffer();
-        gl.bindBuffer(gl.ATOMIC_COUNTER_BUFFER, atomicCounter);
-        gl.bufferData(gl.ATOMIC_COUNTER_BUFFER, new Uint32Array(Max_nAtomic),gl.DYNAMIC_COPY);
-        gl.bindBufferBase(gl.ATOMIC_COUNTER_BUFFER, 0, atomicCounter);
-
-        
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.bufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, new Uint32Array(Max_nAtomic));// clear counter
-
-        const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
-        const groupsY = Math.ceil(dimensions.height / this._localSize.y);
-        const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
+        //gl.clear(gl.COLOR_BUFFER_BIT);
+        //gl.bufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, new Uint32Array(Max_nAtomic));// clear counter
 
         gl.dispatchCompute(groupsX, groupsY, groupsZ);
-        
       
-        gl.memoryBarrier(gl.ATOMIC_COUNTER_BARRIER_BIT);
-        const result  = new Uint32Array(Max_nAtomic);
-        gl.getBufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, result);
+        //gl.memoryBarrier(gl.ATOMIC_COUNTER_BARRIER_BIT);        
+        //gl.memoryBarrier(gl.SHADER_STORAGE_BUFFER);        
+
+        //gl.getBufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, result);
+        gl.getBufferSubData(gl.SHADER_STORAGE_BUFFER, 0, result);
         //console.log(result);
-        gl.deleteBuffer(atomicCounter);
+        //gl.deleteBuffer(atomicCounter);
 
         /***** comput avarage  ****/
         var j=0;
         for(var i=start;i<end;i++)
         {
-            var prob_float=parseFloat(result[j])/100.0;
-            avgProbArray[i]=prob_float/parseFloat(result[j+1]);
+            var prob_float= result[j]/100.0;            
+            if(result[j+1] > 0) {
+                avgProbArray[i]= prob_float / result[j+1];
+            } else {
+                avgProbArray[i]= 0;
+            }
+            //console.log(avgProbArray[i]);
             this._elements[i].avgProb=avgProbArray[i];
             j+=2;
         }
     }
-    console.log('avg Probabilities is computed..');
+    //gl.deleteBuffer(atomicCounter);
+    gl.deleteBuffer(ssbo);
+    var t1 = performance.now();
+
+    console.log('avg Probabilities is computed in ' + (t1 - t0) + " milliseconds.");
     //console.log(this._elements);
     //this._createAvgProbBuffer(avgProbArray);  
 }
