@@ -42,8 +42,8 @@ constructor(gl, volume,camera, environmentTexture, options) {
     this._avgProbability = null;
     this._visibilityStatus = gl.createBuffer();
     this._localSize = {
-        x: 8,
-        y: 8,
+        x: 128,
+        y: 1,
         z: 1,
     };
 
