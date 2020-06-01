@@ -127,11 +127,10 @@ setAttributes(attributes, layout,elements) {
         buffer : this._attrib,
         data   : attributes || new ArrayBuffer()
     });
-    this._layout = layout;    
+    this._layout = layout;
     if(layout) {
         var parser = new AttributesParser();
-        //var values = parser.getValuesByAttributeName("RealX2", layout, attributes);
-        var values = parser.parseValuesFromAttributeRawFile(0, layout.length, attributes);
+        var values = parser.getValuesByAttributeName("RealX2", layout, attributes);
         this._numberInstance=values.length;
         this.initInstancesArray();
         //TODO: recall _rebuildProbCompute() everytime camera is changed
@@ -145,17 +144,21 @@ setAttributes(attributes, layout,elements) {
 }
 setHtreeRules(rules)
 {
-    
+    this.clearVisStatusArray();
     this._rules='';
     var _x = rules.map((rule, index) => {
         const attribute = rule.attribute;
         const hi = rule.hi;
         const lo = rule.lo;
+        var instancesStRule=this._getRuleElements(attribute, hi, lo);
+        this._sort_by_key(instancesStRule,'avgProb');
         const visibility = (rule.visibility / 100).toFixed(4);
+        this.updateVisStatusArray(instancesStRule,visibility);
         const phi = (index / rules.length) * 2 * Math.PI;
         const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
         const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
         var rangeCondition = '';
+        
         if(attribute.length>1)
         {
             
@@ -173,12 +176,12 @@ setHtreeRules(rules)
             rangeCondition += `instance.${attribute[0]} >= float(${lo[0]}) && instance.${attribute[0]} <= float(${hi[0]})`;
                
         }
-        const visibilityCondition = ` prob <  ${visibility}`;
+        const visibilityCondition = `visStatus> uint(0)`;
         this._rules+= `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
-   // console.log(rules);
-    //this.saveInFile(this._rules);
-    this._recomputeTransferFunction(rules); 
+    //console.log(this.visStatusArr);    
+    this._recomputeTransferFunction(rules);
+    this._createVisibilityStatusBuffer();
     this._rebuildAttribCompute(true);
 }
 initInstancesArray()
@@ -189,27 +192,27 @@ clearVisStatusArray()
 {
     for(var i=0;i<this._numberInstance;i++)
     {
-        this.visStatusArr[i]=0;
+        this.visStatusArr[i]=1;
     }
 }
 setRules(rules) { 
-//setRulesBasedAvgProb(rules) {
     this.clearVisStatusArray();//defult 0=visible .. 1=invisible
     this._rules = rules.map((rule, index) => {
         const attribute = rule.attribute;
         const lo = rule.range.x.toFixed(4);
-        const hi = rule.range.y.toFixed(4);                
+        const hi = rule.range.y.toFixed(4);
         var instancesStRule=this._getRuleElements([attribute], [hi], [lo]);
         this._sort_by_key(instancesStRule,'avgProb');
-        //console.log(instances);
+        //console.log(instancesStRule);
         const visibility = (rule.visibility / 100).toFixed(4);
         this.updateVisStatusArray(instancesStRule,visibility);
         const phi = (index / rules.length) * 2 * Math.PI;
         const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
         const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
         const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
-       // const visibilityCondition = ` prob == uint(0)`;
-        return `if (${rangeCondition}) { return vec2(${tfx}, ${tfy}); }`;
+        const visibilityCondition = `visStatus> uint(0)`;
+       return `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
+   
     });
     //console.log(this.visStatusArr);    
     this._recomputeTransferFunction(rules);
@@ -234,11 +237,19 @@ setRules(rules) {
     this._rebuildAttribCompute();
 }*/
 updateVisStatusArray(instancesStRule,visibility)
-{    
-    var numberRemoved = instancesStRule.length-(Math.round(instancesStRule.length*visibility));
+{
+    var numberRemoved=instancesStRule.length-(Math.floor(instancesStRule.length*visibility));
+    //console.log('instances.length'+instancesStRule.length);
+    //console.log('numberRemoved'+numberRemoved);
     for(var i=0;i<numberRemoved;i++)
     {
-        this.visStatusArr[instancesStRule[i]['id']]=1;
+        if(this.visStatusArr[instancesStRule[i]['id']]==1)
+            this.visStatusArr[instancesStRule[i]['id']]=0;
+    }
+    for(var i=numberRemoved;i<instancesStRule.length;i++)
+    {
+        if(this.visStatusArr[instancesStRule[i]['id']]==1)
+            this.visStatusArr[instancesStRule[i]['id']]=2;
     }
 }
 _sort_by_key(array, key)
@@ -334,56 +345,77 @@ _recomputeProbability() {
     gl.bindImageTexture(1, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
     gl.uniform1i(program.uniforms.uNumInstances, this._numberInstance);
-    //console.log(gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS));
-    const Max_nAtomic=gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS);
+    const Max_nAtomic= this._numberInstance * 2; //gl.getParameter(gl.MAX_COMBINED_ATOMIC_COUNTERS);
     gl.uniform1i(program.uniforms.uMax_nAtomic, Max_nAtomic);
+     // -     // --------------------------------------------------------------
+    var stepSize=Math.floor(Max_nAtomic/2.0);
+    let start=0;
+    let end=0;
+    
+    gl.uniform1f(program.uniforms.vx, 1.0 / dimensions.width);
+    gl.uniform1f(program.uniforms.vy, 1.0 / dimensions.height);
+    gl.uniform1f(program.uniforms.vz, 1.0 / dimensions.depth);
+    
+    //const atomicCounter = gl.createBuffer();
+    const ssbo = gl.createBuffer();
+
+    //gl.bindBuffer(gl.ATOMIC_COUNTER_BUFFER, atomicCounter);
+    gl.bindBuffer(gl.SHADER_STORAGE_BUFFER, ssbo);
 
     const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
     const groupsY = Math.ceil(dimensions.height / this._localSize.y);
     const groupsZ = Math.ceil(dimensions.depth  / this._localSize.z);
+    
+    var t0 = performance.now();
 
-    gl.uniform3i(program.uniforms.uVoxelLength, groupsX, groupsY, groupsZ);
-     // --------------------------------------------------------------
-    var stepSize=Math.floor(Max_nAtomic/2.0);
-    let start=0;
-    let end=start+stepSize;
     for (; end < this._numberInstance; start+=stepSize) {
-        end=start+stepSize;
-        if(end> this._numberInstance)
-            end= this._numberInstance;
+        end = start+stepSize;
+
+        if (end > this._numberInstance)
+            end = this._numberInstance;
 
         gl.uniform1ui(program.uniforms.start, start);
         gl.uniform1ui(program.uniforms.end, end);
+    
+        const result  = new Uint32Array(Max_nAtomic);
+        //gl.bufferData(gl.ATOMIC_COUNTER_BUFFER, result, gl.DYNAMIC_COPY);
+        gl.bufferData(gl.SHADER_STORAGE_BUFFER, result, gl.DYNAMIC_COPY);
+        //gl.bindBufferBase(gl.ATOMIC_COUNTER_BUFFER, 0, atomicCounter);
+        gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, ssbo);
 
-        const atomicCounter= gl.createBuffer();
-        gl.bindBuffer(gl.ATOMIC_COUNTER_BUFFER, atomicCounter);
-        gl.bufferData(gl.ATOMIC_COUNTER_BUFFER, new Uint32Array(Max_nAtomic),gl.DYNAMIC_COPY);
-        gl.bindBufferBase(gl.ATOMIC_COUNTER_BUFFER, 0, atomicCounter);
-
-        
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.bufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, new Uint32Array(Max_nAtomic));// clear counter
+        //gl.clear(gl.COLOR_BUFFER_BIT);
+        //gl.bufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, new Uint32Array(Max_nAtomic));// clear counter
 
         gl.dispatchCompute(groupsX, groupsY, groupsZ);
-        
       
-        gl.memoryBarrier(gl.ATOMIC_COUNTER_BARRIER_BIT);
-        const result  = new Uint32Array(Max_nAtomic);
-        gl.getBufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, result);
+        //gl.memoryBarrier(gl.ATOMIC_COUNTER_BARRIER_BIT);        
+        //gl.memoryBarrier(gl.SHADER_STORAGE_BUFFER);        
+
+        //gl.getBufferSubData(gl.ATOMIC_COUNTER_BUFFER, 0, result);
+        gl.getBufferSubData(gl.SHADER_STORAGE_BUFFER, 0, result);
         //console.log(result);
-        gl.deleteBuffer(atomicCounter);
+        //gl.deleteBuffer(atomicCounter);
 
         /***** comput avarage  ****/
         var j=0;
         for(var i=start;i<end;i++)
         {
-            
-            avgProbArray[i]=parseFloat(result[j])/parseFloat(result[j+1]);
+            var prob_float= result[j]/100.0;            
+            if(result[j+1] > 0) {
+                avgProbArray[i]= prob_float / result[j+1];
+            } else {
+                avgProbArray[i]= 0;
+            }
+            //console.log(avgProbArray[i]);
             this._elements[i].avgProb=avgProbArray[i];
             j+=2;
         }
     }
-    console.log('avg Probabilities..');
+    //gl.deleteBuffer(atomicCounter);
+    gl.deleteBuffer(ssbo);
+    var t1 = performance.now();
+
+    console.log('avg Probabilities is computed in ' + (t1 - t0) + " milliseconds.");
     //console.log(this._elements);
     //this._createAvgProbBuffer(avgProbArray);  
 }
@@ -415,8 +447,12 @@ _createVisibilityStatusBuffer()
     
     var visStatus_buffer = this.visStatusArr.buffer;
     
-    console.log(visStatus_buffer);
-    
+    //console.log(visStatus_buffer);
+    //if(this._visibilityStatus)
+    //{
+    //    gl.deleteBuffer(this._visibilityStatus);
+    //}
+
     WebGL.createBuffer(gl, {
         target : gl.SHADER_STORAGE_BUFFER,
         buffer : this._visibilityStatus,
