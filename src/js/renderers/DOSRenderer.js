@@ -6,7 +6,7 @@
 
 class DOSRenderer extends AbstractRenderer {
 
-constructor(gl, volume,camera, environmentTexture, options) {
+constructor(gl, volume, camera, environmentTexture, options) {
     super(gl, volume, environmentTexture, options);
 
     Object.assign(this, {
@@ -18,8 +18,8 @@ constructor(gl, volume,camera, environmentTexture, options) {
         _depth         : 1,
         _minDepth      : -1,
         _maxDepth      : 1,
-        _lightPos      :[0.5,0.5,0.5],
-        _ks            :0.1,
+        _lightPos      : [0.5, 0.5, 0.5],
+        _ks            : 0.1,
         _kt            : 0.1
     }, options);
 
@@ -29,7 +29,7 @@ constructor(gl, volume,camera, environmentTexture, options) {
         reset     : SHADERS.DOSReset,
         transfer  : SHADERS.PolarTransferFunction,
     }, MIXINS);
-    
+
     this._camera= camera;
     this._numberInstance=0;
     this._rules = [];
@@ -145,7 +145,7 @@ setAttributes(attributes, layout) {
     }
 }
 saveInFile(data) {
-    // this function just to test the content of long variables 
+    // this function just to test the content of long variables
     let bl = new Blob([data], {
        type: "text/html"
     });
@@ -160,7 +160,7 @@ saveInFile(data) {
 }
 setHtreeRules(rules)
 {
-    
+
     this._rules='';
     var _x = rules.map((rule, index) => {
         const attribute = rule.attribute;
@@ -173,7 +173,7 @@ setHtreeRules(rules)
         var rangeCondition = '';
         if(attribute.length>1)
         {
-            
+
             for(var i=0;i<attribute.length;i++)
             {
                 /*
@@ -192,7 +192,7 @@ setHtreeRules(rules)
         else{
             //rangeCondition+= `instance.${attribute[0]}==float(${value[0]})`;
             rangeCondition += `instance.${attribute[0]} >= float(${lo[0]}) && instance.${attribute[0]} <= float(${hi[0]})`;
-               
+
         }
 
         //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
@@ -200,9 +200,10 @@ setHtreeRules(rules)
         this._rules+= `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
     //console.log(this._rules);
-    this._recomputeTransferFunction(rules); 
+    this._recomputeTransferFunction(rules);
     this._rebuildAttribComputeTree();
 }
+
 setRules(rules) {
     this._rules = rules.map((rule, index) => {
         const attribute = rule.attribute;
@@ -213,18 +214,18 @@ setRules(rules) {
         const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
         const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
         const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
-        //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
-        const visibilityCondition = ` prob <  ${visibility}`;
+        const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
         return `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
     });
-    //console.log(rules);
+
     this._recomputeTransferFunction(rules);
     this._rebuildAttribCompute();
 }
-_getCameraPosition()
-{
+
+_getCameraPosition() {
     return [this._camera.position.x,this._camera.position.y,this._camera.position.z];
 }
+
 _rebuildAttribCompute() {
     const gl = this._gl;
 
@@ -238,7 +239,7 @@ _rebuildAttribCompute() {
     }
     const instance = members.join('\n');
     const rules = this._rules.join('\n');
-    
+
     this._programs.compute = WebGL.buildPrograms(gl, {
         compute  : SHADERS.AttribCompute
     }, {
@@ -252,6 +253,7 @@ _rebuildAttribCompute() {
 
     this._recomputeMask();
 }
+
 _rebuildAttribComputeTree() {
     const gl = this._gl;
 
@@ -265,7 +267,7 @@ _rebuildAttribComputeTree() {
     }
     const instance = members.join('\n');
     const rules = this._rules;
-    
+
     this._programs.compute = WebGL.buildPrograms(gl, {
         compute  : SHADERS.AttribCompute
     }, {
@@ -279,6 +281,7 @@ _rebuildAttribComputeTree() {
 
     this._recomputeMask();
 }
+
 _recomputeMask() {
     const gl = this._gl;
 
@@ -298,7 +301,7 @@ _recomputeMask() {
     gl.uniform1f(program.uniforms.uMaxDistance, this._maxDepth);
     gl.uniform1f(program.uniforms.uKs, this._ks);
     gl.uniform1f(program.uniforms.uKt, this._kt);*/
-   
+
     gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
     /*gl.activeTexture(gl.TEXTURE2);
     gl.uniform1i(program.uniforms.uVolume, 2);
@@ -323,7 +326,7 @@ _recomputeTransferFunction(rules) {
         .flat()
         .map(x => x * 255);
     const data = new Uint8Array(colors);
-    
+
     // upload color strip
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this._colorStrip);
@@ -334,7 +337,7 @@ _recomputeTransferFunction(rules) {
         height  : 1,
         data    : data
     });
-   
+
     // render transfer function
     const program = this._programs.transfer;
     gl.useProgram(program.program);
@@ -386,7 +389,7 @@ _integrateFrame() {
         gl.COLOR_ATTACHMENT0,
         gl.COLOR_ATTACHMENT1
     ]);
-    
+
     gl.activeTexture(gl.TEXTURE2);
     gl.uniform1i(program.uniforms.uVolume, 2);
     gl.bindTexture(gl.TEXTURE_3D, this._mask);
@@ -394,7 +397,7 @@ _integrateFrame() {
     gl.activeTexture(gl.TEXTURE3);
     gl.uniform1i(program.uniforms.uTransferFunction, 3);
     gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
-    
+
     // TODO: calculate correct blur radius (occlusion scale)
     gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
     gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
@@ -485,8 +488,7 @@ _getAccumulationBufferSpec() {
 }
 
 _getValuesByAttributeName(attribName, layout, attributes) {
-    var index = this._getIndexOfAttribute(attribName, layout);    
-    
+    var index = this._getIndexOfAttribute(attribName, layout);
     return this._parseValuesFromAttributeRawFile(index, layout.length, attributes);
 }
 
@@ -510,14 +512,14 @@ _parseValuesFromAttributeRawFile(index, valuesPerRow, attributes) {
         return [];
     }
 
-    const view = new DataView(attributes);    
+    const view = new DataView(attributes);
     var count = attributes.byteLength / 4; // converting to float32
-    
+
     var data = [];
-    for(var i = index; i < count; i += valuesPerRow) {        
+    for(var i = index; i < count; i += valuesPerRow) {
         data.push(view.getFloat32(i * 4, false));
     }
-    
+
     return data;
 }
 
