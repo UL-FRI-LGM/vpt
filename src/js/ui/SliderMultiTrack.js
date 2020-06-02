@@ -92,19 +92,29 @@ class SliderMultiTrack extends UIObject {
     }
 
     setLimitLeft(value) {
-        this.limitLeft = value;
+        this.limitLeft = value; 
         this._updateUI();
     }
 
     setLimitRight(value) {
-        this.limitRight = value;
+        this.limitRight = value; 
         this._updateUI();
     }
 
+    setMaxValue(value) {
+        this.max = value;
+        this._updateUI();
+    }
     getMaxValue() {
         return this.max;
     }
+    getLimitLeft() {
+        return this.limitLeft;
+    }
 
+    getLimitRight() {
+        return this.limitRight;
+    }
     _updateUI() {
         if (this.logarithmic) {
             const logmin = Math.log(this.min);
@@ -125,11 +135,18 @@ class SliderMultiTrack extends UIObject {
                 const ratio = (this.limitLeft - this.min) / (this.max - this.min) * 100;
                 this._binds.limitLeft.style.width = ratio + '%';
             }
+            else{
+                this._binds.limitLeft.style.width ='0%';
+            }
 
             if (this.limitRight < this.max) {
                 const ratio = (this.limitRight - this.min) / (this.max - this.min) * 100;
                 this._binds.limitRight.style.left = ratio + '%';
                 this._binds.limitRight.style.width = (100 - ratio) + '%';
+            }
+            else{
+                this._binds.limitRight.style.left = '0%';
+                this._binds.limitRight.style.width = '0%';
             }
         }
     }
@@ -200,6 +217,12 @@ class SliderMultiTrack extends UIObject {
 
         const delta = this.logarithmic ? this.value * this.step * wheel : this.step * wheel;
         this.setValue(this.value + delta);
+    }
+    resetLimits() 
+    { 
+        this.limitLeft = this.min; 
+        this.limitRight = this.max; 
+        this._updateUI();
     }
 
 }

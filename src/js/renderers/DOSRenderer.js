@@ -39,7 +39,6 @@ constructor(gl, volume,camera, environmentTexture, options) {
     this._mask = null;
     this._elements=[];
     this.visStatusArr= null;
-    this._avgProbability = null;
     this._visibilityStatus = gl.createBuffer();
     this._localSize = {
         x: 128,
