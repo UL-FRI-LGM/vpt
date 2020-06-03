@@ -578,7 +578,7 @@ function createJSONHierarchyTree(nav) {
     node.isDisabled = false;
     computeMinMaxRange(node);
   }
-  function updateSliderTracks(node)//
+  function updateSliderTracks(node)
   {
     node.occludedInstance = 50;// node.sliderValue*0.10;
     node.sliderObj.object.setValue2(node.sliderObj.object.getMaxValue() - node.sliderObj.object.getValue());

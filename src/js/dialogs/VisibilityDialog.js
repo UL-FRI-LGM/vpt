@@ -21,6 +21,7 @@ constructor(options) {
 _registerEventListeners() {
     this._handleAddGroupClick = this._handleAddGroupClick.bind(this);
     this._handleGroupChange = this._handleGroupChange.bind(this);
+    this._handleColorChange =  this._handleColorChange.bind(this);
 }
 
 _addEventListeners() {
