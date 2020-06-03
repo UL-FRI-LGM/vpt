@@ -2,6 +2,7 @@
 
 // #include ../math
 // #include ../WebGL.js
+// #include ../DoubleBuffer.js
 // #include AbstractRenderer.js
 
 class DOSRenderer extends AbstractRenderer {
@@ -28,6 +29,8 @@ constructor(gl, volume, camera, environmentTexture, options) {
         render    : SHADERS.DOSRender,
         reset     : SHADERS.DOSReset,
         transfer  : SHADERS.PolarTransferFunction,
+        idrender  : SHADERS.IDBuffer.render,
+        idreset   : SHADERS.IDBuffer.reset,
     }, MIXINS);
 
     this._camera= camera;
@@ -67,6 +70,18 @@ destroy() {
     });
 
     super.destroy();
+}
+
+_rebuildBuffers() {
+    const gl = this._gl;
+
+    if (this._idFramebuffer) {
+        this._idFramebuffer.destroy();
+    }
+
+    this._idFramebuffer = new DoubleBuffer(gl, this._getIDFramebufferSpec());
+
+    super._rebuildBuffers();
 }
 
 calculateDepth() {
@@ -391,9 +406,18 @@ _resetFrame() {
         gl.COLOR_ATTACHMENT1
     ]);
 
-    const program = this._programs.reset;
+    let program = this._programs.reset;
     gl.useProgram(program.program);
+    gl.drawBuffers([ gl.COLOR_ATTACHMENT0 ]);
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
+    program = this._programs.idreset;
+    gl.useProgram(program.program);
+    gl.drawBuffers([
+        gl.COLOR_ATTACHMENT0,
+        gl.COLOR_ATTACHMENT1
+    ]);
+    this._idFramebuffer.use();
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 }
 
@@ -505,6 +529,25 @@ _getAccumulationBufferSpec() {
     return [
         colorBuffer,
         occlusionBuffer
+    ];
+}
+
+_getIDFramebufferSpec() {
+    const gl = this._gl;
+
+    const spec = {
+        width          : this._bufferSize,
+        height         : this._bufferSize,
+        min            : gl.NEAREST,
+        mag            : gl.NEAREST,
+        format         : gl.RED_INTEGER,
+        internalFormat : gl.R32UI,
+        type           : gl.UNSIGNED_INT
+    };
+
+    return [
+        spec, // instance ID
+        spec  // group ID
     ];
 }
 

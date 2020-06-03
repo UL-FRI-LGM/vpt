@@ -24,6 +24,8 @@ void main() {
 
 #version 310 es
 precision mediump float;
+precision mediump usampler2D;
+precision mediump usampler3D;
 
 uniform usampler3D uIDVolume;
 
@@ -36,21 +38,9 @@ in vec3 vPosition3D;
 layout (location = 0) out uint oInstanceID;
 layout (location = 1) out uint oGroupID;
 
-struct Instance {
-    @instance
+layout (std430, binding = 1) buffer bGroupMembership {
+    uint sGroupMembership[];
 };
-
-layout (std430, binding = 0) buffer bAttributes {
-    Instance sInstances[];
-};
-
-@rand
-
-uint getGroupID(Instance instance, uint instanceId) {
-    if (id == 0u) { return 0u; }
-    @groupRules
-    return 0u;
-}
 
 void main() {
     uint instanceID = texture(uInstanceID, vPosition2D).r;
@@ -69,8 +59,7 @@ void main() {
     }
 
     uint newInstanceID = texture(uIDVolume, vPosition3D).r;
-    Instance instance = sInstances[instanceID];
-    uint newGroupID = getGroupID(instance, instanceID);
+    uint newGroupID = sGroupMembership[newInstanceID];
 
     oInstanceID = newInstanceID;
     oGroupID = newGroupID;
@@ -81,8 +70,10 @@ void main() {
 #version 310 es
 precision mediump float;
 
-void main() {
+layout (location = 0) in vec2 aPosition;
 
+void main() {
+    gl_Position = vec4(aPosition, 0, 1);
 }
 
 // #section IDBuffer/reset/fragment
@@ -90,6 +81,10 @@ void main() {
 #version 310 es
 precision mediump float;
 
-void main() {
+layout (location = 0) out uint oInstanceID;
+layout (location = 1) out uint oGroupID;
 
+void main() {
+    oInstanceID = 0u;
+    oGroupID = 0u;
 }
