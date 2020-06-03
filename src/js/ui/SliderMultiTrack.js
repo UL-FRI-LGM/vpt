@@ -218,11 +218,5 @@ class SliderMultiTrack extends UIObject {
         const delta = this.logarithmic ? this.value * this.step * wheel : this.step * wheel;
         this.setValue(this.value + delta);
     }
-    resetLimits() 
-    { 
-        this.limitLeft = this.min; 
-        this.limitRight = this.max; 
-        this._updateUI();
-    }
 
 }
