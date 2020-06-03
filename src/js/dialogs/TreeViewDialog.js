@@ -328,10 +328,12 @@ function createJSONHierarchyTree(nav) {
     node.sliderObj = UI.create({
       "type": "slider-multi-track",
       "bind": "sliderChange",
-      "value": 99.999,
-      "min": 0.0001,
-      "max": 99.999,
-      "step": 1.000
+      "value": 100,
+      "value2": 0,
+      "value3": 0,
+      "min": 0,
+      "max": 100,
+      "step": 1
     });
 
     const div_slider = node.sliderObj.object._element;
@@ -409,10 +411,12 @@ function createJSONHierarchyTree(nav) {
     node.sliderObj = UI.create({
       "type": "slider-multi-track",
       "bind": "sliderChange",
-      "value": 99.999,
-      "min": 0.0001,
-      "max": 99.999,
-      "step": 1.000
+      "value": 100,
+      "value2": 0,
+      "value3": 0,
+      "min": 0,
+      "max": 100,
+      "step": 1
     });
     const div_slider = node.sliderObj.object._element;
     updateSliderTracks(node);

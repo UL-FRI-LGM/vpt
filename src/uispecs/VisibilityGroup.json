@@ -39,10 +39,12 @@
             {
               "type": "slider-multi-track",
               "bind": "visibility",
-              "value": 99.999,
-              "min": 0.0001,
-              "max": 99.999,
-              "step": 1.000
+              "value": 100,
+              "value2": 0,
+              "value3": 0,
+              "min": 0,
+              "max": 100,
+              "step": 1
             }
           ]
         },
