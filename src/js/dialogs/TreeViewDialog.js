@@ -328,10 +328,12 @@ function createJSONHierarchyTree(nav) {
     node.sliderObj = UI.create({
       "type": "slider-multi-track",
       "bind": "sliderChange",
-      "value": 99.999,
-      "min": 0.0001,
-      "max": 99.999,
-      "step": 1.000
+      "value": 100,
+      "value2": 0,
+      "value3": 0,
+      "min": 0,
+      "max": 100,
+      "step": 1
     });
 
     const div_slider = node.sliderObj.object._element;
@@ -360,12 +362,7 @@ function createJSONHierarchyTree(nav) {
       //lineChildren = [caretElem,typeElem]
       lineChildren = [caretElem, propertyElem]
     }
-    /*else if (node.name === null) {
-      //lineChildren = [caretElem,typeElem];//,div_slider,div_Lock]
-      lineChildren = [caretElem,propertyElem,div_slider,div_colorChooser,div_Lock];
-    } */
     else {
-      //lineChildren = [caretElem,propertyElem];//,div_slider,div_Lock]
       lineChildren = [caretElem, propertyElem, div_slider, div_colorChooser, div_Lock];
     }
 
@@ -414,10 +411,12 @@ function createJSONHierarchyTree(nav) {
     node.sliderObj = UI.create({
       "type": "slider-multi-track",
       "bind": "sliderChange",
-      "value": 99.999,
-      "min": 0.0001,
-      "max": 99.999,
-      "step": 1.000
+      "value": 100,
+      "value2": 0,
+      "value3": 0,
+      "min": 0,
+      "max": 100,
+      "step": 1
     });
     const div_slider = node.sliderObj.object._element;
     updateSliderTracks(node);
@@ -461,8 +460,8 @@ function createJSONHierarchyTree(nav) {
       visInstances: 0,
       occludedInstance: 0,
       sliderValue: 100,
-      minSliderValue: 0,
-      maxSliderValue: 100,
+     // minSliderValue: 0,
+      //maxSliderValue: 100,
       lo: 0,
       hi: 0,
       color: '#808080',//gray
@@ -528,15 +527,6 @@ function createJSONHierarchyTree(nav) {
       },
       sliderChange: function () {
         if (this.isDisabled !== true) {
-          // the MAX and MIN range will never be exceeded, this is checked inside the slider
-          //if (exceedMaxRange(this) == true) {
-          //  setSliderValue(this, this.maxSliderValue);
-          //}
-          //else if (exceedMinRange(this) == true) {
-          //  setSliderValue(this, this.minSliderValue);
-          //}
-          //=========================
-          //if(isSliderUpdated==true)
           {
             this.sliderValue = getSliderValue(this);
             var prevCount = this.visInstances;
@@ -550,17 +540,9 @@ function createJSONHierarchyTree(nav) {
               decreaseChildrenSliderCountValues(this, amount * -1);
               
             TVDClass.trigger('treeSliderChange');
-            //this.sliderObject.object.triggerChange();
-            // console.log(this);
           }
         }
-        else {
-          //console.log('illegal change in the slider..');
-        }
       },
-      /*onHandleSliderClick:function(){
- 
-      },*/
       ColorChange: function () {
         this.color = (getColor(this)).value;
         updateChildrenColorValue(this, this.color);
@@ -590,8 +572,8 @@ function createJSONHierarchyTree(nav) {
     element.className = 'lock';
     node.sliderObj.object.disable();
     node.isDisabled = true;
-    node.minSliderValue = node.sliderValue;
-    node.maxSliderValue = node.sliderValue;
+    setSliderRightLimit(node,node.sliderValue);
+    setSliderLeftLimit(node,node.sliderValue);
   }
   function unlockedNode(node) {
     var element = getLockElement(node);
@@ -600,30 +582,12 @@ function createJSONHierarchyTree(nav) {
     node.isDisabled = false;
     computeMinMaxRange(node);
   }
-  function updateSliderTracks(node)//
+  function updateSliderTracks(node)
   {
     node.occludedInstance = 50;// node.sliderValue*0.10;
     node.sliderObj.object.setValue2(node.sliderObj.object.getMaxValue() - node.sliderObj.object.getValue());
     node.sliderObj.object.setValue3(node.occludedInstance);
 
-  }
-  function exceedMinRange(node) {
-    var sliderVal = getSliderValue(node);
-    //check sliders total if greater than 150 and re-update slider 
-    if (sliderVal < node.minSliderValue) {
-      return true;
-    }
-    else
-      return false;
-  }
-  function exceedMaxRange(node) {
-    var sliderVal = getSliderValue(node);
-    if (sliderVal > node.maxSliderValue) {
-      //setSliderValue(node,node.maxSliderValue);
-      return true;
-    }
-    else
-      return false;
   }
   function changeParentsMinMaxRange(node) {
     if (node.isroot != true) {
@@ -636,20 +600,21 @@ function createJSONHierarchyTree(nav) {
       var min = 0;
       var max = 0;
       node.children.forEach((item) => {
-        min += item.minSliderValue * (item.nInstances / item.parent.nInstances);
-        max += item.maxSliderValue * (item.nInstances / item.parent.nInstances);
+        min += getSliderLeftLimit(item) * (item.nInstances / item.parent.nInstances);
+        max += getSliderRightLimit(item) * (item.nInstances / item.parent.nInstances);
       });
       if (node.children[0].isClassName == true) {
         min = min / node.children.length;
         max = max / node.children.length;
       }
-      node.minSliderValue = min;
-      node.maxSliderValue = max;
+      setSliderRightLimit(node ,max);
+      setSliderLeftLimit(node,min);
     }
     else {
-      node.minSliderValue = 0;
-      node.maxSliderValue = 100;
+      setSliderRightLimit(node ,100);
+      setSliderLeftLimit(node,0);
     }
+    
   }
   function updateCountFromSliderValue(node) {
     var newValue = (node.sliderValue * node.nInstances) / 100;
@@ -669,6 +634,7 @@ function createJSONHierarchyTree(nav) {
   function unlockedParents(node) {
     if (node.isroot !== true) {
       unlockedNode(node);
+
       unlockedParents(node.parent);
     }
   }
@@ -691,7 +657,6 @@ function createJSONHierarchyTree(nav) {
     return node.elem.children[3].children[0];
   }
   function getLockElement(node) {
-    //console.log(node);
     return node.elem.children[4].children[0];
   }
   function updateParentsSliderCountValues(node) {
@@ -935,9 +900,38 @@ function createJSONHierarchyTree(nav) {
       Htree.visInstances = Htree.nInstances;
       render(Htree, targetElem, 0);
       countElementsOfthisClass(Htree, [], [], []);
+      countElementsBasedVisRule(Htree);
     }
   }
-
+  function countElementsBasedVisRule(node)
+  {
+    if (node.children != null)
+    {
+        var count=0;
+        node.children.forEach((item) => {
+          count+=countElementsBasedVisRule(item);
+        });
+        node.nInstances=count;
+        node.visInstances = node.nInstances;
+    }
+    return node.nInstances;
+  }
+  function setSliderRightLimit(node,newValue)
+  {
+    node.sliderObj.object.setLimitRight(newValue);
+  }
+  function getSliderRightLimit(node)
+  {
+    return node.sliderObj.object.getLimitRight();
+  }
+  function setSliderLeftLimit(node,newValue)
+  {
+    node.sliderObj.object.setLimitLeft(newValue);
+  }
+  function getSliderLeftLimit(node)
+  {
+    return node.sliderObj.object.getLimitLeft();
+  }
   function countElementsOfthisClass(node, className, hiList, loList) {
     if (node.isClassName == true) {
 
@@ -996,13 +990,11 @@ function createJSONHierarchyTree(nav) {
   }
   function LockedEmptyNode(node) {
     node.isEmpty = true;
-    //LockChange
     var element = getLockElement(node);
     element.className = 'empty';
     node.sliderObj.object.disable();
     setSliderValue(node, 0);
+    setSliderRightLimit(node,0);
     node.isDisabled = true;
-    node.minSliderValue = 0;
-    node.maxSliderValue = 0;
   }
 })();

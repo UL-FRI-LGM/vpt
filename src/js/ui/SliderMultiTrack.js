@@ -17,7 +17,9 @@ class SliderMultiTrack extends UIObject {
             step: 1,
             enabled: true,
             logarithmic: false,
-            focused: false
+            focused: false,
+            limitLeft: 0,
+            limitRight: 100
         }, options);
 
         this._handleMouseDown = this._handleMouseDown.bind(this);
@@ -58,15 +60,25 @@ class SliderMultiTrack extends UIObject {
             return;
         }
 
-        var newValue = CommonUtils.clamp(value, this.min, this.max);
-
+        var newValue = CommonUtils.clamp(value, this.min, this.max);        
+        newValue = CommonUtils.clamp(newValue, this.limitLeft, this.limitRight);
+        
         this.value = newValue;
+
+        /* TESTING
+        this.limitLeft = newValue * 0.1 + 5;
+        this.limitRight = this.max - this.limitLeft * 2;        
+        this.value2 = this.value * 0.3;
+        this.value3 = this.value * 0.6;
+        */
+
         this._updateUI();
 
         if (this.focused) {
             this.trigger('change');
         }
     }
+
     setValue2(value) {
         // there is no 'disabled' test because it's just state visualization
         this.value2 = CommonUtils.clamp(value, this.min, this.max);
@@ -79,10 +91,30 @@ class SliderMultiTrack extends UIObject {
         this._updateUI();
     }
 
+    setLimitLeft(value) {
+        this.limitLeft = value; 
+        this._updateUI();
+    }
+
+    setLimitRight(value) {
+        this.limitRight = value; 
+        this._updateUI();
+    }
+
+    setMaxValue(value) {
+        this.max = value;
+        this._updateUI();
+    }
     getMaxValue() {
         return this.max;
     }
+    getLimitLeft() {
+        return this.limitLeft;
+    }
 
+    getLimitRight() {
+        return this.limitRight;
+    }
     _updateUI() {
         if (this.logarithmic) {
             const logmin = Math.log(this.min);
@@ -98,6 +130,24 @@ class SliderMultiTrack extends UIObject {
 
             const ratio3 = (this.value3 - this.min) / (this.max - this.min) * 100;
             this._binds.track3.style.width = ratio3 + '%';
+
+            if (this.limitLeft > this.min) {
+                const ratio = (this.limitLeft - this.min) / (this.max - this.min) * 100;
+                this._binds.limitLeft.style.width = ratio + '%';
+            }
+            else{
+                this._binds.limitLeft.style.width ='0%';
+            }
+
+            if (this.limitRight < this.max) {
+                const ratio = (this.limitRight - this.min) / (this.max - this.min) * 100;
+                this._binds.limitRight.style.left = ratio + '%';
+                this._binds.limitRight.style.width = (100 - ratio) + '%';
+            }
+            else{
+                this._binds.limitRight.style.left = '0%';
+                this._binds.limitRight.style.width = '0%';
+            }
         }
     }
 

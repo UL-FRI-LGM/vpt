@@ -11,7 +11,7 @@ constructor(options) {
 
     this.groups = [];
     this.attributes = [];
-
+    this._elementsArray = [];
     this._colorSeed = Math.random();
 
     this._registerEventListeners();
@@ -21,6 +21,7 @@ constructor(options) {
 _registerEventListeners() {
     this._handleAddGroupClick = this._handleAddGroupClick.bind(this);
     this._handleGroupChange = this._handleGroupChange.bind(this);
+    this._handleColorChange =  this._handleColorChange.bind(this);
 }
 
 _addEventListeners() {
@@ -34,8 +35,9 @@ reset() {
     this.groups = [];
 }
 
-setAttributes(attributes) {
+setAttributes(attributes,elementsJSON) {
     this.attributes = attributes;
+    this._elementsArray = elementsJSON;
 }
 
 getGroups() {
@@ -51,10 +53,23 @@ _handleAddGroupClick() {
     this._addGroup();
 }
 
-_handleGroupChange() {
+_handleGroupChange(group) {
+    const { object, binds } = group;
+
+    /*var attribute= binds.attribute.getValue();
+    var range = binds.range.getValue();
+    var visibility = binds.visibility.getValue();
+    var elemCount = this.countElements([attribute], [range.y], [range.x]) ;*/
+    
+    var occludedInstance = 50;// 
+    binds.visibility.setValue2(binds.visibility.getMaxValue() - binds.visibility.getValue());
+    binds.visibility.setValue3(occludedInstance);
     this.trigger('change');
 }
 
+_handleColorChange() {
+    this.trigger('change');
+}
 _addGroup() {
     const group = UI.create(UISPECS.VisibilityGroup);
     const { object, binds } = group;
@@ -89,10 +104,10 @@ _addGroup() {
     controlPanelButtons.down.addEventListener('click', e => this._moveDown(group));
     controlPanelButtons.delete.addEventListener('click', e => this._delete(group));
 
-    binds.attribute.addEventListener('change', this._handleGroupChange);
-    binds.range.addEventListener('change', this._handleGroupChange);
-    binds.visibility.addEventListener('change', this._handleGroupChange);
-    binds.color.addEventListener('change', this._handleGroupChange);
+    binds.attribute.addEventListener('change', e => this._handleGroupChange(group));
+    binds.range.addEventListener('change', e => this._handleGroupChange(group));
+    binds.visibility.addEventListener('change',  e => this._handleGroupChange(group));
+    binds.color.addEventListener('change', this._handleColorChange);
 
     return group;
 }
@@ -137,4 +152,22 @@ _delete(group) {
     this.trigger('retopo');
 }
 
+ countElements(className, hiList, loList) {
+    var el = clone(this._elementsArray);
+    for (var j = 0; j < className.length; j++) {
+      if (hiList[j] == null)
+        break;
+      el = el.filter(x => x[className[j]] <= hiList[j] && x[className[j]] >= loList[j])
+    }
+    return el.length;
+  }
+}
+
+function clone(obj) {
+    if (null == obj || "object" != typeof obj) return obj;
+    var copy = new obj.constructor();
+    for (var attr in obj) {
+      if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+    }
+    return copy;
 }

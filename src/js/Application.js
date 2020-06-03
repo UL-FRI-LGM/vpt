@@ -200,11 +200,10 @@ _handleAttribLoad(options) {
     });
     
     Promise.all([attrib, layout]).then(([attrib, layout]) => {
-       
         const elementsJSON=this.getElementsAttribJSON(attrib, layout);//get also min/max
         const renderer = this._renderingContext.getRenderer();
         renderer.setAttributes(attrib, layout.map(function(x) { var v=new Object();v.name=x.name;v.type=x.type; return v;}),elementsJSON);
-        this._visibilityDialog.setAttributes(layout.map(x=> x.name));//layout.map(function(x) { var v=new Object();v.name=x.name;v.lowerBound=x.lowerBound;v.upperBound=x.upperBound; return v;}));
+        this._visibilityDialog.setAttributes(layout.map(x=> x.name),elementsJSON);//layout.map(function(x) { var v=new Object();v.name=x.name;v.lowerBound=x.lowerBound;v.upperBound=x.upperBound; return v;}));
         this._treeViewDialog.setAttributes(layout,elementsJSON);
     });
 }

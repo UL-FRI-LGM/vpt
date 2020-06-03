@@ -70,3 +70,19 @@
 .slider-multi-track .button.disabled {
     border: 2px solid var(--disabled-color);    
 }
+
+.slider-multi-track .limit-left {
+    position: absolute;
+    top: 0px;    
+    height: 100%;
+
+    background-color: #ddddddaa;
+}
+
+.slider-multi-track .limit-right {
+    position: absolute;
+    top: 0px;    
+    height: 100%;
+
+    background-color: #ddddddaa;
+}

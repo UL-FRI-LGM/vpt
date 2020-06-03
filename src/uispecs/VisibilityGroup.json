@@ -37,9 +37,14 @@
           "label": "Visibility:",
           "children": [
             {
-              "type": "slider",
+              "type": "slider-multi-track",
               "bind": "visibility",
-              "value": 100
+              "value": 100,
+              "value2": 0,
+              "value3": 0,
+              "min": 0,
+              "max": 100,
+              "step": 1
             }
           ]
         },
