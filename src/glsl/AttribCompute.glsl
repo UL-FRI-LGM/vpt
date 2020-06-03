@@ -14,6 +14,10 @@ layout (std430, binding = 0) buffer bAttributes {
     Instance sInstances[];
 };
 
+layout (std430, binding = 1) buffer bGroupMembership {
+    uint sGroupMembership[];
+};
+
 uniform ivec3 imageSize;
 layout (r32ui, binding = 0) restrict readonly highp uniform uimage3D iID;
 layout (rgba8, binding = 1) restrict writeonly highp uniform image3D oMask;
@@ -29,11 +33,17 @@ uniform float uMinDistance;
 uniform float uMaxDistance;*/
 @rand
 vec2 rules(Instance instance, uint id, float depth) {
-    if (id == 0u) { return vec2(0.5); }
+    if (id == 0u) {
+        sGroupMembership[id] = 0u;
+        return vec2(0.5);
+    }
+
     float prob= (rand(vec2(float(id))).x);
     //float prob= rand(vec2(depth)).x;
     //float prob= fract(float(id)/uNumInstances);
     @rules
+
+    sGroupMembership[id] = 0u;
     return vec2(0.5);
 }
 

@@ -35,6 +35,7 @@ constructor(gl, volume, camera, environmentTexture, options) {
     this._rules = [];
     this._layout = [];
     this._attrib = gl.createBuffer();
+    this._groupMembership = gl.createBuffer();
     this._mask = null;
     //this._probMask =null;
     this._localSize = {
@@ -136,6 +137,16 @@ setAttributes(attributes, layout) {
         buffer : this._attrib,
         data   : attributes || new ArrayBuffer()
     });
+
+    // TODO: only float works for now
+    const numberOfInstances = attributes ? (attributes.length / (layout.length * 4)) : 0;
+
+    WebGL.createBuffer(gl, {
+        target : gl.SHADER_STORAGE_BUFFER,
+        buffer : this._groupMembership,
+        data   : new ArrayBuffer(numberOfInstances * 4)
+    })
+
     this._layout = layout;
     //console.log(attributes);
     if(layout) {
@@ -213,9 +224,18 @@ setRules(rules) {
         const phi = (index / rules.length) * 2 * Math.PI;
         const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
         const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
+
         const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
         const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
-        return `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
+        const groupStatement = `sGroupMembership[id] = ${index + 1}u; return vec2(${tfx}, ${tfy});`;
+        const backgroundStatement = `sGroupMembership[id] = 0u; return vec2(0.5);`;
+        return `if (${rangeCondition}) {
+            if (${visibilityCondition}) {
+                ${groupStatement}
+            } else {
+                ${backgroundStatement}
+            }
+        }`;
     });
 
     this._recomputeTransferFunction(rules);
@@ -308,6 +328,7 @@ _recomputeMask() {
     gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());*/
 
     gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._attrib);
+    gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, this._groupMembership);
 
     const groupsX = Math.ceil(dimensions.width  / this._localSize.x);
     const groupsY = Math.ceil(dimensions.height / this._localSize.y);
