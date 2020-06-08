@@ -103,11 +103,14 @@ void main() {
         return;
     }
 
-    if (groupID != 0u) {
+    if (groupID == 0u) {
         uint newInstanceID = texture(uIDVolume, vPosition3D).r;
         uint newGroupID = sGroupMembership[newInstanceID];
         oInstanceID = newInstanceID;
         oGroupID = newGroupID;
+    } else {
+        oInstanceID = instanceID;
+        oGroupID = groupID;
     }
 
     vec4 transferSample = getSample(vPosition3D);

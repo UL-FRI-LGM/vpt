@@ -424,7 +424,7 @@ _integrateFrame() {
         gl.COLOR_ATTACHMENT0,
         gl.COLOR_ATTACHMENT1,
         gl.COLOR_ATTACHMENT2,
-        gl.COLOR_ATTACHMENT,
+        gl.COLOR_ATTACHMENT3,
     ]);
 
     gl.activeTexture(gl.TEXTURE4);
