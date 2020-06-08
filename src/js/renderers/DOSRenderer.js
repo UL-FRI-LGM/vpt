@@ -29,8 +29,6 @@ constructor(gl, volume, camera, environmentTexture, options) {
         render    : SHADERS.DOSRender,
         reset     : SHADERS.DOSReset,
         transfer  : SHADERS.PolarTransferFunction,
-        idrender  : SHADERS.IDBuffer.render,
-        idreset   : SHADERS.IDBuffer.reset,
     }, MIXINS);
 
     this._camera= camera;
@@ -403,21 +401,13 @@ _resetFrame() {
 
     gl.drawBuffers([
         gl.COLOR_ATTACHMENT0,
-        gl.COLOR_ATTACHMENT1
+        gl.COLOR_ATTACHMENT1,
+        gl.COLOR_ATTACHMENT2,
+        gl.COLOR_ATTACHMENT3,
     ]);
 
     let program = this._programs.reset;
     gl.useProgram(program.program);
-    gl.drawBuffers([ gl.COLOR_ATTACHMENT0 ]);
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
-    program = this._programs.idreset;
-    gl.useProgram(program.program);
-    gl.drawBuffers([
-        gl.COLOR_ATTACHMENT0,
-        gl.COLOR_ATTACHMENT1
-    ]);
-    this._idFramebuffer.use();
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 }
 
@@ -432,15 +422,21 @@ _integrateFrame() {
 
     gl.drawBuffers([
         gl.COLOR_ATTACHMENT0,
-        gl.COLOR_ATTACHMENT1
+        gl.COLOR_ATTACHMENT1,
+        gl.COLOR_ATTACHMENT2,
+        gl.COLOR_ATTACHMENT,
     ]);
 
-    gl.activeTexture(gl.TEXTURE2);
-    gl.uniform1i(program.uniforms.uVolume, 2);
+    gl.activeTexture(gl.TEXTURE4);
+    gl.uniform1i(program.uniforms.uVolume, 4);
     gl.bindTexture(gl.TEXTURE_3D, this._mask);
 
-    gl.activeTexture(gl.TEXTURE3);
-    gl.uniform1i(program.uniforms.uTransferFunction, 3);
+    gl.activeTexture(gl.TEXTURE5);
+    gl.uniform1i(program.uniforms.uIDVolume, 5);
+    gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());
+
+    gl.activeTexture(gl.TEXTURE6);
+    gl.uniform1i(program.uniforms.uTransferFunction, 6);
     gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
 
     // TODO: calculate correct blur radius (occlusion scale)
@@ -448,6 +444,8 @@ _integrateFrame() {
     gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
     //gl.uniform1f(program.uniforms.uVisibility, this.visibility);
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
+
+    gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._groupMembership);
 
     const depthStep = (this._maxDepth - this._minDepth) / this.slices;
     for (let step = 0; step < this.steps; step++) {
@@ -462,6 +460,14 @@ _integrateFrame() {
         gl.activeTexture(gl.TEXTURE1);
         gl.uniform1i(program.uniforms.uOcclusion, 1);
         gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[1]);
+
+        gl.activeTexture(gl.TEXTURE2);
+        gl.uniform1i(program.uniforms.uInstanceID, 2);
+        gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[2]);
+
+        gl.activeTexture(gl.TEXTURE3);
+        gl.uniform1i(program.uniforms.uGroupID, 3);
+        gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[3]);
 
         gl.uniform1f(program.uniforms.uDepth, this._depth);
 
@@ -521,14 +527,36 @@ _getAccumulationBufferSpec() {
         height         : this._bufferSize,
         min            : gl.NEAREST,
         mag            : gl.NEAREST,
-        format         : gl.RG,
-        internalFormat : gl.RG32F,
+        format         : gl.RED,
+        internalFormat : gl.R32F,
         type           : gl.FLOAT
+    };
+
+    const instanceIDBuffer = {
+        width          : this._bufferSize,
+        height         : this._bufferSize,
+        min            : gl.NEAREST,
+        mag            : gl.NEAREST,
+        format         : gl.RED_INTEGER,
+        internalFormat : gl.R32UI,
+        type           : gl.UNSIGNED_INT
+    };
+
+    const groupIDBuffer = {
+        width          : this._bufferSize,
+        height         : this._bufferSize,
+        min            : gl.NEAREST,
+        mag            : gl.NEAREST,
+        format         : gl.RED_INTEGER,
+        internalFormat : gl.R32UI,
+        type           : gl.UNSIGNED_INT
     };
 
     return [
         colorBuffer,
-        occlusionBuffer
+        occlusionBuffer,
+        instanceIDBuffer,
+        groupIDBuffer
     ];
 }
 

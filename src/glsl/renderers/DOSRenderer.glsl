@@ -2,7 +2,7 @@
 
 // #section DOSIntegrate/vertex
 
-#version 300 es
+#version 310 es
 precision mediump float;
 
 uniform mat4 uMvpInverseMatrix;
@@ -22,16 +22,21 @@ void main() {
 
 // #section DOSIntegrate/fragment
 
-#version 300 es
+#version 310 es
 precision mediump float;
 precision mediump sampler2D;
 precision mediump sampler3D;
+precision mediump usampler2D;
+precision mediump usampler3D;
 
 uniform sampler3D uVolume;
+uniform usampler3D uIDVolume;
 uniform sampler2D uTransferFunction;
 
 uniform sampler2D uColor;
 uniform sampler2D uOcclusion;
+uniform usampler2D uInstanceID;
+uniform usampler2D uGroupID;
 
 //uniform float uVisibility;
 
@@ -42,7 +47,13 @@ in vec2 vPosition2D;
 in vec3 vPosition3D;
 
 layout (location = 0) out vec4 oColor;
-layout (location = 1) out vec2 oOcclusion;
+layout (location = 1) out float oOcclusion;
+layout (location = 2) out uint oInstanceID;
+layout (location = 3) out uint oGroupID;
+
+layout (std430, binding = 0) buffer bGroupMembership {
+    uint sGroupMembership[];
+};
 
 vec4 getSample(vec3 position) {
     vec4 volumeSample = texture(uVolume, position);
@@ -50,7 +61,7 @@ vec4 getSample(vec3 position) {
     return transferSample;
 }
 
-void main() {
+float getOcclusion() {
     const vec2 offsets[9] = vec2[](
         vec2(-1, -1),
         vec2( 0, -1),
@@ -75,25 +86,41 @@ void main() {
         occlusion += texture(uOcclusion, occlusionPos).r * weights[i];
     }
 
-    vec4 prevColor = texture(uColor, vPosition2D);
+    return occlusion;
+}
+
+void main() {
+    float occlusion = getOcclusion();
+    vec4 color = texture(uColor, vPosition2D);
+    uint instanceID = texture(uInstanceID, vPosition2D).r;
+    uint groupID = texture(uGroupID, vPosition2D).r;
 
     if (any(greaterThan(vPosition3D, vec3(1))) || any(lessThan(vPosition3D, vec3(0)))) {
-        oColor = prevColor;
-        oOcclusion.x = occlusion;
-    } else {
-        vec4 transferSample = getSample(vPosition3D);
-        transferSample.rgb *= transferSample.a * occlusion;
-
-        oColor = prevColor + transferSample * (1.0 - prevColor.a);
-        // TODO: do this calculation right
-        oOcclusion.x = 1.0 - ((1.0 - (occlusion - transferSample.a)) * uOcclusionDecay);
+        oColor = color;
+        oOcclusion = occlusion;
+        oInstanceID = instanceID;
+        oGroupID = groupID;
+        return;
     }
-    //oOcclusion.y=computeProbability(vPosition3D,oColor);
+
+    if (groupID != 0u) {
+        uint newInstanceID = texture(uIDVolume, vPosition3D).r;
+        uint newGroupID = sGroupMembership[newInstanceID];
+        oInstanceID = newInstanceID;
+        oGroupID = newGroupID;
+    }
+
+    vec4 transferSample = getSample(vPosition3D);
+    transferSample.rgb *= transferSample.a * occlusion;
+
+    oColor = color + transferSample * (1.0 - color.a);
+    // TODO: do this calculation right
+    oOcclusion = 1.0 - ((1.0 - (occlusion - transferSample.a)) * uOcclusionDecay);
 }
 
 // #section DOSRender/vertex
 
-#version 300 es
+#version 310 es
 precision mediump float;
 
 layout (location = 0) in vec2 aPosition;
@@ -106,7 +133,7 @@ void main() {
 
 // #section DOSRender/fragment
 
-#version 300 es
+#version 310 es
 precision mediump float;
 
 uniform mediump sampler2D uAccumulator;
@@ -121,7 +148,7 @@ void main() {
 
 // #section DOSReset/vertex
 
-#version 300 es
+#version 310 es
 precision mediump float;
 
 layout (location = 0) in vec2 aPosition;
@@ -132,13 +159,17 @@ void main() {
 
 // #section DOSReset/fragment
 
-#version 300 es
+#version 310 es
 precision mediump float;
 
 layout (location = 0) out vec4 oColor;
-layout (location = 1) out vec2 oOcclusion;
+layout (location = 1) out float oOcclusion;
+layout (location = 2) out uint oInstanceID;
+layout (location = 3) out uint oGroupID;
 
 void main() {
     oColor = vec4(0, 0, 0, 0);
-    oOcclusion = vec2(1.0);
+    oOcclusion = 1.0;
+    oInstanceID = 0u;
+    oGroupID = 0u;
 }
