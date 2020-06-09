@@ -33,7 +33,7 @@ void main() {
     uint id = imageLoad(iID, voxel).r;
     if (voxel.x < imageSize.x && voxel.y < imageSize.y && voxel.z < imageSize.z) {
         vec3 pos = getPosition3D(voxel);
-        uint p = convertProbToInt(pos.z);//TODO: later use computeProbability(pos);
+        uint p = convertProbToInt(pos.z); //TODO: later use computeProbability(pos);
         int index=(int(id))*2;
         atomicAdd(counter[index], p);            
         atomicAdd(counter[index + 1], uint(1));

@@ -376,6 +376,7 @@ void generateCSV(QList<Object*> objects, Settings* set)
     if(rawFile.open(QIODevice::WriteOnly)) {
         QDataStream out(&rawFile);
         out.setFloatingPointPrecision(QDataStream::FloatingPointPrecision::SinglePrecision);
+        out.setByteOrder(QDataStream::LittleEndian);
 
         for(auto o : objects) {
             out << (float)o->getId();
@@ -583,7 +584,7 @@ int main(int argc, char *argv[])
     set.w = 128;
     set.h = 128;
     set.d = 128;
-    set.targetCount = 150;
+    set.targetCount = 10;
     set.outputType = 3;
 
     // main data generator

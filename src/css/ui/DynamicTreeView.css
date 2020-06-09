@@ -59,6 +59,7 @@
     line-height: 26px;
     vertical-align: middle;
     margin: 2px;
+    font-weight: bold;
 }
 
 .property-collapse-button {
@@ -79,6 +80,7 @@
     clear: both;
     height: 20px;
     padding: 2px;
+    margin-bottom: 2px;
 }
 
 .property-enum {
@@ -86,14 +88,23 @@
 }
 
 .property-range-label, .property-enum-label {
-    width: 60px;
-    float: left;
+    width: 30%;
+    float: left;    
+    font-style: italic;
 }
 
 .property-range input {
-    width: 50px;
+    width: 25%;
     float: left;
     height: 18px;
+    margin: 0;
+    padding: 0;
+    padding-left: 3px;
+    background-color: white;
+    border: 1px solid #aaaaaa;
+    color: black;
+    box-sizing: border-box;
+    display: block;
 }
 
 .property-range-delete-button {
