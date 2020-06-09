@@ -290,7 +290,9 @@ class DOSRenderer extends AbstractRenderer {
 
         const members = [];
         for (const attrib of this._layout) {
-            members.push(attrib.type + ' ' + attrib.name + ';');
+            // attrib.type must be numeric type!!! no 'enum' allowed in shader
+            //members.push(attrib.type + ' ' + attrib.name + ';');
+            members.push('float ' + attrib.name + ';');
         }
         const instance = members.join('\n');
 

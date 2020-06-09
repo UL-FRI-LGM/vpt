@@ -643,12 +643,12 @@ int main(int argc, char *argv[])
     set.w = 128;
     set.h = 128;
     set.d = 128;
-    set.targetCount = 10;
+    set.targetCount = 100;
     set.outputType = 3;
 
     // main data generator
-    //QList<Object*> objects = generateObjects(&set);
-    QList<Object*> objects = generateObjectsGrid(&set);
+    QList<Object*> objects = generateObjects(&set);
+    //QList<Object*> objects = generateObjectsGrid(&set);
     qDebug() << objects.size();
     QByteArray data = generateData(objects, &set);
     writeData(data, &set);

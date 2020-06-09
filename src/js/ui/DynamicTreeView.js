@@ -17,10 +17,12 @@ class DynamicTreeView extends UIObject {
 
         this.headerId = "property-tree-header";
         this.containerId = "property-tree-container";
+        this.properties = [];
     }
 
     createHeader(properties) {
         var _this = this;
+        _this.properties = properties;
 
         var header = document.getElementById(this.headerId);
         while (header.firstChild) {
@@ -33,7 +35,7 @@ class DynamicTreeView extends UIObject {
             var prop = properties[i];
             var option = this.createElement("option");
             option.innerText = prop.text;
-            option.value = prop.text;
+            option.value = prop.id;
             select.appendChild(option);
         }
         selectWrapper.appendChild(select);
@@ -43,10 +45,21 @@ class DynamicTreeView extends UIObject {
         var addButton = this.createElement("input");
         addButton.type = "button";
         addButton.onclick = function () {
-            var value = select.options[select.selectedIndex].value;
+            var propId = select.options[select.selectedIndex].value;
 
-            // TODO: implement enum values
-            _this.addFloatProperty(value);
+            var property = _this.properties[propId];
+
+            if (property.type == "enum") {
+                // TODO: attach to property.values[]
+                var values = {};
+                values["1"] = "Box";
+                values["2"] = "Sphere";
+                values["3"] = "Ellipsoid";
+
+                _this.addEnumProperty(property.text, values);
+            } else {
+                _this.addFloatProperty(property.text, property.lo || 0, property.hi || 100);
+            }
         };
         addButton.value = "Add";
         buttonWrapper.appendChild(addButton);
@@ -121,21 +134,21 @@ class DynamicTreeView extends UIObject {
 
         var node = _this.createElement("div", "property-tree-node draggable", "node_" + _this.nodes.length);
         node.draggable = true;
-        node.addEventListener('dragstart', function (ev) {            
+        node.addEventListener('dragstart', function (ev) {
             ev.dataTransfer.setData("text/plain", ev.target.id);
         });
         node.addEventListener('drop', function (ev) {
             ev.preventDefault();
-            var data = ev.dataTransfer.getData("text/plain"); 
-            var source = document.getElementById(data);           
+            var data = ev.dataTransfer.getData("text/plain");
+            var source = document.getElementById(data);
             var target = ev.target;
 
-            if(target !== null && source != target.parentElement) {
+            if (target !== null && source != target.parentElement) {
                 let subnodes = target.parentElement.querySelector('.property-subnodes-wrapper');
                 subnodes.appendChild(source);
             }
         });
-        node.addEventListener('dragover', function (ev) {            
+        node.addEventListener('dragover', function (ev) {
             ev.preventDefault();
         });
         _this.nodes.push(node);
@@ -222,12 +235,12 @@ class DynamicTreeView extends UIObject {
         label.innerText = "Option(s):";
         enumValue.appendChild(label);
 
-        var select = _this.createElement("select");
+        var select = _this.createElement("select", "property-enum-values");
         select.multiple = true;
-        for (var i = 0; i < values.length; i++) {
+        for (var value in values) {
             var option = _this.createElement("option");
-            option.value = values[i];
-            option.innerText = values[i];
+            option.value = value;
+            option.innerText = values[value];
             select.appendChild(option);
         }
         enumValue.appendChild(select);
@@ -304,7 +317,7 @@ class DynamicTreeView extends UIObject {
             var json = [];
 
             for (var i = 0; i < node.childNodes.length; i++) {
-                var child = node.childNodes[i];                
+                var child = node.childNodes[i];
                 var subnode = this.getJSON(child);
                 json.push(subnode);
             }
@@ -320,20 +333,40 @@ class DynamicTreeView extends UIObject {
             var gmin = Number.MAX_SAFE_INTEGER;
             var gmax = -Number.MAX_SAFE_INTEGER;
             var name = node.querySelector('.property-name');
-            json.name = name.innerText;
-            json.type = "float";
+            json.name = name.innerText;            
             for (var i = 0; i < values.childElementCount; i++) {
+                json.type = "float";
                 var group = {};
-                var child = values.childNodes[i];
-                var label = child.querySelector('.property-range-label');
+                var child = values.childNodes[i];                
                 var min = child.querySelector('.property-range-min');
-                group.lo = parseInt(min.value);
-                gmin = Math.min(group.lo, gmin);
-                var max = child.querySelector('.property-range-max');
-                group.hi = parseInt(max.value);
-                group.name = "[" + group.lo + "~" + group.hi + "]";
-                gmax = Math.max(group.hi, gmax);
-                json.groups.push(group);
+                var options = child.querySelector('.property-enum-values');
+
+                if (min != null) { // 'float property'
+                    group.lo = parseInt(min.value);
+                    gmin = Math.min(group.lo, gmin);
+                    var max = child.querySelector('.property-range-max');
+                    group.hi = parseInt(max.value);
+                    group.name = "[" + group.lo + "~" + group.hi + "]";
+                    gmax = Math.max(group.hi, gmax);
+                    json.groups.push(group);
+                } else if (options != null) { // 'enum' values   
+                    json.type = "enum";                 
+
+                    for (var i = 0; i < options.length; i++) {
+                        var opt = options[i];
+            
+                        if (opt.selected) {
+                            var egroup = clone(group);
+                            egroup.name = opt.text;
+                            egroup.lo = egroup.hi = parseInt(opt.value); 
+                            gmin = Math.min(egroup.lo, gmin);
+                            gmax = Math.max(egroup.hi, gmax);
+                            json.groups.push(egroup);                            
+                        }
+                    }                    
+                } else {
+                    continue;
+                }                
             }
             json.hi = gmax;
             json.lo = gmin;
@@ -345,7 +378,7 @@ class DynamicTreeView extends UIObject {
                 var subnode = this.getJSON(child);
                 json.children.push(subnode);
             }
-
+            
             return json;
         }
     }
