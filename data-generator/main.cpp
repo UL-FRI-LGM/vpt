@@ -45,6 +45,58 @@ public:
     }
 };
 
+QList<Object*> generateObjectsGrid(Settings* set)
+{
+    QList<Object*> objects;
+
+    float partX = 1.0f / set->w;
+    float partY = 1.0f / set->h;
+    float partZ = 1.0f / set->d;
+
+
+    //auto center = QVector3D(0.5f, 0.5f, 0.5f);
+    //Object* obj = new Sphere(objects.size(), center, objects.size(), 8, 1);
+    //objects.push_back(obj);
+
+    for(int x = 0; x < set->w; x += 42) {
+        for(int y = 0; y < set->h; y += 42) {
+            for(int z = 0; z < set->d; z += 42) {
+
+                if(((x + y + z) % 2) == 1) {
+                    continue;
+                }
+
+                /*
+                if((x > set->w * 0.25 && x < set->w * 0.75) &&
+                (y > set->h * 0.25 && y < set->h * 0.75) &&
+                (z > set->d * 0.25 && z < set->d * 0.75)){
+                    continue;
+                }
+*/
+
+                auto center = QVector3D(x * partX + partX * 0.5f, y * partY + partY * 0.5f, z * partZ + partZ * 0.5f);
+                Object* obj = new Box(objects.size(), center, objects.size(), 1, 1);
+
+                bool collision = false;
+                /*
+                for(int i = 0; i < objects.size(); i++) {
+                    if(Collisions::intersect(obj, objects[i])) {
+                        collision = true;
+                        break;
+                    }
+                }
+                */
+
+                if(!collision) {
+                    objects.push_back(obj);
+                }
+            }
+        }
+    }
+
+    return objects;
+}
+
 QList<Object*> generateObjects(Settings* set)
 {
     // initialization of the seed
@@ -208,6 +260,7 @@ QByteArray generateData(QList<Object*> objects, Settings* set)
                 }
             }
         }
+        qDebug() << z << ".";
     }
 
 
@@ -364,6 +417,9 @@ void generateCSV(QList<Object*> objects, Settings* set)
             out << o->getType() << ",";
             out << o->getSize() << ",";
             out << o->getOrientation() << ",";
+            out << o->getPosition().x() * 100 << ",";
+            out << o->getPosition().y() * 100 << ",";
+            out << o->getPosition().z() * 100;
             out << "\n";
         }
 
@@ -383,6 +439,9 @@ void generateCSV(QList<Object*> objects, Settings* set)
             out << (float)o->getType();
             out << (float)o->getSize();
             out << (float)o->getOrientation();
+            out << (float)(o->getPosition().x() * 100);
+            out << (float)(o->getPosition().y() * 100);
+            out << (float)(o->getPosition().z() * 100);
         }
 
         csvFile.close();
@@ -588,7 +647,9 @@ int main(int argc, char *argv[])
     set.outputType = 3;
 
     // main data generator
-    QList<Object*> objects = generateObjects(&set);
+    //QList<Object*> objects = generateObjects(&set);
+    QList<Object*> objects = generateObjectsGrid(&set);
+    qDebug() << objects.size();
     QByteArray data = generateData(objects, &set);
     writeData(data, &set);
 

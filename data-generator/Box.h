@@ -40,6 +40,9 @@ public:
             case 7:
                 this->_size = QVector3D(0.05f, 0.12f, 0.2f);
                 break;
+            case 8:
+                this->_size = QVector3D(0.33f, 0.33f, 0.33f);
+                break;
         }
     }
     //inline QVector3D getDimensions() { return _size; }
