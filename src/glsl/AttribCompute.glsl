@@ -30,7 +30,7 @@ vec2 rules(Instance instance, uint visStatus, uint id) {
         return vec2(0.5);
     }
 
-    float prob = (rand(vec2(float(id))).x);
+    //float prob = (rand(vec2(float(id))).x);
     
     @rules
 

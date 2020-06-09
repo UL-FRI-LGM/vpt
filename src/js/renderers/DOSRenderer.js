@@ -207,7 +207,10 @@ class DOSRenderer extends AbstractRenderer {
 
             }
             const visibilityCondition = `visStatus> uint(0)`;
-            this._rules += `if (${rangeCondition}) { if (${visibilityCondition}) { return vec2(${tfx}, ${tfy}); } else { return vec2(0.5); } }`;
+            const groupStatement = `sGroupMembership[id] = ${index + 1}u; return vec2(${tfx}, ${tfy});`;
+            const backgroundStatement = `sGroupMembership[id] = 0u; return vec2(0.5);`;
+
+            this._rules += `if (${rangeCondition}) { if (${visibilityCondition}) {  ${groupStatement} } else { ${backgroundStatement} } }`;
         });
         this._recomputeTransferFunction(rules);
         this._createVisibilityStatusBuffer();
@@ -238,7 +241,8 @@ class DOSRenderer extends AbstractRenderer {
             const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
 
             const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
-            const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
+           // const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
+            const visibilityCondition = `visStatus> uint(0)`;
             const groupStatement = `sGroupMembership[id] = ${index + 1}u; return vec2(${tfx}, ${tfy});`;
             const backgroundStatement = `sGroupMembership[id] = 0u; return vec2(0.5);`;
             return `if (${rangeCondition}) {
