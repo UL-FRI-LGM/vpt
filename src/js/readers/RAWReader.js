@@ -36,8 +36,9 @@ readMetadata(handlers) {
                         0, 0, 0, 1
                     ]
                 },
-                components: 1,
-                bits: this.bits,
+                format: 36244, // gl.RED_INTEGER
+                internalFormat: 33334, // gl.R32UI
+                type: 5125, // gl.UNSIGNED_INT
                 placements: []
             }
         ],
