@@ -340,13 +340,15 @@ class DOSRenderer extends AbstractRenderer {
             gl.deleteProgram(this._programs.compute.program);
         }
 
+        /*
         const members = [];
         for (const attrib of this._layout) {
             members.push(attrib.type + ' ' + attrib.name + ';');
         }
         const instance = members.join('\n');
         const rules = this._rules;
-
+        */
+       
         this._programs.compute = WebGL.buildPrograms(gl, {
             compute: SHADERS.ProbCompute
         }, {
