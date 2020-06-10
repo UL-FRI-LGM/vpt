@@ -41,7 +41,7 @@ public:
                 this->_radius = 0.12f;
                 break;
             case 8:
-                this->_radius = 0.33f;
+                this->_radius = 0.25f;
             break;
         }
     }
