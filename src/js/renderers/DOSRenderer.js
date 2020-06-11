@@ -140,7 +140,7 @@ setAttributes(attributes, layout) {
     });
 
     // TODO: only float works for now
-    const numberOfInstances = attributes ? (attributes.length / (layout.length * 4)) : 0;
+    const numberOfInstances = attributes ? (attributes.byteLength / (layout.length * 4)) : 0;
 
     WebGL.createBuffer(gl, {
         target : gl.SHADER_STORAGE_BUFFER,
