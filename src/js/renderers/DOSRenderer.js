@@ -70,18 +70,6 @@ destroy() {
     super.destroy();
 }
 
-_rebuildBuffers() {
-    const gl = this._gl;
-
-    if (this._idFramebuffer) {
-        this._idFramebuffer.destroy();
-    }
-
-    this._idFramebuffer = new DoubleBuffer(gl, this._getIDFramebufferSpec());
-
-    super._rebuildBuffers();
-}
-
 calculateDepth() {
     const vertices = [
         new Vector(0, 0, 0),
@@ -556,25 +544,6 @@ _getAccumulationBufferSpec() {
         occlusionBuffer,
         instanceIDBuffer,
         groupIDBuffer
-    ];
-}
-
-_getIDFramebufferSpec() {
-    const gl = this._gl;
-
-    const spec = {
-        width          : this._bufferSize,
-        height         : this._bufferSize,
-        min            : gl.NEAREST,
-        mag            : gl.NEAREST,
-        format         : gl.RED_INTEGER,
-        internalFormat : gl.R32UI,
-        type           : gl.UNSIGNED_INT
-    };
-
-    return [
-        spec, // instance ID
-        spec  // group ID
     ];
 }
 
