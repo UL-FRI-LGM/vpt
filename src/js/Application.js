@@ -40,8 +40,8 @@ constructor() {
     });
     CommonUtils.trigger('resize', window);
     
-    //document.body.addEventListener('dragover', e => e.preventDefault());
-    //document.body.addEventListener('drop', this._handleFileDrop);
+    document.body.addEventListener('dragover', e => e.preventDefault());
+    document.body.addEventListener('drop', this._handleFileDrop);
 
     this._mainDialog = new MainDialog();
     if (!this._renderingContext.hasComputeCapabilities()) {
@@ -157,7 +157,8 @@ _handleVolumeLoad(options) {
                     onData: attributes => {
                         reader.readLayout({
                             onData: layout => {
-                                this._renderingContext.getRenderer().setAttributes(attributes, layout);
+                                const elementsJSON = this.getElementsAttribJSON(attributes, layout);
+                                this._renderingContext.getRenderer().setAttributes(attributes, layout, elementsJSON);
                                 this._visibilityDialog.setAttributes(layout.map(x => x.name));
                             }
                         });
