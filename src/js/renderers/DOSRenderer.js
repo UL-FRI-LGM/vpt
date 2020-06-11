@@ -142,7 +142,7 @@ class DOSRenderer extends AbstractRenderer {
         });
 
         // TODO: only float works for now
-        const numberOfInstances = attributes ? (attributes.length / (layout.length * 4)) : 0;
+        const numberOfInstances = attributes ? (attributes.byteLength / (layout.length * 4)) : 0;
 
         WebGL.createBuffer(gl, {
             target: gl.SHADER_STORAGE_BUFFER,
@@ -152,11 +152,10 @@ class DOSRenderer extends AbstractRenderer {
 
         this._layout = layout;
         if (layout) {
-            var parser = new AttributesParser();
-            this._numberInstance = parser.getInstanceNumberFromRawFile(attributes, layout);
+            this._numberInstance = numberOfInstances;
             this.initInstancesArray();
             this._elements = elements;
-            //this._rebuildProbCompute();
+            
         }
     }
 
@@ -257,7 +256,7 @@ class DOSRenderer extends AbstractRenderer {
         this._recomputeTransferFunction(rules);
         this._createVisibilityStatusBuffer();
         this._rebuildAttribCompute(false);
-        //this.countOccludedInstance();
+        this._countOccludedInstance();
     }
     updateVisStatusArray(instancesStRule, visibility) {
         var numberRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
@@ -347,15 +346,6 @@ class DOSRenderer extends AbstractRenderer {
             gl.deleteProgram(this._programs.compute.program);
         }
 
-        /*
-        const members = [];
-        for (const attrib of this._layout) {
-            members.push(attrib.type + ' ' + attrib.name + ';');
-        }
-        const instance = members.join('\n');
-        const rules = this._rules;
-        */
-       
         this._programs.compute = WebGL.buildPrograms(gl, {
             compute: SHADERS.ProbCompute
         }, {
@@ -374,6 +364,9 @@ class DOSRenderer extends AbstractRenderer {
         const gl = this._gl;
         const program = this._programs.compute;
         gl.useProgram(program.program);
+    const dimensions = this._volume._currentModality.dimensions;
+    gl.bindImageTexture(0, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
+    gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
 
         const dimensions = this._volume._currentModality.dimensions;
         gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
@@ -512,6 +505,9 @@ class DOSRenderer extends AbstractRenderer {
         let program = this._programs.reset;
         gl.useProgram(program.program);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+        //========= recompute avgProb ==========
+        this._rebuildProbCompute();
     }
 
     _integrateFrame() {
@@ -681,6 +677,10 @@ class DOSRenderer extends AbstractRenderer {
             spec  // group ID
         ];
     }*/
+    _countOccludedInstance()
+    {
+        console.log(this._getInstanceIDFramebuffer() );
+    }
     _getInstanceIDFramebuffer() {
         const texture= this._accumulationBuffer.getAttachments().color[2];
         

@@ -44,8 +44,6 @@ class AttributesParser {
     }
     
     getInstanceNumberFromRawFile(attributes,layout) {
-        var valuesPerRow= layout.length;
-        var count = attributes.byteLength / 4; 
-        return Math.floor(count/valuesPerRow);
+        return Math.floor(attributes.byteLength/(4*layout.length));
     }
 }
