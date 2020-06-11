@@ -67,8 +67,8 @@ class TreeViewDialog extends AbstractDialog {
 
     }
   }
-//instance.sort((a, b) => parseFloat(a.avgProb) - parseFloat(b.avgProb));
-  setAttributes(layout,elementsJSON) {
+  //instance.sort((a, b) => parseFloat(a.avgProb) - parseFloat(b.avgProb));
+  setAttributes(layout, elementsJSON) {
 
     this.layout = layout;
     propertyList = [];
@@ -94,8 +94,8 @@ class TreeViewDialog extends AbstractDialog {
     //var csv = new TextDecoder().decode(attributes);
     //elementsArray = this.csvJSON(csv);
 
-  
-    elementsArray= elementsJSON;
+
+    elementsArray = elementsJSON;
     //console.log(elementsArray);
   }
 
@@ -126,7 +126,7 @@ class TreeViewDialog extends AbstractDialog {
 
 
 
- 
+
   _createAbstractTree = function () {
     /*// TEST purposes only!!!
     propertyList = [];
@@ -460,7 +460,7 @@ function createJSONHierarchyTree(nav) {
       visInstances: 0,
       occludedInstance: 0,
       sliderValue: 100,
-     // minSliderValue: 0,
+      // minSliderValue: 0,
       //maxSliderValue: 100,
       lo: 0,
       hi: 0,
@@ -538,7 +538,7 @@ function createJSONHierarchyTree(nav) {
               increaseChildrenSliderCountValues(this, amount);
             else
               decreaseChildrenSliderCountValues(this, amount * -1);
-              
+
             TVDClass.trigger('treeSliderChange');
           }
         }
@@ -572,8 +572,8 @@ function createJSONHierarchyTree(nav) {
     element.className = 'lock';
     node.sliderObj.object.disable();
     node.isDisabled = true;
-    setSliderRightLimit(node,node.sliderValue);
-    setSliderLeftLimit(node,node.sliderValue);
+    setSliderRightLimit(node, node.sliderValue);
+    setSliderLeftLimit(node, node.sliderValue);
   }
   function unlockedNode(node) {
     var element = getLockElement(node);
@@ -582,8 +582,7 @@ function createJSONHierarchyTree(nav) {
     node.isDisabled = false;
     computeMinMaxRange(node);
   }
-  function updateSliderTracks(node)
-  {
+  function updateSliderTracks(node) {
     node.occludedInstance = 50;// node.sliderValue*0.10;
     node.sliderObj.object.setValue2(node.sliderObj.object.getMaxValue() - node.sliderObj.object.getValue());
     node.sliderObj.object.setValue3(node.occludedInstance);
@@ -607,14 +606,14 @@ function createJSONHierarchyTree(nav) {
         min = min / node.children.length;
         max = max / node.children.length;
       }
-      setSliderRightLimit(node ,max);
-      setSliderLeftLimit(node,min);
+      setSliderRightLimit(node, max);
+      setSliderLeftLimit(node, min);
     }
     else {
-      setSliderRightLimit(node ,100);
-      setSliderLeftLimit(node,0);
+      setSliderRightLimit(node, 100);
+      setSliderLeftLimit(node, 0);
     }
-    
+
   }
   function updateCountFromSliderValue(node) {
     var newValue = (node.sliderValue * node.nInstances) / 100;
@@ -903,35 +902,30 @@ function createJSONHierarchyTree(nav) {
       countElementsBasedVisRule(Htree);
     }
   }
-  function countElementsBasedVisRule(node)
-  {
-    if (node.children != null)
-    {
-        var count=0;
-        node.children.forEach((item) => {
-          count+=countElementsBasedVisRule(item);
-        });
-        node.nInstances=count;
-        node.visInstances = node.nInstances;
+  function countElementsBasedVisRule(node) {
+    if (node.children != null) {
+      var count = 0;
+      node.children.forEach((item) => {
+        count += countElementsBasedVisRule(item);
+      });
+      node.nInstances = count;
+      node.visInstances = node.nInstances;
     }
     return node.nInstances;
   }
-  function setSliderRightLimit(node,newValue)
-  {
+  function setSliderRightLimit(node, newValue) {
     node.sliderObj.object.setLimitRight(newValue);
   }
-  function getSliderRightLimit(node)
-  {
+  function getSliderRightLimit(node) {
     return node.sliderObj.object.getLimitRight();
   }
-  function setSliderLeftLimit(node,newValue)
-  {
+  function setSliderLeftLimit(node, newValue) {
     node.sliderObj.object.setLimitLeft(newValue);
   }
-  function getSliderLeftLimit(node)
-  {
+  function getSliderLeftLimit(node) {
     return node.sliderObj.object.getLimitLeft();
   }
+
   function countElementsOfthisClass(node, className, hiList, loList) {
     if (node.isClassName == true) {
 
@@ -979,22 +973,25 @@ function createJSONHierarchyTree(nav) {
       loList.pop();
     }
   }
+
   function countElements(className, hiList, loList) {
     var el = clone(elementsArray);
     for (var j = 0; j < className.length; j++) {
       if (hiList[j] == null)
         break;
-      el = el.filter(x => x[className[j]] < hiList[j] && x[className[j]] >= loList[j])
+      el = el.filter(x => x[className[j]] <= hiList[j] && x[className[j]] >= loList[j])
     }
+
     return el.length;
   }
+
   function LockedEmptyNode(node) {
     node.isEmpty = true;
     var element = getLockElement(node);
     element.className = 'empty';
     node.sliderObj.object.disable();
     setSliderValue(node, 0);
-    setSliderRightLimit(node,0);
+    setSliderRightLimit(node, 0);
     node.isDisabled = true;
   }
 })();

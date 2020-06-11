@@ -40,6 +40,9 @@ public:
             case 7:
                 this->_radius = 0.12f;
                 break;
+            case 8:
+                this->_radius = 0.33f;
+            break;
         }
     }
     inline float getRadius() { return _radius; }
