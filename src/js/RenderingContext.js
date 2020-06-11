@@ -21,7 +21,7 @@ constructor(options) {
 
     Object.assign(this, {
         _resolution : 512,
-        _filter     : 'linear'
+        _filter     : 'nearest'
     }, options);
 
     this._canvas = document.createElement('canvas');
