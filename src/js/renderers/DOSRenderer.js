@@ -364,10 +364,7 @@ class DOSRenderer extends AbstractRenderer {
         const gl = this._gl;
         const program = this._programs.compute;
         gl.useProgram(program.program);
-    const dimensions = this._volume._currentModality.dimensions;
-    gl.bindImageTexture(0, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
-    gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
-
+    
         const dimensions = this._volume._currentModality.dimensions;
         gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
         gl.bindImageTexture(1, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
@@ -407,7 +404,7 @@ class DOSRenderer extends AbstractRenderer {
 
         gl.deleteBuffer(ssbo);
         //var t1 = performance.now();
-        ////console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
+        //console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
         //console.log(this._elements); 
     }
     _getRuleElements(className, hiList, loList) {
