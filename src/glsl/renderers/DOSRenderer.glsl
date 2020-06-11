@@ -106,8 +106,13 @@ void main() {
     if (groupID == 0u) {
         uint newInstanceID = texture(uIDVolume, vPosition3D).r;
         uint newGroupID = sGroupMembership[newInstanceID];
-        oInstanceID = newInstanceID;
-        oGroupID = newGroupID;
+        if (newGroupID != 0u) {
+            oInstanceID = newInstanceID;
+            oGroupID = newGroupID;
+        } else {
+            oInstanceID = instanceID;
+            oGroupID = groupID;
+        }
     } else {
         oInstanceID = instanceID;
         oGroupID = groupID;
