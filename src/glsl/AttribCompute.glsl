@@ -18,7 +18,6 @@ layout (std430, binding = 1) buffer bGroupMembership {
     uint sGroupMembership[];
 };
 
-uniform ivec3 imageSize;
 layout (r32ui, binding = 0) restrict readonly highp uniform uimage3D iID;
 layout (rgba8, binding = 1) restrict writeonly highp uniform image3D oMask;
 uniform float uNumInstances;
@@ -49,6 +48,7 @@ vec2 rules(Instance instance, uint id, float depth) {
 
 void main() {
     ivec3 voxel = ivec3(gl_GlobalInvocationID);
+    ivec3 imageSize = imageSize(iID);
     if (voxel.x < imageSize.x && voxel.y < imageSize.y && voxel.z < imageSize.z) {
         //-----------------------------------------------------------------------
         //vec4 color = texelFetch(uVolume, voxel, 0);

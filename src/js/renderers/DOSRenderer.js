@@ -325,7 +325,6 @@ _recomputeMask() {
     gl.uniform3fv(program.uniforms.uCameraPos,cameraPos);
 
     const dimensions = this._volume._currentModality.dimensions;
-    gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
     gl.bindImageTexture(0, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
     gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
 
