@@ -19,6 +19,10 @@ class RenderingContext extends EventEmitter {
 
         this._webglcontextlostHandler = this._webglcontextlostHandler.bind(this);
         this._webglcontextrestoredHandler = this._webglcontextrestoredHandler.bind(this);
+    Object.assign(this, {
+        _resolution : 512,
+        _filter     : 'nearest'
+    }, options);
 
         Object.assign(this, {
             _resolution: 512,
@@ -220,15 +224,6 @@ class RenderingContext extends EventEmitter {
             this._renderer.setMvpMatrix(mvp);
             this._renderer.setMvpInverseMatrix(mvpit);
             this._renderer.reset();
-        }
-        this._rebuildProbCompute();
-    }
-    _rebuildProbCompute() {
-        const renderer = this.getRenderer();
-        if (renderer != undefined) {
-            // renderer._rebuildProbCompute();
-            // console.log('rebuildProbCompute');
-            renderer._rebuildProbCompute();
         }
     }
     _render() {

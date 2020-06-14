@@ -19,7 +19,6 @@ layout (std430, binding = 2) buffer visibilityStatus {
     uint vData[];
 };
 
-uniform ivec3 imageSize;
 layout (r32ui, binding = 0) restrict readonly highp uniform uimage3D iID;
 layout (rgba8, binding = 1) restrict writeonly highp uniform image3D oMask;
 
@@ -40,7 +39,7 @@ vec2 rules(Instance instance, uint visStatus, uint id) {
 
 void main() {
     ivec3 voxel = ivec3(gl_GlobalInvocationID);
-
+    ivec3 imageSize = imageSize(iID);
     if (voxel.x < imageSize.x && voxel.y < imageSize.y && voxel.z < imageSize.z) {
 
         uint id = imageLoad(iID, voxel).r;

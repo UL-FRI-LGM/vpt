@@ -20,11 +20,11 @@ class DOSRenderer extends AbstractRenderer {
             _depth: 1,
             _minDepth: -1,
             _maxDepth: 1,
-            _lightPos: [0.5, 0.5, 0.5],
+            /*_lightPos: [0.5, 0.5, 0.5],
             _ks: 0.1,
-            _kt: 0.1
+            _kt: 0.1*/
         }, options);
-
+        
         this._programs = WebGL.buildPrograms(gl, {
             integrate: SHADERS.DOSIntegrate,
             render: SHADERS.DOSRender,
@@ -40,7 +40,7 @@ class DOSRenderer extends AbstractRenderer {
         this._groupMembership = gl.createBuffer();
         this._mask = null;
         this._elements = [];
-        this.visStatusArr = null;
+        this._visStatusArray = null;
         this._visibilityStatus = gl.createBuffer();
         this._localSize = {
             x: 128,
@@ -73,7 +73,7 @@ class DOSRenderer extends AbstractRenderer {
         super.destroy();
     }
 
-    _rebuildBuffers() {
+    /*_rebuildBuffers() {
         const gl = this._gl;
 
         if (this._idFramebuffer) {
@@ -83,7 +83,7 @@ class DOSRenderer extends AbstractRenderer {
         this._idFramebuffer = new DoubleBuffer(gl, this._getIDFramebufferSpec());
 
         super._rebuildBuffers();
-    }
+    }*/
 
     calculateDepth() {
         const vertices = [
@@ -142,7 +142,7 @@ class DOSRenderer extends AbstractRenderer {
         });
 
         // TODO: only float works for now
-        const numberOfInstances = attributes ? (attributes.length / (layout.length * 4)) : 0;
+        const numberOfInstances = attributes ? (attributes.byteLength / (layout.length * 4)) : 0;
 
         WebGL.createBuffer(gl, {
             target: gl.SHADER_STORAGE_BUFFER,
@@ -152,11 +152,10 @@ class DOSRenderer extends AbstractRenderer {
 
         this._layout = layout;
         if (layout) {
-            var parser = new AttributesParser();
-            this._numberInstance = parser.getInstanceNumberFromRawFile(attributes, layout);
+            this._numberInstance = numberOfInstances;
             this.initInstancesArray();
             this._elements = elements;
-            //this._rebuildProbCompute();
+            
         }
     }
 
@@ -217,11 +216,11 @@ class DOSRenderer extends AbstractRenderer {
         this._rebuildAttribCompute(true);
     }
     initInstancesArray() {
-        this.visStatusArr = new Uint32Array(this._numberInstance);
+        this._visStatusArray = new Uint32Array(this._numberInstance);
     }
     clearVisStatusArray() {
         for (var i = 0; i < this._numberInstance; i++) {
-            this.visStatusArr[i] = 1;
+            this._visStatusArray[i] = 1;
         }
     }
 
@@ -257,16 +256,17 @@ class DOSRenderer extends AbstractRenderer {
         this._recomputeTransferFunction(rules);
         this._createVisibilityStatusBuffer();
         this._rebuildAttribCompute(false);
+        this._countOccludedInstance();
     }
     updateVisStatusArray(instancesStRule, visibility) {
         var numberRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
         for (var i = 0; i < numberRemoved; i++) {
-            if (this.visStatusArr[instancesStRule[i]['id']] == 1)
-                this.visStatusArr[instancesStRule[i]['id']] = 0;//invisible 
+            if (this._visStatusArray[instancesStRule[i]['id']] == 1)
+                this._visStatusArray[instancesStRule[i]['id']] = 0;//invisible 
         }
         for (var i = numberRemoved; i < instancesStRule.length; i++) {
-            if (this.visStatusArr[instancesStRule[i]['id']] == 1)
-                this.visStatusArr[instancesStRule[i]['id']] = 2;//visible
+            if (this._visStatusArray[instancesStRule[i]['id']] == 1)
+                this._visStatusArray[instancesStRule[i]['id']] = 2;//visible
         }
     }
     _sort_by_key(array, key) {
@@ -346,15 +346,6 @@ class DOSRenderer extends AbstractRenderer {
             gl.deleteProgram(this._programs.compute.program);
         }
 
-        /*
-        const members = [];
-        for (const attrib of this._layout) {
-            members.push(attrib.type + ' ' + attrib.name + ';');
-        }
-        const instance = members.join('\n');
-        const rules = this._rules;
-        */
-       
         this._programs.compute = WebGL.buildPrograms(gl, {
             compute: SHADERS.ProbCompute
         }, {
@@ -368,12 +359,12 @@ class DOSRenderer extends AbstractRenderer {
 
     _recomputeProbability() {
 
-        var t0 = performance.now();
+        //var t0 = performance.now();
 
         const gl = this._gl;
         const program = this._programs.compute;
         gl.useProgram(program.program);
-
+    
         const dimensions = this._volume._currentModality.dimensions;
         gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
         gl.bindImageTexture(1, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
@@ -412,8 +403,8 @@ class DOSRenderer extends AbstractRenderer {
         }
 
         gl.deleteBuffer(ssbo);
-        var t1 = performance.now();
-        console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
+        //var t1 = performance.now();
+        //console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
         //console.log(this._elements); 
     }
     _getRuleElements(className, hiList, loList) {
@@ -442,7 +433,7 @@ class DOSRenderer extends AbstractRenderer {
     _createVisibilityStatusBuffer() {
         const gl = this._gl;
 
-        var visStatus_buffer = this.visStatusArr.buffer;
+        var visStatus_buffer = this._visStatusArray.buffer;
         WebGL.createBuffer(gl, {
             target: gl.SHADER_STORAGE_BUFFER,
             buffer: this._visibilityStatus,
@@ -511,6 +502,9 @@ class DOSRenderer extends AbstractRenderer {
         let program = this._programs.reset;
         gl.useProgram(program.program);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+        //========= recompute avgProb ==========
+        this._rebuildProbCompute();
     }
 
     _integrateFrame() {
@@ -582,8 +576,8 @@ class DOSRenderer extends AbstractRenderer {
 
         // Swap again to undo the last swap by AbstractRenderer
         this._accumulationBuffer.swap();
+        
     }
-
     _renderFrame() {
         const gl = this._gl;
 
@@ -662,7 +656,7 @@ class DOSRenderer extends AbstractRenderer {
         ];
     }
 
-    _getIDFramebufferSpec() {
+    /*_getIDFramebufferSpec() {
         const gl = this._gl;
 
         const spec = {
@@ -679,6 +673,37 @@ class DOSRenderer extends AbstractRenderer {
             spec, // instance ID
             spec  // group ID
         ];
+    }*/
+    _countOccludedInstance()
+    {
+        console.log(this._getInstanceIDFramebuffer() );
     }
+    _getInstanceIDFramebuffer() {
+        const texture= this._accumulationBuffer.getAttachments().color[2];
+        
+        var gl=this._gl;
+
+        var fb = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+        var res = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+
+        if (res == gl.FRAMEBUFFER_COMPLETE) {
+            const format = gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_FORMAT);
+            const type = gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_TYPE);
+
+            var pixels = new Uint32Array(this._bufferSize * this._bufferSize);
+            gl.readPixels(0, 0, this._bufferSize, this._bufferSize, format, type, pixels);
+        }
+        gl.deleteFramebuffer(fb);
+        
+        return pixels;
+    }
+    _getGroupIDFramebuffer() {
+       // const texture= this._accumulationBuffer.getAttachments().color[3]  // group ID
+    }
+
+
+    
 
 }
