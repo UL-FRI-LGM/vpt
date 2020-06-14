@@ -156,7 +156,7 @@ class DOSRenderer extends AbstractRenderer {
             this._numberInstance = parser.getInstanceNumberFromRawFile(attributes, layout);
             this.initInstancesArray();
             this._elements = elements;
-            this._rebuildProbCompute();
+            //this._rebuildProbCompute();
         }
     }
 
