@@ -31,7 +31,7 @@ class DOSRenderer extends AbstractRenderer {
             reset: SHADERS.DOSReset,
             transfer: SHADERS.PolarTransferFunction,
         }, MIXINS);
-
+        this._test=0;//for testing
         this._camera = camera;
         this._numberInstance = 0;
         this._rules = [];
@@ -43,8 +43,8 @@ class DOSRenderer extends AbstractRenderer {
         this._visStatusArray = null;
         this._visibilityStatus = gl.createBuffer();
         this._localSize = {
-            x: 128,
-            y: 1,
+            x: 8,
+            y: 8,
             z: 1,
         };
 
@@ -228,6 +228,8 @@ class DOSRenderer extends AbstractRenderer {
         this.clearVisStatusArray();
 
         this._rules = rules.map((rule, index) => {
+            if(index>=1)
+                {this._test=1;}
             const attribute = rule.attribute;
             const lo = rule.range.x.toFixed(4);
             const hi = rule.range.y.toFixed(4);
@@ -276,11 +278,6 @@ class DOSRenderer extends AbstractRenderer {
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
     }
-
-    _getCameraPosition() {
-        return [this._camera.position.x, this._camera.position.y, this._camera.position.z];
-    }
-
     _rebuildAttribCompute(isTreeRules) {
         const gl = this._gl;
 
@@ -534,7 +531,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.activeTexture(gl.TEXTURE6);
         gl.uniform1i(program.uniforms.uTransferFunction, 6);
         gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
-
+        gl.uniform1i(program.uniforms.utest,this._test);//for testing
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
         gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
@@ -676,10 +673,21 @@ class DOSRenderer extends AbstractRenderer {
     }*/
     _countOccludedInstance()
     {
-        console.log(this._getInstanceIDFramebuffer() );
+        console.log(this._getGroupIDFramebuffer() );
+        console.log(this._sumArray(this._getGroupIDFramebuffer()));//just for testing
+
+        //console.log(this._getInstanceIDFramebuffer() );
+        //console.log(this._sumArray(this._getInstanceIDFramebuffer()));
+        
+            
+          
+    }
+    _sumArray(array)
+    {
+        return array.reduce((a, b) => a + b, 0);
     }
     _getInstanceIDFramebuffer() {
-        const texture= this._accumulationBuffer.getAttachments().color[2];
+        const texture= this._accumulationBuffer.getAttachments().color[2];  // instance ID
         
         var gl=this._gl;
 
@@ -700,7 +708,25 @@ class DOSRenderer extends AbstractRenderer {
         return pixels;
     }
     _getGroupIDFramebuffer() {
-       // const texture= this._accumulationBuffer.getAttachments().color[3]  // group ID
+       const texture= this._accumulationBuffer.getAttachments().color[3]  // group ID
+
+       var gl=this._gl;
+
+       var fb = gl.createFramebuffer();
+       gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+       var res = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+
+       if (res == gl.FRAMEBUFFER_COMPLETE) {
+           const format = gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_FORMAT);
+           const type = gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_TYPE);
+
+           var pixels = new Uint32Array(this._bufferSize * this._bufferSize);
+           gl.readPixels(0, 0, this._bufferSize, this._bufferSize, format, type, pixels);
+       }
+       gl.deleteFramebuffer(fb);
+       
+       return pixels;
     }
 
 
