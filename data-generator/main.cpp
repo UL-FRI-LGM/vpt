@@ -38,7 +38,7 @@ public:
 
     Settings::Settings() {
         allowedTypes.append(1);
-        allowedTypes.append(2);
+        //allowedTypes.append(2);
         allowedTypes.append(3);
 
         targetFile = "data.raw";
@@ -106,6 +106,9 @@ QList<Object*> generateObjects(Settings* set)
     // generate a bunch of objects
     QList<Object*> objects;
 
+    auto middle = new Sphere(1, QVector3D(0.5, 0.5, 0.5), 1, 8, 5);
+    objects.push_back(middle);
+
     while(objects.size() < set->targetCount) {
         // random position
         float x = (qrand() % 100) * 0.01f;
@@ -114,9 +117,9 @@ QList<Object*> generateObjects(Settings* set)
 
         uchar type = set->allowedTypes[qrand() % set->allowedTypes.size()];
         uchar size = qrand() % 8; // 8 possible size classes
-        uchar orientation = qrand() % 8; // 8 possible orientations
-        uchar value = size * 32;
+        uchar orientation = qrand() % 8; // 8 possible orientations        
         uchar id = objects.size() + 1;
+        uchar value = id;
 
         Object* obj = nullptr;
         switch (type) {
@@ -409,18 +412,31 @@ void generateCSV(QList<Object*> objects, Settings* set)
     set->targetFile = "attributes.csv";
     QFile csvFile(set->targetFile);
 
+    QString separator = ";";
+
     if(csvFile.open(QIODevice::WriteOnly)) {
         QTextStream out(&csvFile);
 
+        // header
+        out << "Id" << separator;
+        out << "Type" << separator;
+        out << "Size" << separator;
+        out << "Orientation" << separator;
+        out << "X" << separator;
+        out << "Y" << separator;
+        out << "Z";
+        out << "\r\n";
+
+
         for(auto o : objects) {
-            out << o->getId() << ",";
-            out << o->getType() << ",";
-            out << o->getSize() << ",";
-            out << o->getOrientation() << ",";
-            out << o->getPosition().x() * 100 << ",";
-            out << o->getPosition().y() * 100 << ",";
+            out << o->getId() << separator;
+            out << o->getType() << separator;
+            out << o->getSize() << separator;
+            out << o->getOrientation() << separator;
+            out << o->getPosition().x() * 100 << separator;
+            out << o->getPosition().y() * 100 << separator;
             out << o->getPosition().z() * 100;
-            out << "\n";
+            out << "\r\n";
         }
 
         csvFile.close();
@@ -643,7 +659,7 @@ int main(int argc, char *argv[])
     set.w = 128;
     set.h = 128;
     set.d = 128;
-    set.targetCount = 100;
+    set.targetCount = 200;
     set.outputType = 3;
 
     // main data generator

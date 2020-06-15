@@ -29,9 +29,11 @@ precision mediump sampler3D;
 precision mediump usampler2D;
 precision mediump usampler3D;
 
-uniform sampler3D uVolume;
+uniform sampler3D uMaskVolume;
 uniform usampler3D uIDVolume;
-uniform sampler2D uTransferFunction;
+uniform sampler3D uDataVolume;
+uniform sampler2D uMaskTransferFunction;
+uniform sampler2D uDataTransferFunction;
 
 uniform sampler2D uColor;
 uniform sampler2D uOcclusion;
@@ -56,9 +58,13 @@ layout (std430, binding = 0) buffer bGroupMembership {
 };
 
 vec4 getSample(vec3 position) {
-    vec4 volumeSample = texture(uVolume, position);
-    vec4 transferSample = texture(uTransferFunction, volumeSample.rg);
-    return transferSample;
+    vec4 maskVolumeSample = texture(uMaskVolume, position);
+    vec4 dataVolumeSample = texture(uDataVolume, position);
+    vec4 maskTransferSample = texture(uMaskTransferFunction, maskVolumeSample.rg);
+    vec4 dataTransferSample = texture(uDataTransferFunction, dataVolumeSample.rg);
+    vec3 mixedColor = mix(maskTransferSample.rgb, dataTransferSample.rgb, dataTransferSample.a);
+    vec4 finalColor = vec4(mixedColor, maskTransferSample.a);
+    return finalColor;
 }
 
 float getOcclusion() {
