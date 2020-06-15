@@ -696,8 +696,7 @@ let additionalFilesDirectory = {
     files: []
 };
 
-let currentModality = clone(modalityTemplate);
-manifest.modalities.push(currentModality);
+let currentModality = null;
 let outputFile = null;
 
 for (let i = 2; i < process.argv.length - 1; i++) {
