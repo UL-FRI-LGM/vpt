@@ -187,7 +187,7 @@ class RenderingContext extends EventEmitter {
             this._renderer.destroy();
         }
         const rendererClass = this._getRendererClass(renderer);
-        this._renderer = new rendererClass(this._gl, this._volume, this.getCamera(), this._environmentTexture);
+        this._renderer = new rendererClass(this._gl, this._idVolume, this._dataVolume, this._environmentTexture);
 
         if (this._toneMapper) {
             this._toneMapper.setTexture(this._renderer.getTexture());

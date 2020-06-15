@@ -41,7 +41,7 @@ uniform usampler2D uInstanceID;
 uniform usampler2D uGroupID;
 
 uniform float uVisibility;
-uniform int utest;//for testing 
+//uniform int utest;//for testing 
 uniform vec2 uOcclusionScale;
 uniform float uOcclusionDecay;
 
@@ -131,7 +131,7 @@ void main() {
     // TODO: do this calculation right
     oOcclusion = 1.0 - ((1.0 - (occlusion - transferSample.a)) * uOcclusionDecay);
     
-    if(utest==1)//---- for testing --------
+   /*if(utest==1)//---- for testing --------
     {
         //if(oGroupID==0u)
            // oColor = vec4(1,0,0,1);
@@ -141,7 +141,7 @@ void main() {
 
        // if(oOcclusion==0.0)
            // oColor = vec4(0,0,1,1);
-    }
+    }*/
 }
 
 // #section DOSRender/vertex

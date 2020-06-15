@@ -60,7 +60,7 @@
       "label": "Transfer function",
       "children": [
         {
-          "type": "_panel",
+          "type": "panel",
           "bind": "tfContainer"
         }
       ]

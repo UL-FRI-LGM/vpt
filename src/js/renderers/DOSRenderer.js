@@ -20,9 +20,9 @@ class DOSRenderer extends AbstractRenderer {
             _depth: 1,
             _minDepth: -1,
             _maxDepth: 1,
-            _lightPos: [0.5, 0.5, 0.5],
+           /* _lightPos: [0.5, 0.5, 0.5],
             _ks: 0.1,
-            _kt: 0.1
+            _kt: 0.1*/
         }, options);
 
         this._idVolume = idVolume;
@@ -39,9 +39,11 @@ class DOSRenderer extends AbstractRenderer {
         this._numberInstance = 0;
         this._rules = [];
         this._layout = [];
+        
         this._attrib = gl.createBuffer();
         this._groupMembership = gl.createBuffer();
-        //this._probMask =null;
+        this._visibilityStatus= gl.createBuffer();
+        
         this._localSize = {
             x: 8,
             y: 8,
@@ -296,11 +298,10 @@ class DOSRenderer extends AbstractRenderer {
         const program = this._programs.compute;
         gl.useProgram(program.program);
 
-        const dimensions = this._volume._currentModality.dimensions;
-        gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
-        gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
-        gl.bindImageTexture(0, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
-        gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
+       // gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
+        const dimensions = this._idVolume._currentModality.dimensions;
+        gl.bindImageTexture(0, this._idVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
+        gl.bindImageTexture(1, this._maskVolume, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
 
         gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._attrib);
         gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, this._groupMembership);
@@ -333,19 +334,14 @@ class DOSRenderer extends AbstractRenderer {
     _recomputeProbability() {
 
         //var t0 = performance.now();
-        const dimensions = this._idVolume._currentModality.dimensions;
-        gl.bindImageTexture(0, this._idVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
-        gl.bindImageTexture(1, this._maskVolume, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
-
-        gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
-
         const gl = this._gl;
         const program = this._programs.compute;
         gl.useProgram(program.program);
 
-        const dimensions = this._volume._currentModality.dimensions;
-        gl.uniform3i(program.uniforms.imageSize, dimensions.width, dimensions.height, dimensions.depth);
-        gl.bindImageTexture(1, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
+        const dimensions = this._idVolume._currentModality.dimensions;
+        gl.bindImageTexture(0, this._idVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
+
+        gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
 
         const Max_nAtomic = this._numberInstance * 2;
@@ -544,7 +540,8 @@ class DOSRenderer extends AbstractRenderer {
             gl.COLOR_ATTACHMENT2,
             gl.COLOR_ATTACHMENT3,
         ]);
-    
+       // gl.uniform1i(program.uniforms.utest, this._test);
+
         gl.activeTexture(gl.TEXTURE4);
         gl.uniform1i(program.uniforms.uMaskVolume, 4);
         gl.bindTexture(gl.TEXTURE_3D, this._maskVolume);

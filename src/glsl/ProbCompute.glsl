@@ -5,7 +5,6 @@
 #version 310 es
 layout (local_size_x = @localSizeX, local_size_y = @localSizeY, local_size_z = @localSizeZ) in;
 
-uniform ivec3 imageSize;
 uniform mat4 uMvpInverseMatrix;
 uniform float vx;
 uniform float vy;
@@ -30,6 +29,7 @@ uint convertProbToInt(float x)
 
 void main() {
     ivec3 voxel = ivec3(gl_GlobalInvocationID);
+    ivec3 imageSize = imageSize(iID);
     uint id = imageLoad(iID, voxel).r;
     if (voxel.x < imageSize.x && voxel.y < imageSize.y && voxel.z < imageSize.z) {
         vec3 pos = getPosition3D(voxel);
