@@ -7,8 +7,8 @@
 
 class DOSRenderer extends AbstractRenderer {
 
-constructor(gl, volume, camera, environmentTexture, options) {
-    super(gl, volume, environmentTexture, options);
+constructor(gl, idVolume, dataVolume, environmentTexture, options) {
+    super(gl, idVolume, environmentTexture, options);
 
     Object.assign(this, {
         steps          : 10,
@@ -24,6 +24,10 @@ constructor(gl, volume, camera, environmentTexture, options) {
         _kt            : 0.1
     }, options);
 
+    this._idVolume = idVolume;
+    this._dataVolume = dataVolume;
+    this._maskVolume = null;
+
     this._programs = WebGL.buildPrograms(gl, {
         integrate : SHADERS.DOSIntegrate,
         render    : SHADERS.DOSRender,
@@ -31,13 +35,11 @@ constructor(gl, volume, camera, environmentTexture, options) {
         transfer  : SHADERS.PolarTransferFunction,
     }, MIXINS);
 
-    this._camera= camera;
     this._numberInstance=0;
     this._rules = [];
     this._layout = [];
     this._attrib = gl.createBuffer();
     this._groupMembership = gl.createBuffer();
-    this._mask = null;
     //this._probMask =null;
     this._localSize = {
         x: 8,
@@ -95,18 +97,18 @@ calculateDepth() {
     return [minDepth, maxDepth];
 }
 
-setVolume(volume) {
-    super.setVolume(volume);
-
+setIDVolume(volume) {
     const gl = this._gl;
     const dimensions = volume._currentModality.dimensions;
 
-    if (this._mask) {
-        gl.deleteTexture(this._mask);
+    this._idVolume = volume;
+
+    if (this._maskVolume) {
+        gl.deleteTexture(this._maskVolume);
     }
 
-    this._mask = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_3D, this._mask);
+    this._maskVolume = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_3D, this._maskVolume);
     gl.texStorage3D(gl.TEXTURE_3D, 1, gl.RGBA8,
         dimensions.width, dimensions.height, dimensions.depth);
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -114,20 +116,13 @@ setVolume(volume) {
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+}
 
+setDataVolume(volume) {
+    const gl = this._gl;
+    const dimensions = volume._currentModality.dimensions;
 
-    /*if (this._probMask) {
-        gl.deleteTexture(this._probMask);
-    }
-    this._probMask = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_3D, this._probMask);
-    gl.texStorage3D(gl.TEXTURE_3D, 1, gl.Rf,
-        dimensions.width, dimensions.height, dimensions.depth);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);*/
+    this._dataVolume = volume;
 }
 
 setAttributes(attributes, layout) {
@@ -243,10 +238,6 @@ setRules(rules) {
     this._rebuildAttribCompute();
 }
 
-_getCameraPosition() {
-    return [this._camera.position.x,this._camera.position.y,this._camera.position.z];
-}
-
 _rebuildAttribCompute() {
     const gl = this._gl;
 
@@ -309,23 +300,11 @@ _recomputeMask() {
     const program = this._programs.compute;
     gl.useProgram(program.program);
 
-    const cameraPos=[this._camera.position.x,this._camera.position.y,this._camera.position.y];
-    gl.uniform3fv(program.uniforms.uCameraPos,cameraPos);
-
-    const dimensions = this._volume._currentModality.dimensions;
-    gl.bindImageTexture(0, this._volume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
-    gl.bindImageTexture(1, this._mask, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
-
-    /*gl.uniform3fv(program.uniforms.uLightPos,this._lightPos);
-    gl.uniform1f(program.uniforms.uMinDistance, this._minDepth);
-    gl.uniform1f(program.uniforms.uMaxDistance, this._maxDepth);
-    gl.uniform1f(program.uniforms.uKs, this._ks);
-    gl.uniform1f(program.uniforms.uKt, this._kt);*/
+    const dimensions = this._idVolume._currentModality.dimensions;
+    gl.bindImageTexture(0, this._idVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
+    gl.bindImageTexture(1, this._maskVolume, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
 
     gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
-    /*gl.activeTexture(gl.TEXTURE2);
-    gl.uniform1i(program.uniforms.uVolume, 2);
-    gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());*/
 
     gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._attrib);
     gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, this._groupMembership);
@@ -401,7 +380,7 @@ _resetFrame() {
 _integrateFrame() {
     const gl = this._gl;
 
-    if (!this._mask) {
+    if (!this._maskVolume) {
         return;
     }
     const program = this._programs.integrate;
@@ -415,15 +394,19 @@ _integrateFrame() {
     ]);
 
     gl.activeTexture(gl.TEXTURE4);
-    gl.uniform1i(program.uniforms.uVolume, 4);
-    gl.bindTexture(gl.TEXTURE_3D, this._mask);
+    gl.uniform1i(program.uniforms.uMaskVolume, 4);
+    gl.bindTexture(gl.TEXTURE_3D, this._maskVolume);
 
     gl.activeTexture(gl.TEXTURE5);
     gl.uniform1i(program.uniforms.uIDVolume, 5);
-    gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());
+    gl.bindTexture(gl.TEXTURE_3D, this._idVolume.getTexture());
 
     gl.activeTexture(gl.TEXTURE6);
-    gl.uniform1i(program.uniforms.uTransferFunction, 6);
+    gl.uniform1i(program.uniforms.uDataVolume, 6);
+    gl.bindTexture(gl.TEXTURE_3D, this._dataVolume.getTexture());
+
+    gl.activeTexture(gl.TEXTURE7);
+    gl.uniform1i(program.uniforms.uTransferFunction, 7);
     gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
 
     // TODO: calculate correct blur radius (occlusion scale)

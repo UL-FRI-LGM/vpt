@@ -38,7 +38,8 @@ constructor(options) {
 
     this._cameraController = new OrbitCameraController(this._camera, this._canvas);
 
-    this._volume = new Volume(this._gl);
+    this._idVolume = new Volume(this._gl);
+    this._dataVolume = new Volume(this._gl);
     this._scale = new Vector(1, 1, 1);
     this._translation = new Vector(0, 0, 0);
     this._isTransformationDirty = true;
@@ -110,21 +111,46 @@ resize(width, height) {
     this._canvas.height = height;
     this._camera.resize(width, height);
 }
-getCamera()
-{
-    return this._camera;
-}
-setVolume(reader) {
-    this._volume = new Volume(this._gl, reader);
-    this._volume.readMetadata({
+
+setIDVolume(reader) {
+    if (this._idVolume) {
+        this._idVolume.destroy();
+    }
+
+    this._idVolume = new Volume(this._gl, reader);
+    this._idVolume.readMetadata({
         onData: () => {
-            this._volume.readModality('default', {
+            this._idVolume.readModality('id', {
                 onLoad: () => {
-                    this._volume.setFilter(this._filter);
+                    this._idVolume.setFilter('nearest');
                     if (this._renderer) {
-                        this._renderer.setVolume(this._volume);
-                        this.startRendering();
-                        this.trigger('volume-loaded');
+                        this._renderer.setIDVolume(this._idVolume);
+                        if (this._idVolume.ready && this._dataVolume.ready) {
+                            this.startRendering();
+                        }
+                    }
+                }
+            });
+        }
+    });
+}
+
+setDataVolume(reader) {
+    if (this._dataVolume) {
+        this._dataVolume.destroy();
+    }
+
+    this._dataVolume = new Volume(this._gl, reader);
+    this._dataVolume.readMetadata({
+        onData: () => {
+            this._dataVolume.readModality('data', {
+                onLoad: () => {
+                    this._dataVolume.setFilter(this._filter);
+                    if (this._renderer) {
+                        this._renderer.setDataVolume(this._dataVolume);
+                        if (this._idVolume.ready && this._dataVolume.ready) {
+                            this.startRendering();
+                        }
                     }
                 }
             });
@@ -141,8 +167,8 @@ setEnvironmentMap(image) {
 
 setFilter(filter) {
     this._filter = filter;
-    if (this._volume) {
-        this._volume.setFilter(filter);
+    if (this._dataVolume) {
+        this._dataVolume.setFilter(filter);
         if (this._renderer) {
             this._renderer.reset();
         }
@@ -154,7 +180,7 @@ chooseRenderer(renderer) {
         this._renderer.destroy();
     }
     const rendererClass = this._getRendererClass(renderer);
-    this._renderer = new rendererClass(this._gl, this._volume,this.getCamera(), this._environmentTexture);
+    this._renderer = new rendererClass(this._gl, this._idVolume, this._dataVolume, this._environmentTexture);
     
     if (this._toneMapper) {
         this._toneMapper.setTexture(this._renderer.getTexture());

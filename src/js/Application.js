@@ -150,7 +150,8 @@ _handleVolumeLoad(options) {
                 bits   : options.precision
             });
             this._renderingContext.stopRendering();
-            this._renderingContext.setVolume(reader);
+            this._renderingContext.setIDVolume(reader);
+            this._renderingContext.setDataVolume(reader);
             this._renderingContext.getRenderer().setAttributes(null, null);
             this._visibilityDialog.reset();
             if (reader.readAttributes) {

@@ -29,8 +29,9 @@ precision mediump sampler3D;
 precision mediump usampler2D;
 precision mediump usampler3D;
 
-uniform sampler3D uVolume;
+uniform sampler3D uMaskVolume;
 uniform usampler3D uIDVolume;
+uniform sampler3D uDataVolume;
 uniform sampler2D uTransferFunction;
 
 uniform sampler2D uColor;
@@ -56,7 +57,7 @@ layout (std430, binding = 0) buffer bGroupMembership {
 };
 
 vec4 getSample(vec3 position) {
-    vec4 volumeSample = texture(uVolume, position);
+    vec4 volumeSample = texture(uMaskVolume, position);
     vec4 transferSample = texture(uTransferFunction, volumeSample.rg);
     return transferSample;
 }
