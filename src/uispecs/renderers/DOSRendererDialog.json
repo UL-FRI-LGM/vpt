@@ -57,6 +57,16 @@
     },
     {
       "type": "accordion",
+      "label": "Transfer function",
+      "children": [
+        {
+          "type": "_panel",
+          "bind": "tfContainer"
+        }
+      ]
+    },
+    {
+      "type": "accordion",
       "label": "Probability parameter",
       "children": [
         {

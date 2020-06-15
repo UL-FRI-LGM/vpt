@@ -52,14 +52,17 @@ constructor(gl, idVolume, dataVolume, environmentTexture, options) {
         mag: gl.LINEAR,
     });
 
-    this._transferFunction = WebGL.createTexture(gl, {
-        texture : this._transferFunction,
+    this._maskTransferFunction = WebGL.createTexture(gl, {
         width   : 256,
         height  : 256,
+        wrapS  : gl.CLAMP_TO_EDGE,
+        wrapT  : gl.CLAMP_TO_EDGE,
+        min    : gl.LINEAR,
+        mag    : gl.LINEAR,
     });
 
-    this._transferFunctionFramebuffer = WebGL.createFramebuffer(gl, {
-        color: [ this._transferFunction ]
+    this._maskTransferFunctionFramebuffer = WebGL.createFramebuffer(gl, {
+        color: [ this._maskTransferFunction ]
     });
 }
 
@@ -350,7 +353,7 @@ _recomputeTransferFunction(rules) {
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this._transferFunctionFramebuffer);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this._maskTransferFunctionFramebuffer);
     gl.viewport(0, 0, 256, 256); // TODO: get actual TF size
     gl.drawBuffers([ gl.COLOR_ATTACHMENT0 ]);
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -406,7 +409,11 @@ _integrateFrame() {
     gl.bindTexture(gl.TEXTURE_3D, this._dataVolume.getTexture());
 
     gl.activeTexture(gl.TEXTURE7);
-    gl.uniform1i(program.uniforms.uTransferFunction, 7);
+    gl.uniform1i(program.uniforms.uMaskTransferFunction, 7);
+    gl.bindTexture(gl.TEXTURE_2D, this._maskTransferFunction);
+
+    gl.activeTexture(gl.TEXTURE8);
+    gl.uniform1i(program.uniforms.uDataTransferFunction, 8);
     gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
 
     // TODO: calculate correct blur radius (occlusion scale)
