@@ -8,7 +8,7 @@ class DynamicTreeView extends UIObject {
 
     constructor(options) {
         super(TEMPLATES.DynamicTreeView, options);
-        
+
         Object.assign(this, {
             label: ''
         }, options);
@@ -23,7 +23,7 @@ class DynamicTreeView extends UIObject {
         this.containerId = "property-tree-container";
         this.properties = [];
     }
-    
+
     createHeader(properties) {
         var _this = this;
         _this.properties = properties;
@@ -53,18 +53,7 @@ class DynamicTreeView extends UIObject {
 
             var property = _this.properties[propId];
 
-            if (property.type == "enum") {
-                var values = {};
-                if (property.values) {
-                    values = property.values;
-                } else {
-                    console.log("No 'enum' values specified!");
-                    return;
-                }
-                _this.addEnumProperty(property.text, values);
-            } else {
-                _this.addFloatProperty(property.text, property.lo || 0, property.hi || 100);
-            }
+            _this.insertPropertyNode(property);
         };
         addButton.value = "Add";
         buttonWrapper.appendChild(addButton);
@@ -95,11 +84,37 @@ class DynamicTreeView extends UIObject {
         jsonButton.type = "button";
         jsonButton.onclick = function () {
             var json = _this.getJSON();
-            console.log(JSON.stringify(json));
+
+            _this.saveJSON(json);
         };
-        jsonButton.value = "JSON";
+        jsonButton.value = "Save";
         buttonWrapper.appendChild(jsonButton);
         header.appendChild(buttonWrapper);
+
+        buttonWrapper = this.createElement("div", "button");
+        var jsonButton = this.createElement("input");
+        jsonButton.type = "button";
+        jsonButton.onclick = function () {
+            _this.loadJSON();
+        };
+        jsonButton.value = "Load";
+        buttonWrapper.appendChild(jsonButton);
+        header.appendChild(buttonWrapper);
+    }
+
+    insertPropertyNode(property) {
+        if (property.type == "enum") {
+            var values = {};
+            if (property.values) {
+                values = property.values;
+            } else {
+                console.log("No 'enum' values specified!");
+                return;
+            }
+            return this.addEnumProperty(property.text, values);
+        } else {
+            return this.addFloatProperty(property.text, property.lo || 0, property.hi || 100);
+        }
     }
 
     setProperties(properties) {
@@ -117,12 +132,16 @@ class DynamicTreeView extends UIObject {
         var node = this.addPropertyNode(name);
 
         this.addEnum(node, values);
+
+        return node;
     }
 
     addFloatProperty(name, min = 0, max = 100) {
         var node = this.addPropertyNode(name);
 
         this.addRange(node, min, max);
+
+        return node;
     }
 
     addPropertyNode(name) {
@@ -149,8 +168,7 @@ class DynamicTreeView extends UIObject {
             var target = ev.target;
 
             if (target !== null && source != target.parentElement) {
-                let subnodes = target.parentElement.querySelector('.property-subnodes-wrapper');
-                subnodes.appendChild(source);
+                _this.insertChild(target.parentElement, source);
             }
         });
         node.addEventListener('dragover', function (ev) {
@@ -193,6 +211,11 @@ class DynamicTreeView extends UIObject {
         return node;
     }
 
+    insertChild(parent, child) {
+        let subnodes = parent.querySelector('.property-subnodes-wrapper');
+        subnodes.appendChild(child);
+    }
+
     addRange(node, minValue = 0, maxValue = 100) {
         var _this = this;
 
@@ -205,11 +228,17 @@ class DynamicTreeView extends UIObject {
         var min = _this.createElement("input", "property-range-min");
         min.type = "number";
         min.value = minValue;
+        min.addEventListener("mousemove", (e) => {
+            e.preventDefault();
+        });        
         range.appendChild(min);
 
         var max = _this.createElement("input", "property-range-max");
         max.type = "number";
         max.value = Math.ceil(maxValue);
+        max.addEventListener("mousemove", (e) => {
+            e.preventDefault();
+        });        
         range.appendChild(max);
 
         var addButton = _this.createElement("div", "property-range-add-button add-button");
@@ -388,8 +417,61 @@ class DynamicTreeView extends UIObject {
         }
     }
 
+    saveJSON(json) {
+        var a = document.createElement("a");
+
+        var date = new Date();
+
+        var now = "";
+        now += date.getFullYear();
+        var month = date.getMonth() + 1; // months are zero indexed 
+        now += month < 10 ? "0" + month : month;
+        var day = date.getDate();
+        now += day < 10 ? "0" + day : day
+        now += date.getHours();
+        var minute = date.getMinutes();
+        now += minute < 10 ? "0" + minute : minute;
+        now += date.getSeconds();
+
+        CommonUtils.downloadJSON(json, "vpttree_" + now + ".json");
+    }
+
     loadJSON() {
-        // TODO: implement
+        var _this = this;
+
+        CommonUtils.readTextFile(data => {
+            var json = JSON.parse(data);
+
+            _this.setJSON(json);
+        });
+    }
+
+    setJSON(json) {
+        for (var i = 0; i < json.length; i++) {
+            var node = json[i];
+            this.createNodeFromJSON(node);
+        }
+    }
+
+    createNodeFromJSON(propJSON, parent = null) {
+        var prop = this.properties.find(p => p.text == propJSON.name);
+
+        if (prop) {
+            var node = this.addPropertyNode(prop.text);
+
+            if(parent) {
+                this.insertChild(parent, node);
+            }
+
+            for (var g = 0; g < propJSON.groups.length; g++) {
+                var group = propJSON.groups[g];
+                this.addRange(node, group.lo, group.hi);
+            }
+
+            for (var c = 0; c < propJSON.children.length; c++) {
+                this.createNodeFromJSON(propJSON.children[c], node);
+            }
+        }
     }
 
     reset() {
@@ -405,7 +487,7 @@ class DynamicTreeView extends UIObject {
     }
 
     _handleMouseMove(e) {
-        
+
     }
 }
 
