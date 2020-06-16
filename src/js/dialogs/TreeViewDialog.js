@@ -20,20 +20,38 @@ class TreeViewDialog extends AbstractDialog {
   _updateOccludedInstance(_rulesInfo)
   {
       var index=0;
-      this.rules.forEach(x=>{
-        
+      for(var index=0;index<this.rules.length;index++)  
+      {
         var nVisInstances = _rulesInfo[index].nInstances-_rulesInfo[index].nRemoved;
-        var occludedInstance = nVisInstances-_rulesInfo[index].nSeen;
-        //x.node.occludedInstance = occludedInstance ;
-        x.node.sliderObj.object.setValue3((occludedInstance/_rulesInfo[index].nInstances)*100);
-        index++;
-
-      });
+        this.rulesNodes[index].occludedInstance = nVisInstances-_rulesInfo[index].nSeen;
+      }
+      this._countOccludedInstances(Htree);
   }
-
+  _countOccludedInstances(node) {
+    if(node.children==null)
+    {
+      this.updateSliderTracks(node);
+      return node.occludedInstance;
+    }
+    else
+    {
+      var count = 0;
+      node.children.forEach((item) => {
+        count += this._countOccludedInstances(item);
+      });
+      node.occludedInstance = count;
+      this.updateSliderTracks(node);
+    }
+    return node.occludedInstance;
+  }
+  updateSliderTracks(node) {
+    node.sliderObj.object.setValue2(node.sliderObj.object.getMaxValue() - node.sliderObj.object.getValue());
+    node.sliderObj.object.setValue3((node.occludedInstance/node.nInstances)*100);
+  }
   _getGroupOfRules() {
     //console.log(Htree);
     this.rules = [];
+    this.rulesNodes = [];
     this.extractRulesFromTree(Htree, [], [], []);
 
     //console.log(this.rules);
@@ -55,7 +73,7 @@ class TreeViewDialog extends AbstractDialog {
       obj.visibility = node.sliderValue;
       obj.nInstances = node.nInstances;
       obj.color = node.color;
-      obj.node = node;
+      this.rulesNodes.push(node);
       this.rules.push(JSON.parse(JSON.stringify(obj)));
       //---------------------------------------
       obj = [];
