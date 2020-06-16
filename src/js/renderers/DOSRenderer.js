@@ -12,17 +12,20 @@ class DOSRenderer extends AbstractRenderer {
         super(gl, idVolume, environmentTexture, options);
 
         Object.assign(this, {
-            steps: 10,
-            slices: 200,
-            occlusionScale: 0.01,
-            occlusionDecay: 0.9,
-            rawVisibility: 0,
-            _depth: 1,
-            _minDepth: -1,
-            _maxDepth: 1,
-            _lightPos: [0.5, 0.5, 0.5],
-            _ks: 0.1,
-            _kt: 0.1
+            steps          : 10,
+            slices         : 200,
+            occlusionScale : 0.01,
+            occlusionDecay : 0.9,
+            colorBias      : 0,
+            alphaBias      : 0,
+            alphaTransfer  : 0,
+            cutDepth       : 0,
+            _depth         : 1,
+            _minDepth      : -1,
+            _maxDepth      : 1,
+            _lightPos      : [0.5, 0.5, 0.5],
+            _ks            : 0.1,
+            _kt            : 0.1
         }, options);
 
         this._idVolume = idVolume;
@@ -493,7 +496,7 @@ class DOSRenderer extends AbstractRenderer {
         const [minDepth, maxDepth] = this.calculateDepth();
         this._minDepth = minDepth;
         this._maxDepth = maxDepth;
-        this._depth = minDepth;
+        this._depth = minDepth + this.cutDepth * (maxDepth - minDepth);
 
         gl.drawBuffers([
             gl.COLOR_ATTACHMENT0,
@@ -549,11 +552,12 @@ class DOSRenderer extends AbstractRenderer {
 
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
-        gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);        
+        gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
         gl.uniform1f(program.uniforms.uColorBias, this.colorBias);
         gl.uniform1f(program.uniforms.uAlphaBias, this.alphaBias);
+        gl.uniform1f(program.uniforms.uAlphaTransfer, this.alphaTransfer);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
-            
+
         gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._groupMembership);
 
         const depthStep = (this._maxDepth - this._minDepth) / this.slices;
