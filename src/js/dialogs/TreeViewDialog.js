@@ -185,8 +185,7 @@ class TreeViewDialog extends AbstractDialog {
     var roots = document.getElementsByClassName("root");
     for (var i = 0; i < roots.length; i++) {
       var root = roots[i];
-      while (root.firstChild) {
-        ;
+      while (root.firstChild) {        
         root.removeChild(root.lastChild);
       }
     }
