@@ -15,7 +15,7 @@ constructor(gl, idVolume, dataVolume, environmentTexture, options) {
         slices         : 200,
         occlusionScale : 0.01,
         occlusionDecay : 0.9,
-        visibility     : 0.9,
+        rawVisibility  : 0,
         _depth         : 1,
         _minDepth      : -1,
         _maxDepth      : 1,
@@ -419,7 +419,7 @@ _integrateFrame() {
     // TODO: calculate correct blur radius (occlusion scale)
     gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
     gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
-    //gl.uniform1f(program.uniforms.uVisibility, this.visibility);
+    gl.uniform1f(program.uniforms.uRawVisibility, this.rawVisibility);
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
 
     gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._groupMembership);
