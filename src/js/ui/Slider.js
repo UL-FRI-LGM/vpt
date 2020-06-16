@@ -83,6 +83,8 @@ _handleMouseUp(e) {
 }
 
 _handleMouseMove(e) {
+    e.preventDefault();
+    
     this._setValueByEvent(e);
 }
 

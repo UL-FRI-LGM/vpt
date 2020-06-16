@@ -57,12 +57,51 @@
     },
     {
       "type": "field",
-      "label": "Raw data visibility:",
+      "label": "Color bias:",
       "children": [
         {
           "type": "slider",
-          "bind": "rawVisibility",
-          "value": 0.5,
+          "bind": "colorBias",
+          "value": 0,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "label": "Alpha bias:",
+      "children": [
+        {
+          "type": "slider",
+          "bind": "alphaBias",
+          "value": 0,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "label": "Alpha transfer:",
+      "children": [
+        {
+          "type": "slider",
+          "bind": "alphaTransfer",
+          "value": 0,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "label": "Cut depth:",
+      "children": [
+        {
+          "type": "slider",
+          "bind": "cutDepth",
+          "value": 0,
           "min": 0,
           "max": 1
         }

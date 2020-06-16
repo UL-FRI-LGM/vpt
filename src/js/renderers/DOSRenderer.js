@@ -16,7 +16,10 @@ class DOSRenderer extends AbstractRenderer {
             slices: 200,
             occlusionScale: 0.01,
             occlusionDecay: 0.9,
-            rawVisibility: 0,
+            colorBias: 0,
+            alphaBias: 0,
+            alphaTransfer: 0,
+            cutDepth: 0,
             _depth: 1,
             _minDepth: -1,
             _maxDepth: 1,
@@ -24,7 +27,7 @@ class DOSRenderer extends AbstractRenderer {
             _ks: 0.1,
             _kt: 0.1
         }, options);
-        this._GUIObject=null;
+        this._GUIObject = null;
         this._idVolume = idVolume;
         this._dataVolume = dataVolume;
         this._maskVolume = null;
@@ -40,11 +43,11 @@ class DOSRenderer extends AbstractRenderer {
         this._visStatusArray = null;
         this._rules = [];
         this._layout = [];
-        this._nRules=0;
+        this._nRules = 0;
         this._attrib = gl.createBuffer();
         this._groupMembership = gl.createBuffer();
         this._visibilityStatus = gl.createBuffer();
-        this._rulesInfo =null;
+        this._rulesInfo = null;
         this._localSize = {
             x: 128,
             y: 1,
@@ -175,15 +178,15 @@ class DOSRenderer extends AbstractRenderer {
         a.click();
     }
 
-    setHtreeRules(rules,GUIObject) {
+    setHtreeRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
 
-        this._rulesInfo  = [];
+        this._rulesInfo = [];
         this.clearVisStatusArray();
-        this._nRules=rules.length;
+        this._nRules = rules.length;
         this._rules = '';
         var _x = rules.map((rule, index) => {
-            var ruleObj =new Object();
+            var ruleObj = new Object();
 
             const attribute = rule.attribute;
             const hi = rule.hi;
@@ -192,7 +195,7 @@ class DOSRenderer extends AbstractRenderer {
             this._sort_by_key(instancesStRule, 'avgProb');
             const visibility = (rule.visibility / 100).toFixed(4);
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
-            ruleObj.nInstances =instancesStRule.length; 
+            ruleObj.nInstances = instancesStRule.length;
             this._rulesInfo.push(ruleObj);
             this.updateVisStatusArray(instancesStRule, this._rulesInfo[index].nRemoved);
             const phi = (index / rules.length) * 2 * Math.PI;
@@ -235,14 +238,14 @@ class DOSRenderer extends AbstractRenderer {
         }
     }
 
-    setRules(rules,GUIObject) {
+    setRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
-        this._nRules=rules.length;
-        this._rulesInfo  = [];
+        this._nRules = rules.length;
+        this._rulesInfo = [];
         this.clearVisStatusArray();
 
         this._rules = rules.map((rule, index) => {
-            var ruleObj =new Object();
+            var ruleObj = new Object();
             const attribute = rule.attribute;
             const lo = rule.range.x.toFixed(4);
             const hi = rule.range.y.toFixed(4);
@@ -250,7 +253,7 @@ class DOSRenderer extends AbstractRenderer {
             this._sort_by_key(instancesStRule, 'avgProb');
             const visibility = (rule.visibility / 100).toFixed(4);
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
-            ruleObj.nInstances =instancesStRule.length; 
+            ruleObj.nInstances = instancesStRule.length;
             this._rulesInfo.push(ruleObj);
             this.updateVisStatusArray(instancesStRule, this._rulesInfo[index].nRemoved);
             const phi = (index / rules.length) * 2 * Math.PI;
@@ -277,7 +280,7 @@ class DOSRenderer extends AbstractRenderer {
     }
 
     updateVisStatusArray(instancesStRule, numberRemoved) {
-        
+
         for (var i = 0; i < numberRemoved; i++) {
             if (this._visStatusArray[instancesStRule[i]['id']] == 1)
                 this._visStatusArray[instancesStRule[i]['id']] = 0;//invisible 
@@ -506,7 +509,7 @@ class DOSRenderer extends AbstractRenderer {
         const [minDepth, maxDepth] = this.calculateDepth();
         this._minDepth = minDepth;
         this._maxDepth = maxDepth;
-        this._depth = minDepth;
+        this._depth = minDepth + this.cutDepth * (maxDepth - minDepth);
 
         gl.drawBuffers([
             gl.COLOR_ATTACHMENT0,
@@ -562,16 +565,17 @@ class DOSRenderer extends AbstractRenderer {
 
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
-        gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);        
+        gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
         gl.uniform1f(program.uniforms.uColorBias, this.colorBias);
         gl.uniform1f(program.uniforms.uAlphaBias, this.alphaBias);
+        gl.uniform1f(program.uniforms.uAlphaTransfer, this.alphaTransfer);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
-            
+
         gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._groupMembership);
 
         const depthStep = (this._maxDepth - this._minDepth) / this.slices;
         for (let step = 0; step < this.steps; step++) {
-            if (this._depth > this._maxDepth) {
+            if (this._depth > this._maxDepth) {                
                 break;
             }
 
@@ -596,18 +600,19 @@ class DOSRenderer extends AbstractRenderer {
             this._accumulationBuffer.use();
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
             //======================================
-            if(step == this.steps-1) //if it is last iteration
-            {// countOccludedInstance & update sliders
-                this._countOccludedInstance();
-            } 
+            //if(step == this.steps-1) //if it is last iteration
+            //{// countOccludedInstance & update sliders
+            //this._countOccludedInstance();
+            //} 
             //======================================
             this._accumulationBuffer.swap();
             this._depth += depthStep;
         }
+
         // Swap again to undo the last swap by AbstractRenderer
         this._accumulationBuffer.swap();
-        
 
+        this._countOccludedInstance();
     }
 
     _renderFrame() {
@@ -707,26 +712,23 @@ class DOSRenderer extends AbstractRenderer {
         ];
     }*/
     _countOccludedInstance() {
-    
-        if(this._nRules>=1)
-        {
-            const InstanceID=this._getInstanceIDFramebuffer();
-            const ruleID=this._getGroupIDFramebuffer();
-    
+
+        if (this._nRules >= 1) {
+            const InstanceID = this._getInstanceIDFramebuffer();
+            const ruleID = this._getGroupIDFramebuffer();
+
             var frameBufferSize = this._bufferSize * this._bufferSize;
-    
-            for(var index=0;index<this._nRules;index++)
-            {
+
+            for (var index = 0; index < this._nRules; index++) {
                 var count = new Uint32Array(this._numberInstance);
-                for(var j=0;j<frameBufferSize;j++)
-                {
-                    if(ruleID[j]==index+1)
-                        count[InstanceID[j]]=1;
+                for (var j = 0; j < frameBufferSize; j++) {
+                    if (ruleID[j] == index + 1)
+                        count[InstanceID[j]] = 1;
                 }
-                this._rulesInfo[index].nSeen=this._computeSum(count);
-            } 
+                this._rulesInfo[index].nSeen = this._computeSum(count);
+            }
             //console.log(this._rulesInfo);
-            if(this._GUIObject!=null)
+            if (this._GUIObject != null)
                 this._GUIObject._updateOccludedInstance(this._rulesInfo);
         }
     }
@@ -737,11 +739,10 @@ class DOSRenderer extends AbstractRenderer {
 
     }
     _getGroupIDFramebuffer() {
-        const texture= this._accumulationBuffer.getAttachments().color[3]  
+        const texture = this._accumulationBuffer.getAttachments().color[3]
         return this._mapTextureToArray(texture);
     }
-    _mapTextureToArray(texture)
-    {
+    _mapTextureToArray(texture) {
         var gl = this._gl;
 
         var fb = gl.createFramebuffer();
@@ -760,10 +761,9 @@ class DOSRenderer extends AbstractRenderer {
 
         return pixels;
     }
-    _computeSum(array)
-    {
+    _computeSum(array) {
         return array.reduce((a, b) => a + b, 0);
-          
+
     }
 
 

@@ -45,8 +45,8 @@ _addEventListeners() {
     this._domElement.addEventListener('touchstart', this._handleMouseDown);
     document.addEventListener('mouseup', this._handleMouseUp);
     document.addEventListener('touchend', this._handleMouseUp);
-    document.addEventListener('mousemove', this._handleMouseMove);
-    document.addEventListener('touchmove', this._handleMouseMove);
+    this._domElement.addEventListener('mousemove', this._handleMouseMove);
+    this._domElement.addEventListener('touchmove', this._handleMouseMove);
     this._domElement.addEventListener('mousewheel', this._handleMouseWheel);
     document.addEventListener('keydown', this._handleKeyDown);
     document.addEventListener('keyup', this._handleKeyUp);
@@ -76,8 +76,7 @@ _handleMouseUp(e) {
 }
 
 _handleMouseMove(e) {
-    // Drag&Drop functionality for the whole page is disabled by this row!!!
-    //e.preventDefault();
+    e.preventDefault();
 
     const x = typeof e.pageX !== 'undefined' ? e.pageX : e.touches[0].pageX;
     const y = typeof e.pageY !== 'undefined' ? e.pageY : e.touches[0].pageY;
