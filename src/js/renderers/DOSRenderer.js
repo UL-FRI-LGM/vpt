@@ -37,7 +37,7 @@ class DOSRenderer extends AbstractRenderer {
         }, MIXINS);
 
         this._numberInstance = 0;
-        this._visStatusArray =null;
+        this._visStatusArray = null;
         this._rules = [];
         this._layout = [];
 
@@ -365,7 +365,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.useProgram(program.program);
 
         const dimensions = this._idVolume._currentModality.dimensions;
-        
+
         gl.bindImageTexture(1, this._idVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
 
         gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
@@ -390,7 +390,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.dispatchCompute(groupsX, groupsY, groupsZ);
         gl.getBufferSubData(gl.SHADER_STORAGE_BUFFER, 0, result);
 
-        
+
         /***** compute avarage  ****/
         var j = 0;
         for (var i = 0; i < this._numberInstance; i++) {
@@ -470,7 +470,7 @@ class DOSRenderer extends AbstractRenderer {
         if (null == obj || "object" != typeof obj) return obj;
         var copy = new obj.constructor();
         for (var attr in obj) {
-            if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];    
+            if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
         }
         return copy;
     }
@@ -546,13 +546,14 @@ class DOSRenderer extends AbstractRenderer {
         gl.activeTexture(gl.TEXTURE8);
         gl.uniform1i(program.uniforms.uDataTransferFunction, 8);
         gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
-         
+
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
-        gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
-        gl.uniform1f(program.uniforms.uRawVisibility, this.rawVisibility);
+        gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);        
+        gl.uniform1f(program.uniforms.uColorBias, this.colorBias);
+        gl.uniform1f(program.uniforms.uAlphaBias, this.alphaBias);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
-
+            
         gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._groupMembership);
 
         const depthStep = (this._maxDepth - this._minDepth) / this.slices;
