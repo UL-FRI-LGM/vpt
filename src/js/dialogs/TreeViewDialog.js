@@ -81,6 +81,11 @@ class TreeViewDialog extends AbstractDialog {
       d.hi = x.hi;
       d.lo = x.lo;
       d.type = x.type;
+
+      if (x.values) {
+        d.values = x.values;
+      }
+
       nbProperty++;
       propertyList.push(d);
     });
