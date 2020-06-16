@@ -55,15 +55,8 @@ _handleAddGroupClick() {
 
 _handleGroupChange(group) {
     const { object, binds } = group;
-
-    /*var attribute= binds.attribute.getValue();
-    var range = binds.range.getValue();
-    var visibility = binds.visibility.getValue();
-    var elemCount = this.countElements([attribute], [range.y], [range.x]) ;*/
     
-   // var occludedInstance = 50;// 
     binds.visibility.setValue2(binds.visibility.getMaxValue() - binds.visibility.getValue());
-    //binds.visibility.setValue3(occludedInstance);
     this.trigger('change');
 }
 
@@ -108,7 +101,8 @@ _addGroup() {
     binds.range.addEventListener('change', e => this._handleGroupChange(group));
     binds.visibility.addEventListener('change',  e => this._handleGroupChange(group));
     binds.color.addEventListener('change', this._handleColorChange);
-
+    
+    this.trigger('retopo');
     return group;
 }
 
@@ -151,28 +145,21 @@ _delete(group) {
 
     this.trigger('retopo');
 }
-
- countElements(className, hiList, loList) {
-
-    var el = clone(this._elementsArray);
-    for (var j = 0; j < className.length; j++) {
-      if (hiList[j] == null)
-        break;
-      el = el.filter(x => x[className[j]] <= hiList[j] && x[className[j]] >= loList[j])
-    }
-    return el.length;
-  }
   _updateOccludedInstance(_rulesInfo)
   {
       var index=0;
       this.groups.forEach(group=>{
         const { object, binds } = group;
+        if(_rulesInfo[index]==undefined)
+        {
+            return;
+        }
+            var nVisInstances = _rulesInfo[index].nInstances-_rulesInfo[index].nRemoved;
+            var occludedInstance = nVisInstances-_rulesInfo[index].nSeen;
+            
+            binds.visibility.setValue2(binds.visibility.getMaxValue() - binds.visibility.getValue());
+            binds.visibility.setValue3((occludedInstance/_rulesInfo[index].nInstances)*100);
         
-        var nVisInstances = _rulesInfo[index].nInstances-_rulesInfo[index].nRemoved;
-        var occludedInstance = nVisInstances-_rulesInfo[index].nSeen;
-        
-        binds.visibility.setValue2(binds.visibility.getMaxValue() - binds.visibility.getValue());
-        binds.visibility.setValue3((occludedInstance/_rulesInfo[index].nInstances)*100);
         index++;
 
       });

@@ -23,9 +23,9 @@ class DOSRenderer extends AbstractRenderer {
             _depth: 1,
             _minDepth: -1,
             _maxDepth: 1,
-            _lightPos: [0.5, 0.5, 0.5],
+            /*_lightPos: [0.5, 0.5, 0.5],
             _ks: 0.1,
-            _kt: 0.1
+            _kt: 0.1*/
         }, options);
         this._GUIObject = null;
         this._idVolume = idVolume;
@@ -47,7 +47,7 @@ class DOSRenderer extends AbstractRenderer {
         this._attrib = gl.createBuffer();
         this._groupMembership = gl.createBuffer();
         this._visibilityStatus = gl.createBuffer();
-        this._rulesInfo = null;
+        this._rulesInfo = [];
         this._localSize = {
             x: 128,
             y: 1,
@@ -181,7 +181,7 @@ class DOSRenderer extends AbstractRenderer {
     setHtreeRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
 
-        this._rulesInfo = [];
+        this._rulesInfo.length=0;
         this.clearVisStatusArray();
         this._nRules = rules.length;
         this._rules = '';
@@ -241,7 +241,7 @@ class DOSRenderer extends AbstractRenderer {
     setRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
         this._nRules = rules.length;
-        this._rulesInfo = [];
+        this._rulesInfo.length=0;
         this.clearVisStatusArray();
 
         this._rules = rules.map((rule, index) => {
