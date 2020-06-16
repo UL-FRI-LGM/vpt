@@ -17,11 +17,25 @@ class TreeViewDialog extends AbstractDialog {
     this._createAbstractTree = this._createAbstractTree.bind(this);
     this._binds.resetTreeButton.addEventListener('click', this._createAbstractTree);
   }
+  _updateOccludedInstance(_rulesInfo)
+  {
+      var index=0;
+      this.rules.forEach(x=>{
+        
+        var nVisInstances = _rulesInfo[index].nInstances-_rulesInfo[index].nRemoved;
+        var occludedInstance = nVisInstances-_rulesInfo[index].nSeen;
+        //x.node.occludedInstance = occludedInstance ;
+        x.node.sliderObj.object.setValue3((occludedInstance/_rulesInfo[index].nInstances)*100);
+        index++;
+
+      });
+  }
 
   _getGroupOfRules() {
     //console.log(Htree);
     this.rules = [];
     this.extractRulesFromTree(Htree, [], [], []);
+
     //console.log(this.rules);
     return this.rules;
   }
@@ -41,6 +55,7 @@ class TreeViewDialog extends AbstractDialog {
       obj.visibility = node.sliderValue;
       obj.nInstances = node.nInstances;
       obj.color = node.color;
+      obj.node = node;
       this.rules.push(JSON.parse(JSON.stringify(obj)));
       //---------------------------------------
       obj = [];
@@ -81,6 +96,11 @@ class TreeViewDialog extends AbstractDialog {
       d.hi = x.hi;
       d.lo = x.lo;
       d.type = x.type;
+
+      if (x.values) {
+        d.values = x.values;
+      }
+
       nbProperty++;
       propertyList.push(d);
     });
@@ -585,9 +605,9 @@ function createJSONHierarchyTree(nav) {
     computeMinMaxRange(node);
   }
   function updateSliderTracks(node) {
-    node.occludedInstance = 50;// node.sliderValue*0.10;
+   // node.occludedInstance = 50;// node.sliderValue*0.10;
     node.sliderObj.object.setValue2(node.sliderObj.object.getMaxValue() - node.sliderObj.object.getValue());
-    node.sliderObj.object.setValue3(node.occludedInstance);
+   // node.sliderObj.object.setValue3(node.occludedInstance);
 
   }
   function changeParentsMinMaxRange(node) {

@@ -233,7 +233,7 @@ _handleEnvmapLoad(options) {
 
 _updateVisibility() {
     const renderer = this._renderingContext.getRenderer();
-    renderer.setRules(this._visibilityDialog.getGroups());
+    renderer.setRules(this._visibilityDialog.getGroups(),this._visibilityDialog);
     renderer.reset();
 
     if (this._visibilityUpdateTimeout) {
@@ -318,7 +318,7 @@ _updateTreeVisibility()
     //var Htree=this._treeViewDialog._getHtree();
     var tree_rules=this._treeViewDialog._getGroupOfRules();
     const renderer = this._renderingContext.getRenderer();
-    renderer.setHtreeRules(tree_rules);
+    renderer.setHtreeRules(tree_rules,this._treeViewDialog);
     renderer.reset();
 
     if (this._visibilityUpdateTimeout) {
