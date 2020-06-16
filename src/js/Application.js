@@ -153,6 +153,7 @@ _handleVolumeLoad(options) {
             this._renderingContext.setDataVolume(reader);
             this._renderingContext.getRenderer().setAttributes(null, null);
             this._visibilityDialog.reset();
+            this._treeViewDialog.reset();
             if (reader.readAttributes) {
                 reader.readAttributes({
                     onData: attributes => {
@@ -161,6 +162,7 @@ _handleVolumeLoad(options) {
                                 const elementsJSON = this.getElementsAttribJSON(attributes, layout);
                                 this._renderingContext.getRenderer().setAttributes(attributes, layout, elementsJSON);
                                 this._visibilityDialog.setAttributes(layout.map(x => x.name));
+                                this._treeViewDialog.setAttributes(layout, elementsJSON);
                             }
                         });
                     }
