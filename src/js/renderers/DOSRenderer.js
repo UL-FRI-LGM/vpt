@@ -37,6 +37,7 @@ class DOSRenderer extends AbstractRenderer {
         }, MIXINS);
 
         this._numberInstance = 0;
+        this._visStatusArray =null;
         this._rules = [];
         this._layout = [];
 
@@ -364,7 +365,8 @@ class DOSRenderer extends AbstractRenderer {
         gl.useProgram(program.program);
 
         const dimensions = this._idVolume._currentModality.dimensions;
-        gl.bindImageTexture(0, this._idVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
+        
+        gl.bindImageTexture(1, this._idVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
 
         gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
@@ -388,7 +390,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.dispatchCompute(groupsX, groupsY, groupsZ);
         gl.getBufferSubData(gl.SHADER_STORAGE_BUFFER, 0, result);
 
-
+        
         /***** compute avarage  ****/
         var j = 0;
         for (var i = 0; i < this._numberInstance; i++) {
@@ -400,7 +402,7 @@ class DOSRenderer extends AbstractRenderer {
             }
             j += 2;
         }
-
+        //console.log( this._elements);
         gl.deleteBuffer(ssbo);
         //var t1 = performance.now();
         //console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
@@ -686,7 +688,7 @@ class DOSRenderer extends AbstractRenderer {
         ];
     }*/
     _countOccludedInstance() {
-        console.log(this._getInstanceIDFramebuffer());
+        //console.log(this._getInstanceIDFramebuffer());
     }
 
     _getInstanceIDFramebuffer() {
