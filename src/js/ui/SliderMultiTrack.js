@@ -194,6 +194,8 @@ class SliderMultiTrack extends UIObject {
     }
 
     _handleMouseMove(e) {
+        e.preventDefault();
+
         if (!this.enabled) {
             return;
         }

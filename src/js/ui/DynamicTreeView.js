@@ -8,18 +8,22 @@ class DynamicTreeView extends UIObject {
 
     constructor(options) {
         super(TEMPLATES.DynamicTreeView, options);
-
+        
         Object.assign(this, {
             label: ''
         }, options);
 
+        this._handleMouseMove = this._handleMouseMove.bind(this);
+
         this.nodes = [];
+
+        this._element.addEventListener('mousemove', this._handleMouseMove);
 
         this.headerId = "property-tree-header";
         this.containerId = "property-tree-container";
         this.properties = [];
     }
-
+    
     createHeader(properties) {
         var _this = this;
         _this.properties = properties;
@@ -205,7 +209,7 @@ class DynamicTreeView extends UIObject {
 
         var max = _this.createElement("input", "property-range-max");
         max.type = "number";
-        max.value = maxValue;
+        max.value = Math.ceil(maxValue);
         range.appendChild(max);
 
         var addButton = _this.createElement("div", "property-range-add-button add-button");
@@ -398,6 +402,10 @@ class DynamicTreeView extends UIObject {
         while (header.firstChild) {
             header.removeChild(header.lastChild);
         }
+    }
+
+    _handleMouseMove(e) {
+        
     }
 }
 
