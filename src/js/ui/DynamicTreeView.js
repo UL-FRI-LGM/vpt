@@ -210,7 +210,7 @@ class DynamicTreeView extends UIObject {
 
         var addButton = _this.createElement("div", "property-range-add-button add-button");
         addButton.onclick = function () {
-            _this.addRange(node);
+            _this.addRange(node, minValue, maxValue);
         };
         range.appendChild(addButton);
 
