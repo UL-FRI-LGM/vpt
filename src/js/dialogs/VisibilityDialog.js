@@ -61,9 +61,9 @@ _handleGroupChange(group) {
     var visibility = binds.visibility.getValue();
     var elemCount = this.countElements([attribute], [range.y], [range.x]) ;*/
     
-    var occludedInstance = 50;// 
+   // var occludedInstance = 50;// 
     binds.visibility.setValue2(binds.visibility.getMaxValue() - binds.visibility.getValue());
-    binds.visibility.setValue3(occludedInstance);
+    //binds.visibility.setValue3(occludedInstance);
     this.trigger('change');
 }
 
@@ -153,6 +153,7 @@ _delete(group) {
 }
 
  countElements(className, hiList, loList) {
+
     var el = clone(this._elementsArray);
     for (var j = 0; j < className.length; j++) {
       if (hiList[j] == null)
@@ -160,6 +161,21 @@ _delete(group) {
       el = el.filter(x => x[className[j]] <= hiList[j] && x[className[j]] >= loList[j])
     }
     return el.length;
+  }
+  _updateOccludedInstance(_rulesInfo)
+  {
+      var index=0;
+      this.groups.forEach(group=>{
+        const { object, binds } = group;
+        
+        var nVisInstances = _rulesInfo[index].nInstances-_rulesInfo[index].nRemoved;
+        var occludedInstance = nVisInstances-_rulesInfo[index].nSeen;
+        
+        binds.visibility.setValue2(binds.visibility.getMaxValue() - binds.visibility.getValue());
+        binds.visibility.setValue3((occludedInstance/_rulesInfo[index].nInstances)*100);
+        index++;
+
+      });
   }
 }
 
