@@ -21,6 +21,8 @@ constructor(renderer, options) {
     this._binds.occlusionDecay.addEventListener('change', this._handleChange);
     this._binds.colorBias.addEventListener('change', this._handleChange);
     this._binds.alphaBias.addEventListener('change', this._handleChange);
+    this._binds.alphaTransfer.addEventListener('change', this._handleChange);
+    this._binds.cutDepth.addEventListener('change', this._handleChange);
 
     this._tfwidget = new TransferFunctionWidget();
     this._binds.tfContainer.add(this._tfwidget);
@@ -34,6 +36,8 @@ _handleChange() {
     this._renderer.occlusionDecay = this._binds.occlusionDecay.getValue();
     this._renderer.colorBias = this._binds.colorBias.getValue();
     this._renderer.alphaBias = this._binds.alphaBias.getValue();
+    this._renderer.alphaTransfer = this._binds.alphaTransfer.getValue();
+    this._renderer.cutDepth = this._binds.cutDepth.getValue();
 
     this._renderer._ks = this._binds.ks.getValue();
     this._renderer._kt = this._binds.kt.getValue();

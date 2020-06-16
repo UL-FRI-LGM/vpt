@@ -17,6 +17,8 @@ constructor(gl, idVolume, dataVolume, environmentTexture, options) {
         occlusionDecay : 0.9,
         colorBias      : 0,
         alphaBias      : 0,
+        alphaTransfer  : 0,
+        cutDepth       : 0,
         _depth         : 1,
         _minDepth      : -1,
         _maxDepth      : 1,
@@ -367,7 +369,7 @@ _resetFrame() {
     const [minDepth, maxDepth] = this.calculateDepth();
     this._minDepth = minDepth;
     this._maxDepth = maxDepth;
-    this._depth = minDepth;
+    this._depth = minDepth + this.cutDepth * (maxDepth - minDepth);
 
     gl.drawBuffers([
         gl.COLOR_ATTACHMENT0,
@@ -422,6 +424,7 @@ _integrateFrame() {
     gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
     gl.uniform1f(program.uniforms.uColorBias, this.colorBias);
     gl.uniform1f(program.uniforms.uAlphaBias, this.alphaBias);
+    gl.uniform1f(program.uniforms.uAlphaTransfer, this.alphaTransfer);
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
 
     gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._groupMembership);

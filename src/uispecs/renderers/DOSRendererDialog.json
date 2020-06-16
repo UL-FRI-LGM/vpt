@@ -82,6 +82,32 @@
       ]
     },
     {
+      "type": "field",
+      "label": "Alpha transfer:",
+      "children": [
+        {
+          "type": "slider",
+          "bind": "alphaTransfer",
+          "value": 0,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "label": "Cut depth:",
+      "children": [
+        {
+          "type": "slider",
+          "bind": "cutDepth",
+          "value": 0,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    },
+    {
       "type": "accordion",
       "label": "Transfer function",
       "children": [
