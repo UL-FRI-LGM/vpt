@@ -78,6 +78,31 @@ class DOSRenderer extends AbstractRenderer {
         super.destroy();
     }
 
+    calculateDepth() {
+        const vertices = [
+            new Vector(0, 0, 0),
+            new Vector(0, 0, 1),
+            new Vector(0, 1, 0),
+            new Vector(0, 1, 1),
+            new Vector(1, 0, 0),
+            new Vector(1, 0, 1),
+            new Vector(1, 1, 0),
+            new Vector(1, 1, 1)
+        ];
+    
+        let minDepth = 1;
+        let maxDepth = -1;
+        let mvp = this._mvpMatrix.clone().transpose();
+        for (const v of vertices) {
+            mvp.transform(v);
+            const depth = Math.min(Math.max(v.z / v.w, -1), 1);
+            minDepth = Math.min(minDepth, depth);
+            maxDepth = Math.max(maxDepth, depth);
+        }
+    
+        return [minDepth, maxDepth];
+    }
+
     setIDVolume(volume) {
         const gl = this._gl;
         const dimensions = volume._currentModality.dimensions;
@@ -393,7 +418,7 @@ class DOSRenderer extends AbstractRenderer {
             .flat()
             .map(x => x * 255);
         const data = new Uint8Array(colors);
-
+         
         // upload color strip
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this._colorStrip);
@@ -459,48 +484,6 @@ class DOSRenderer extends AbstractRenderer {
             hint: gl.DYNAMIC_COPY
         });
     }
-
-    _recomputeTransferFunction(rules) {
-        const gl = this._gl;
-
-        // create color strip
-        const colors = rules
-            .map(rule => rule.color)
-            .map(hex => CommonUtils.hex2rgb(hex))
-            .map(color => [color.r, color.g, color.b, 1])
-            .flat()
-            .map(x => x * 255);
-        const data = new Uint8Array(colors);
-
-        // upload color strip
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this._colorStrip);
-        WebGL.createTexture(gl, {
-            unit: 0,
-            texture: this._colorStrip,
-            width: rules.length,
-            height: 1,
-            data: data
-        });
-
-        // render transfer function
-        const program = this._programs.transfer;
-        gl.useProgram(program.program);
-        gl.uniform1i(program.uniforms.uColorStrip, 0);
-        gl.uniform1f(program.uniforms.uOffset, 0.5 / rules.length);
-        gl.uniform1f(program.uniforms.uFalloffStart, 0.2);
-        gl.uniform1f(program.uniforms.uFalloffEnd, 0.8);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._clipQuad);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this._transferFunctionFramebuffer);
-        gl.viewport(0, 0, 256, 256); // TODO: get actual TF size
-        gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-    }
-
 
     _resetFrame() {
         const gl = this._gl;
@@ -727,7 +710,7 @@ class DOSRenderer extends AbstractRenderer {
 
         return pixels;
     }
-    
+
     _getGroupIDFramebuffer() {
         // const texture= this._accumulationBuffer.getAttachments().color[3]  // group ID
     }

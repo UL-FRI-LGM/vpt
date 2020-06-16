@@ -124,7 +124,9 @@ class TreeViewDialog extends AbstractDialog {
     //return JSON.stringify(result); //string
   }
 
-
+  reset() {
+    this._createAbstractTree();
+  }
 
 
   _createAbstractTree = function () {
