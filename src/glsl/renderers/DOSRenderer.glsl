@@ -40,10 +40,9 @@ uniform sampler2D uOcclusion;
 uniform usampler2D uInstanceID;
 uniform usampler2D uGroupID;
 
-uniform float uVisibility;
-//uniform int utest;//for testing 
 uniform vec2 uOcclusionScale;
 uniform float uOcclusionDecay;
+uniform float uRawVisibility;
 
 in vec2 vPosition2D;
 in vec3 vPosition3D;
@@ -62,9 +61,9 @@ vec4 getSample(vec3 position) {
     vec4 dataVolumeSample = texture(uDataVolume, position);
     vec4 maskTransferSample = texture(uMaskTransferFunction, maskVolumeSample.rg);
     vec4 dataTransferSample = texture(uDataTransferFunction, dataVolumeSample.rg);
-    vec3 mixedColor = mix(maskTransferSample.rgb, dataTransferSample.rgb, dataTransferSample.a);
-    vec4 finalColor = vec4(mixedColor, maskTransferSample.a);
-    return finalColor;
+    //vec3 mixedColor = mix(maskTransferSample.rgb, dataTransferSample.rgb, dataTransferSample.a);
+    //vec4 finalColor = vec4(mixedColor, maskTransferSample.a);
+    return mix(maskTransferSample, dataTransferSample, uRawVisibility);
 }
 
 float getOcclusion() {

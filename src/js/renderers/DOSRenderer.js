@@ -16,13 +16,13 @@ class DOSRenderer extends AbstractRenderer {
             slices: 200,
             occlusionScale: 0.01,
             occlusionDecay: 0.9,
-            visibility: 0.9,
+            rawVisibility: 0,
             _depth: 1,
             _minDepth: -1,
             _maxDepth: 1,
-           /* _lightPos: [0.5, 0.5, 0.5],
+            _lightPos: [0.5, 0.5, 0.5],
             _ks: 0.1,
-            _kt: 0.1*/
+            _kt: 0.1
         }, options);
 
         this._idVolume = idVolume;
@@ -39,14 +39,14 @@ class DOSRenderer extends AbstractRenderer {
         this._numberInstance = 0;
         this._rules = [];
         this._layout = [];
-        
+
         this._attrib = gl.createBuffer();
         this._groupMembership = gl.createBuffer();
-        this._visibilityStatus= gl.createBuffer();
-        
+        this._visibilityStatus = gl.createBuffer();
+
         this._localSize = {
-            x: 8,
-            y: 8,
+            x: 128,
+            y: 1,
             z: 1,
         };
 
@@ -54,6 +54,7 @@ class DOSRenderer extends AbstractRenderer {
             min: gl.LINEAR,
             mag: gl.LINEAR,
         });
+
 
         this._maskTransferFunction = WebGL.createTexture(gl, {
             width: 256,
@@ -89,7 +90,7 @@ class DOSRenderer extends AbstractRenderer {
             new Vector(1, 1, 0),
             new Vector(1, 1, 1)
         ];
-    
+
         let minDepth = 1;
         let maxDepth = -1;
         let mvp = this._mvpMatrix.clone().transpose();
@@ -99,7 +100,7 @@ class DOSRenderer extends AbstractRenderer {
             minDepth = Math.min(minDepth, depth);
             maxDepth = Math.max(maxDepth, depth);
         }
-    
+
         return [minDepth, maxDepth];
     }
 
@@ -229,8 +230,7 @@ class DOSRenderer extends AbstractRenderer {
         this.clearVisStatusArray();
 
         this._rules = rules.map((rule, index) => {
-            if(index>=1)
-                {this._test=1;}
+            if (index >= 1) { this._test = 1; }
             const attribute = rule.attribute;
             const lo = rule.range.x.toFixed(4);
             const hi = rule.range.y.toFixed(4);
@@ -323,7 +323,7 @@ class DOSRenderer extends AbstractRenderer {
         const program = this._programs.compute;
         gl.useProgram(program.program);
 
-       // gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
+        // gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
         const dimensions = this._idVolume._currentModality.dimensions;
         gl.bindImageTexture(0, this._idVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
         gl.bindImageTexture(1, this._maskVolume, 0, true, 0, gl.WRITE_ONLY, gl.RGBA8);
@@ -418,7 +418,7 @@ class DOSRenderer extends AbstractRenderer {
             .flat()
             .map(x => x * 255);
         const data = new Uint8Array(colors);
-         
+
         // upload color strip
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this._colorStrip);
@@ -468,7 +468,7 @@ class DOSRenderer extends AbstractRenderer {
         if (null == obj || "object" != typeof obj) return obj;
         var copy = new obj.constructor();
         for (var attr in obj) {
-            if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+            if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];    
         }
         return copy;
     }
@@ -516,43 +516,43 @@ class DOSRenderer extends AbstractRenderer {
         }
         const program = this._programs.integrate;
         gl.useProgram(program.program);
-    
+
         gl.drawBuffers([
             gl.COLOR_ATTACHMENT0,
             gl.COLOR_ATTACHMENT1,
             gl.COLOR_ATTACHMENT2,
             gl.COLOR_ATTACHMENT3,
         ]);
-       // gl.uniform1i(program.uniforms.utest, this._test);
+        // gl.uniform1i(program.uniforms.utest, this._test);
 
         gl.activeTexture(gl.TEXTURE4);
         gl.uniform1i(program.uniforms.uMaskVolume, 4);
         gl.bindTexture(gl.TEXTURE_3D, this._maskVolume);
-    
+
         gl.activeTexture(gl.TEXTURE5);
         gl.uniform1i(program.uniforms.uIDVolume, 5);
         gl.bindTexture(gl.TEXTURE_3D, this._idVolume.getTexture());
-    
+
         gl.activeTexture(gl.TEXTURE6);
         gl.uniform1i(program.uniforms.uDataVolume, 6);
         gl.bindTexture(gl.TEXTURE_3D, this._dataVolume.getTexture());
-    
+
         gl.activeTexture(gl.TEXTURE7);
         gl.uniform1i(program.uniforms.uMaskTransferFunction, 7);
         gl.bindTexture(gl.TEXTURE_2D, this._maskTransferFunction);
-    
+
         gl.activeTexture(gl.TEXTURE8);
         gl.uniform1i(program.uniforms.uDataTransferFunction, 8);
         gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
-    
+         
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
         gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
-        //gl.uniform1f(program.uniforms.uVisibility, this.visibility);
+        gl.uniform1f(program.uniforms.uRawVisibility, this.rawVisibility);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
-    
+
         gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._groupMembership);
-    
+
         const depthStep = (this._maxDepth - this._minDepth) / this.slices;
         for (let step = 0; step < this.steps; step++) {
             if (this._depth > this._maxDepth) {
