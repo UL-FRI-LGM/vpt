@@ -57,12 +57,16 @@ layout (location = 3) out uint oGroupID;
 layout (std430, binding = 0) buffer bGroupMembership {
     uint sGroupMembership[];
 };
-
+float computeGradientMagnitude(vec3 g) {
+	return sqrt(g.x*g.x + g.y*g.y + g.z*g.z);
+}
 vec4 getSample(vec3 position) {
     vec4 maskVolumeSample = texture(uMaskVolume, position);
     vec4 dataVolumeSample = texture(uDataVolume, position);
     vec4 maskTransferSample = texture(uMaskTransferFunction, maskVolumeSample.rg);
-    vec4 dataTransferSample = texture(uDataTransferFunction, dataVolumeSample.rg);
+    //vec4 dataTransferSample = texture(uDataTransferFunction, dataVolumeSample.rg);
+    float gm = computeGradientMagnitude(dataVolumeSample.gba);
+    vec4 dataTransferSample = texture(uDataTransferFunction, vec2(dataVolumeSample.r,gm));
     //vec3 mixedColor = mix(maskTransferSample.rgb, dataTransferSample.rgb, dataTransferSample.a);
     //vec4 finalColor = vec4(mixedColor, maskTransferSample.a);
     vec3 finalColor = mix(maskTransferSample.rgb, dataTransferSample.rgb, uColorBias);

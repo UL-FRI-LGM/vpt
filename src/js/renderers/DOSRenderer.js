@@ -8,7 +8,7 @@
 
 class DOSRenderer extends AbstractRenderer {
 
-    constructor(gl, idVolume, dataVolume, environmentTexture, options) {
+    constructor(gl, idVolume, dataVolume, environmentTexture, camera, options) {
         super(gl, idVolume, environmentTexture, options);
 
         Object.assign(this, {
@@ -23,31 +23,37 @@ class DOSRenderer extends AbstractRenderer {
             _depth: 1,
             _minDepth: -1,
             _maxDepth: 1,
-            /*_lightPos: [0.5, 0.5, 0.5],
+            _lightPos: [0.5, 0.5, 0.5],
             _ks: 0.1,
-            _kt: 0.1*/
+            _kt: 0.1,
+            _usingCPF: 0
         }, options);
         this._GUIObject = null;
         this._idVolume = idVolume;
         this._dataVolume = dataVolume;
         this._maskVolume = null;
-
+        this._camera= camera;
         this._programs = WebGL.buildPrograms(gl, {
             integrate: SHADERS.DOSIntegrate,
             render: SHADERS.DOSRender,
             reset: SHADERS.DOSReset,
             transfer: SHADERS.PolarTransferFunction,
         }, MIXINS);
-
+        
         this._numberInstance = 0;
         this._visStatusArray = null;
         this._rules = [];
         this._layout = [];
         this._nRules = 0;
+        this._minDist =0;
+        this._maxDist =0;
+        this._minGm = 0;
+        this._maxGm = 0;
+
         this._attrib = gl.createBuffer();
         this._groupMembership = gl.createBuffer();
         this._visibilityStatus = gl.createBuffer();
-        this._rulesInfo = [];
+        this._rulesOutInfo = [];
         this._localSize = {
             x: 128,
             y: 1,
@@ -134,6 +140,8 @@ class DOSRenderer extends AbstractRenderer {
         const dimensions = volume._currentModality.dimensions;
 
         this._dataVolume = volume;
+        this._recomputeMinMaxGM() ;
+        
     }
 
     setAttributes(attributes, layout, elements) {
@@ -159,7 +167,6 @@ class DOSRenderer extends AbstractRenderer {
             this._numberInstance = numberOfInstances;
             this.initInstancesArray();
             this._elements = elements;
-
         }
     }
 
@@ -181,7 +188,7 @@ class DOSRenderer extends AbstractRenderer {
     setHtreeRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
 
-        this._rulesInfo.length=0;
+        this._rulesOutInfo.length=0;
         this.clearVisStatusArray();
         this._nRules = rules.length;
         this._rules = '';
@@ -196,8 +203,8 @@ class DOSRenderer extends AbstractRenderer {
             const visibility = (rule.visibility / 100).toFixed(4);
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
             ruleObj.nInstances = instancesStRule.length;
-            this._rulesInfo.push(ruleObj);
-            this.updateVisStatusArray(instancesStRule, this._rulesInfo[index].nRemoved);
+            this._rulesOutInfo.push(ruleObj);
+            this.updateVisStatusArray(instancesStRule, this._rulesOutInfo[index].nRemoved);
             const phi = (index / rules.length) * 2 * Math.PI;
             const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
             const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
@@ -225,7 +232,7 @@ class DOSRenderer extends AbstractRenderer {
         });
         this._recomputeTransferFunction(rules);
         this._createVisibilityStatusBuffer();
-        this._rebuildAttribCompute(true);
+        this._rebuildAttribCompute();
     }
 
     initInstancesArray() {
@@ -241,10 +248,10 @@ class DOSRenderer extends AbstractRenderer {
     setRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
         this._nRules = rules.length;
-        this._rulesInfo.length=0;
+        this._rulesOutInfo.length=0;
         this.clearVisStatusArray();
 
-        this._rules = rules.map((rule, index) => {
+        const _rules = rules.map((rule, index) => {
             var ruleObj = new Object();
             const attribute = rule.attribute;
             const lo = rule.range.x.toFixed(4);
@@ -254,8 +261,8 @@ class DOSRenderer extends AbstractRenderer {
             const visibility = (rule.visibility / 100).toFixed(4);
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
             ruleObj.nInstances = instancesStRule.length;
-            this._rulesInfo.push(ruleObj);
-            this.updateVisStatusArray(instancesStRule, this._rulesInfo[index].nRemoved);
+            this._rulesOutInfo.push(ruleObj);
+            this.updateVisStatusArray(instancesStRule, this._rulesOutInfo[index].nRemoved);
             const phi = (index / rules.length) * 2 * Math.PI;
             const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
             const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
@@ -273,10 +280,10 @@ class DOSRenderer extends AbstractRenderer {
             }
         }`;
         });
-
+        this._rules = _rules.join('\n');
         this._recomputeTransferFunction(rules);
         this._createVisibilityStatusBuffer();
-        this._rebuildAttribCompute(false);
+        this._rebuildAttribCompute();
     }
 
     updateVisStatusArray(instancesStRule, numberRemoved) {
@@ -298,7 +305,7 @@ class DOSRenderer extends AbstractRenderer {
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
     }
-    _rebuildAttribCompute(isTreeRules) {
+    _rebuildAttribCompute() {
         const gl = this._gl;
 
         if (this._programs.compute) {
@@ -313,12 +320,7 @@ class DOSRenderer extends AbstractRenderer {
         }
         const instance = members.join('\n');
 
-        var temp;
-        if (isTreeRules)
-            temp = this._rules;
-        else
-            temp = this._rules.join('\n');
-        const rules = temp;
+        const rules = this._rules;
 
         this._programs.compute = WebGL.buildPrograms(gl, {
             compute: SHADERS.AttribCompute
@@ -381,9 +383,19 @@ class DOSRenderer extends AbstractRenderer {
         gl.useProgram(program.program);
 
         const dimensions = this._idVolume._currentModality.dimensions;
-
         gl.bindImageTexture(1, this._idVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
-
+        gl.bindImageTexture(2, this._dataVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.RGBA8);
+        //-------- for context preserve formula ----------------------
+        gl.uniform1i(program.uniforms.uCPF, this._usingCPF );
+        gl.uniform1f(program.uniforms.uMinGM, this._minGm );
+        gl.uniform1f(program.uniforms.uMaxGM, this._maxGm );
+        gl.uniform1f(program.uniforms.uMinDist, this._minDist );
+        gl.uniform1f(program.uniforms.uMaxDist, this._maxDist );
+        gl.uniform1f(program.uniforms.uKs, this._ks );
+        gl.uniform1f(program.uniforms.uKt, this._kt );
+        gl.uniform3fv(program.uniforms.uLightPos, this._lightPos );
+        gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
+        //----------------------------------------------------------------
         gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
 
@@ -406,7 +418,6 @@ class DOSRenderer extends AbstractRenderer {
         gl.dispatchCompute(groupsX, groupsY, groupsZ);
         gl.getBufferSubData(gl.SHADER_STORAGE_BUFFER, 0, result);
 
-
         /***** compute avarage  ****/
         var j = 0;
         for (var i = 0; i < this._numberInstance; i++) {
@@ -418,11 +429,11 @@ class DOSRenderer extends AbstractRenderer {
             }
             j += 2;
         }
-        //console.log( this._elements);
+        console.log(result); 
         gl.deleteBuffer(ssbo);
         //var t1 = performance.now();
         //console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
-        //console.log(this._elements); 
+        
     }
 
     _recomputeTransferFunction(rules) {
@@ -523,6 +534,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
         //========= recompute avgProb ==========
+        this._recomputeMinMaxDistance();
         this._rebuildProbCompute();
     }
 
@@ -541,7 +553,6 @@ class DOSRenderer extends AbstractRenderer {
             gl.COLOR_ATTACHMENT2,
             gl.COLOR_ATTACHMENT3,
         ]);
-        // gl.uniform1i(program.uniforms.utest, this._test);
 
         gl.activeTexture(gl.TEXTURE4);
         gl.uniform1i(program.uniforms.uMaskVolume, 4);
@@ -599,12 +610,6 @@ class DOSRenderer extends AbstractRenderer {
 
             this._accumulationBuffer.use();
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-            //======================================
-            //if(step == this.steps-1) //if it is last iteration
-            //{// countOccludedInstance & update sliders
-            //this._countOccludedInstance();
-            //} 
-            //======================================
             this._accumulationBuffer.swap();
             this._depth += depthStep;
         }
@@ -725,11 +730,10 @@ class DOSRenderer extends AbstractRenderer {
                     if (ruleID[j] == index + 1)
                         count[InstanceID[j]] = 1;
                 }
-                this._rulesInfo[index].nSeen = this._computeSum(count);
+                this._rulesOutInfo[index].nSeen = this._computeSum(count);
             }
-            //console.log(this._rulesInfo);
             if (this._GUIObject != null)
-                this._GUIObject._updateOccludedInstance(this._rulesInfo);
+                this._GUIObject._updateOccludedInstance(this._rulesOutInfo);
         }
     }
 
@@ -765,8 +769,266 @@ class DOSRenderer extends AbstractRenderer {
         return array.reduce((a, b) => a + b, 0);
 
     }
+    //=============================================================================
+    _recomputeMinMaxDistance()
+    {
 
+        const positions = [
+            // Front face
+            [0.0, 0.0, 1.0],
+            [1.0, 0.0, 1.0],
+            [1.0, 1.0, 1.0],
+            [0.0, 1.0, 1.0],
+            // Back face
+            [0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [1.0, 0.0, 0.0],
+            // Top face
+            [0.0, 1.0, 0.0],
+            [0.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0],
+            [1.0, 1.0, 0.0],
+            // Bottom face
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0],
+            // Right face
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [1.0, 1.0, 1.0],
+            [1.0, 0.0, 1.0],
+            // Left face
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 1.0, 1.0],
+            [0.0, 1.0, 0.0],
+        ];
+        const triangles=[
+            // front face
+            [0,  1,  2],
+            [0,  2,  3],
+            // back face
+            [4,  5,  6],
+            [4,  6,  7],
+            // top face
+            [8,  9,  10],     
+            [8,  10, 11],
+            // bottom face
+            [12, 13, 14],     
+            [12, 14, 15],  
+            // right
+            [16, 17, 18],     
+            [16, 18, 19],
+            // left  
+            [20, 21, 22],     
+            [20, 22, 23],   
+        ]; 
+        this._minDist = 1000; // any large value
+        this._maxDist = -1; // any small value
+        var cameraPos=this._camera.get3DPosition();
+        var invCameraPos = this.inverse3DPoint(this._camera.get3DPosition())
+        for(var i=0; i<triangles.length; i++)
+        {
+            var closestPoint =this._closestPointOnTriangle(cameraPos, positions, triangles[i]);
+            var furthestPoint =this._closestPointOnTriangle(invCameraPos, positions, triangles[i]);
 
+            var newMinDist = this.distance(closestPoint,cameraPos);
+            var newMaxDist = this.distance(furthestPoint,invCameraPos);
+            
+            this._minDist=Math.min(this._minDist,newMinDist);
+            this._maxDist=Math.max(this._maxDist,newMaxDist);
+            
+        }
+        console.log('minDist',this._minDist);
+        console.log('maxDist',this._maxDist);
+        
+    }
+    _closestPointOnTriangle(point, positions, triangle)
+    {
+        var v1= positions[triangle[0]];
+        var v2= positions[triangle[1]];
+        var v3= positions[triangle[2]];
 
+        var edge0 = this.subtract3D( v2 , v1); 
+        var edge1 = this.subtract3D(v3 , v1);  
+        var v0 = this.subtract3D(v1 , point); 
 
+        var a = this.dotProduct3D(edge0, edge0);  
+        var b = this.dotProduct3D(edge0, edge1);  
+        var c = this.dotProduct3D(edge1, edge1);  
+        var d = this.dotProduct3D(edge0, v0);  
+        var e = this.dotProduct3D(edge1, v0);  
+
+        var det = a * c - b * b; 
+        var s = b * e - c * d; 
+        var t = b * d - a * e; 
+
+        if (s + t < det)
+        {
+            if (s < 0)
+            {
+                if (t < 0)
+                {
+                    if (d < 0)
+                    {
+                        s = this.clamp(-d / a, 0, 1);  
+                        t = 0;
+                    }
+                    else
+                    {
+                        s = 0;
+                        t = this.clamp(-e / c, 0, 1);
+                    }
+                }
+                else
+                {
+                    s = 0;
+                    t = this.clamp(-e / c, 0, 1);
+                }
+            }
+            else if (t < 0)
+            {
+                s = this.clamp(-d / a, 0, 1);
+                t = 0;
+            }
+            else
+            {
+                var invDet = 1 / det;
+                s *= invDet;
+                t *= invDet;
+            }
+        }
+        else
+        {
+            if (s < 0)
+            {
+                var tmp0 = b + d;
+                var tmp1 = c + e;
+                if (tmp1 > tmp0)
+                {
+                    var numer = tmp1 - tmp0;
+                    var denom = a - 2 * b + c;
+                    s = this.clamp(numer / denom, 0, 1);
+                    t = 1 - s;
+                }
+                else
+                {
+                    t = this.clamp(-e / c, 0, 1);
+                    s = 0;
+                }
+            }
+            else if (t < 0)
+            {
+                if (a + d > b + e)
+                {
+                    var numer = c + e - b - d;
+                    var denom = a - 2 * b + c;
+                    s = this.clamp(numer / denom, 0, 1);
+                    t = 1 - s;
+                }
+                else
+                {
+                    s = this.clamp(-e / c, 0, 1);
+                    t = 0;
+                }
+            }
+            else
+            {
+                var numer = c + e - b - d;
+                var denom = a - 2 * b + c;
+                s = this.clamp(numer / denom, 0, 1);
+                t = 1- s;
+            }
+        }
+
+        return this.add3D( this.add3D(v1 , this.scalarMultiplication(s , edge0)) , this.scalarMultiplication(t , edge1));
+
+    }
+    clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+    }
+    subtract3D(v1,v2) {
+        return [
+            v1[0]-v2[0],
+            v1[1]-v2[1],
+            v1[2]-v2[2],
+        ];
+    }
+    add3D(v1,v2) {
+        return [
+            v1[0]+v2[0],
+            v1[1]+v2[1],
+            v1[2]+v2[2],
+        ];
+    }
+    dotProduct3D(v1,v2) {
+        return v1[0] * v2[0] + v1[1]  *v2[1] + v1[2] * v2[2];
+    }
+    distance(p1,p2) {
+        return Math.sqrt( Math.pow((p2[0] - p1[0]),2) + Math.pow((p2[1] - p1[1]),2) +Math.pow((p2[2] - p1[2]),2));
+    }
+    scalarMultiplication(s,v)
+    {
+        return [
+            s*v[0],
+            s*v[1],
+            s*v[2],
+        ];  
+    }
+    inverse3DPoint(v)
+    {
+        return [
+            -1*v[0],
+            -1*v[1],
+            -1*v[2],
+        ];  
+    }
+    //==================================================================
+    _recomputeMinMaxGM() {
+        const gl = this._gl;
+
+        if (this._programs.compute) {
+            gl.deleteProgram(this._programs.compute.program);
+        }
+
+        this._programs.compute = WebGL.buildPrograms(gl, {
+            compute: SHADERS.GmCompute
+        }, {
+            localSizeX: this._localSize.x,
+            localSizeY: this._localSize.y,
+            localSizeZ: this._localSize.z,
+        }).compute;
+        
+        const program = this._programs.compute;
+        gl.useProgram(program.program);
+
+        const dimensions = this._idVolume._currentModality.dimensions;
+        gl.bindImageTexture(1, this._dataVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.RGBA8);
+
+        const gm_ssbo = gl.createBuffer();
+        gl.bindBuffer(gl.SHADER_STORAGE_BUFFER, gm_ssbo);
+        gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, gm_ssbo);
+
+        const gm_result = new Float32Array(2);
+        gl.bufferData(gl.SHADER_STORAGE_BUFFER, gm_result, gl.DYNAMIC_COPY);
+
+        const groupsX = Math.ceil(dimensions.width / this._localSize.x);
+        const groupsY = Math.ceil(dimensions.height / this._localSize.y);
+        const groupsZ = Math.ceil(dimensions.depth / this._localSize.z);
+
+        gl.dispatchCompute(groupsX, groupsY, groupsZ);
+        gl.getBufferSubData(gl.SHADER_STORAGE_BUFFER, 0, gm_result);
+
+        console.log(gm_result);
+        this._minGm=gm_result[0];
+        this._maxGm=gm_result[1];
+       // console.log(this._minGm);
+       // console.log(this._maxGm);
+             
+        gl.deleteBuffer(gm_ssbo);
+    }
 }
+
+   
