@@ -24,6 +24,11 @@ constructor(renderer, options) {
     this._binds.alphaTransfer.addEventListener('change', this._handleChange);
     this._binds.cutDepth.addEventListener('change', this._handleChange);
 
+    this._binds.usingCPF.addEventListener('change', this._handleChange);
+    this._binds.ks.addEventListener('change', this._handleChange);
+    this._binds.kt.addEventListener('change', this._handleChange);
+    this._binds.position.addEventListener('change', this._handleChange);
+
     this._tfwidget = new TransferFunctionWidget();
     this._binds.tfContainer.add(this._tfwidget);
     this._tfwidget.addEventListener('change', this._handleTFChange);
@@ -41,7 +46,7 @@ _handleChange() {
 
     this._renderer._ks = this._binds.ks.getValue();
     this._renderer._kt = this._binds.kt.getValue();
-
+    this._renderer._usingCPF = this._binds.usingCPF.isChecked()? 1 :0;
     const position = this._binds.position.getValue();
     this._renderer._lightPos[0] = position.x;
     this._renderer._lightPos[1] = position.y;

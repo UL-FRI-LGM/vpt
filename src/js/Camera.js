@@ -35,6 +35,10 @@ updateProjectionMatrix() {
     this.projectionMatrix.fromFrustum(-w, w, -h, h, this.near, this.far);
 }
 
+get3DPosition()
+{
+    return [this.position.x,this.position.y,this.position.z];
+}
 updateMatrices() {
     this.updateViewMatrix();
     this.updateProjectionMatrix();

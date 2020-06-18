@@ -123,6 +123,17 @@
       "children": [
         {
           "type": "field",
+          "label": "using Context-Preserved formula:",
+          "children": [
+            {
+              "type": "checkbox",
+              "bind": "usingCPF",
+              "checked": false
+            }
+          ]
+        },
+        {
+          "type": "field",
           "label": "Light Position:",
           "children": [
             {
