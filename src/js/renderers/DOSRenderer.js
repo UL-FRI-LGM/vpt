@@ -429,7 +429,6 @@ class DOSRenderer extends AbstractRenderer {
             }
             j += 2;
         }
-        console.log(result); 
         gl.deleteBuffer(ssbo);
         //var t1 = performance.now();
         //console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
@@ -1006,12 +1005,17 @@ class DOSRenderer extends AbstractRenderer {
 
         const dimensions = this._idVolume._currentModality.dimensions;
         gl.bindImageTexture(1, this._dataVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.RGBA8);
+        gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
+        gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
+        gl.uniform1f(program.uniforms.vx, 1.0 / dimensions.width);
+        gl.uniform1f(program.uniforms.vy, 1.0 / dimensions.height);
+        gl.uniform1f(program.uniforms.vz, 1.0 / dimensions.depth);
 
         const gm_ssbo = gl.createBuffer();
         gl.bindBuffer(gl.SHADER_STORAGE_BUFFER, gm_ssbo);
         gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, gm_ssbo);
 
-        const gm_result = new Float32Array(2);
+        const gm_result = new Uint32Array(4);
         gl.bufferData(gl.SHADER_STORAGE_BUFFER, gm_result, gl.DYNAMIC_COPY);
 
         const groupsX = Math.ceil(dimensions.width / this._localSize.x);
@@ -1021,11 +1025,17 @@ class DOSRenderer extends AbstractRenderer {
         gl.dispatchCompute(groupsX, groupsY, groupsZ);
         gl.getBufferSubData(gl.SHADER_STORAGE_BUFFER, 0, gm_result);
 
+        gm_result[0]=gm_result[0]/ 100.0;;
+        gm_result[1]=gm_result[1]/ 100.0;;
+        gm_result[2]=gm_result[2]/ 100.0;;
+        gm_result[3]=gm_result[3]/ 100.0;;
         console.log(gm_result);
-        this._minGm=gm_result[0];
-        this._maxGm=gm_result[1];
-       // console.log(this._minGm);
-       // console.log(this._maxGm);
+
+       // this._minGm=gm_result[0]/ 100.0;;
+       // this._maxGm=gm_result[1]/ 100.0;;
+       // this._minDist=Math.floor(gm_result[2]/ 100.0);
+       // this._maxDist=Math.ceil(gm_result[3]/ 100.0);
+       
              
         gl.deleteBuffer(gm_ssbo);
     }
