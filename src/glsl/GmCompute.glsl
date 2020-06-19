@@ -20,7 +20,7 @@ float computeGradientMagnitude(ivec3 voxel) {
 }
 uint convertToInt(float x)
 {
-    return uint(round(x*100.0));
+    return uint(floor(x*10000.0));
 }
 void main() {
     ivec3 voxel = ivec3(gl_GlobalInvocationID);
@@ -29,7 +29,6 @@ void main() {
         float gm = computeGradientMagnitude(voxel);
         atomicMin(gmBounds[0],convertToInt(gm)); //minGM
         atomicMax(gmBounds[1],convertToInt(gm)); // maxGM 
-
     }
 
 }

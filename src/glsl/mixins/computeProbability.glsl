@@ -37,14 +37,21 @@ float normlizedDistance(vec3 pos)
 float computeProbability(vec3 pos,ivec3 voxel)
 {
     // pos: current sample position
-    // accColor.a: previously accumulated opacity value 
+    // accColor.a: previously accumulated opacity value .. due to (1.0-accColor.a) structures located 
+    // behind semitransparent regions will appear more opaque. 
     // ks & kt two parameters allow intuitive control of the visualization
     float SP=shadingIntensity(pos,voxel);
     float DP=normlizedDistance(pos);
     //float exponent=pow((uKt*SP*(1.0-DP)*(1.0-accColor.a)),uKs);
-    float exponent=pow(uKt*SP*(1.0-DP),uKs);
+    float exponent=pow(uKt*SP*(DP),uKs);
 
     float GP=normlizedGradientMagnitud(voxel);
     float prob= pow(GP,exponent); 
     return prob;
 }
+
+
+/*
+Regions with low gradient magnitude (left, top) and high shading intensity (left, center) are more likely to be suppressed. 
+Due to the inclusion of the eye distance (left, bottom), this suppression will be strongest for regions close
+*/

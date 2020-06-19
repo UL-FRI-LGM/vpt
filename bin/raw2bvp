@@ -306,6 +306,7 @@ function createZip(files, stream) {
 
     console.error('Writing EOCD');
     stream.write(createEndOfCentralDirectoryRecord(files.length, cdSize, cdStart));
+    
 }
 
 // -----------------------------------------------------------------------------
@@ -383,6 +384,7 @@ function computeGradientSobel(volumeData, volumeDimensions, idx) {
                     z : idx.z + k - 1
                 }, volumeDimensions);
                 values[kernelIdx] = volumeData[volumeIndex] / 255;
+                
             }
         }
     }
@@ -404,7 +406,7 @@ function computeGradientSobel(volumeData, volumeDimensions, idx) {
         dz += kernelZ[i] * values[i];
     }
     dz /= kernelZ.length;
-
+    
     return { dx, dy, dz };
 }
 
@@ -457,10 +459,11 @@ function computeGradient(volumeData, dimensions) {
                         y: j,
                         z: k
                     });
+                    
                     // here, dividing by Math.sqrt(3) would prevent clamping in the worst case
-                    gradient.dx = Math.min(Math.max(Math.round(gradient * 255), 0), 255);
-                    gradient.dy = Math.min(Math.max(Math.round(gradient * 255), 0), 255);
-                    gradient.dz = Math.min(Math.max(Math.round(gradient * 255), 0), 255);
+                    gradient.dx = Math.min(Math.max(Math.round(gradient.dx * 255), 0), 255);
+                    gradient.dy = Math.min(Math.max(Math.round(gradient.dy * 255), 0), 255);
+                    gradient.dz = Math.min(Math.max(Math.round(gradient.dz * 255), 0), 255);
                     gradientData[centerIdx * 3 + 0] = gradient.dx;
                     gradientData[centerIdx * 3 + 1] = gradient.dy;
                     gradientData[centerIdx * 3 + 2] = gradient.dz;
@@ -468,7 +471,8 @@ function computeGradient(volumeData, dimensions) {
             }
         }
     }
-
+    
+    console.error(gradientData[1408830]);
     return gradientData;
 }
 
@@ -504,7 +508,7 @@ function computeGradientMagnitude(volumeData, dimensions) {
             }
         }
     }
-
+    
     return gradientData;
 }
 
@@ -862,3 +866,4 @@ const files = [
     blockOutputDirectory,
 ].concat(additionalFilesDirectory.files);
 createZip(files, stream);
+console.error('Done!');
