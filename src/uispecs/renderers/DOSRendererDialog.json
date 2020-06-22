@@ -119,11 +119,11 @@
     },
     {
       "type": "accordion",
-      "label": "Probability parameter",
+      "label": "Probability parameters",
       "children": [
         {
           "type": "field",
-          "label": "using Context-Preserved formula:",
+          "label": "Using CPF:",
           "children": [
             {
               "type": "checkbox",
@@ -134,12 +134,24 @@
         },
         {
           "type": "field",
-          "label": "Light Position:",
+          "label": "Melting Source(MS):",
           "children": [
             {
               "type": "vector",
-              "bind": "position",
-              "value": 0.5
+              "bind": "meltingPos",
+              "value": 0,
+              "step": 0.1
+            }
+          ]
+        },
+        {
+          "type": "field",
+          "label": "Camera as MS:",
+          "children": [
+            {
+              "type": "checkbox",
+              "bind": "useCameraAsMS",
+              "checked": false
             }
           ]
         },
@@ -148,11 +160,12 @@
           "label": "ks:",
           "children": [
             {
-              "type": "spinner",
+              "type": "slider",
               "bind": "ks",
               "value": 0.1,
-              "step": 0.01,
-               "min": 0
+              "min": 0.01,
+              "max": 2.0,
+              "step": 0.01
             }
           ]
         },
@@ -161,11 +174,12 @@
           "label": "kt:",
           "children": [
             {
-              "type": "spinner",
+              "type": "slider",
               "bind": "kt",
               "value": 0.1,
-              "step": 0.01,
-               "min": 0
+              "min": 0.01,
+              "max": 2.0,
+              "step": 0.01
             }
           ]
         }

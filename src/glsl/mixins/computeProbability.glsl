@@ -5,10 +5,10 @@
 float shadingIntensity(vec3 pos ,ivec3 voxel)
 {
     //Blinn-Phong model
-    float ka=0.2;//ambient lighting coefficient
-    float kd=0.2;//diffuse lighting coefficient
-    float ks=0.2;//specular lighting coefficient
-    float specular_exponent=100.0;
+    float ka=0.20;//ambient lighting coefficient
+    float kd=0.20;//diffuse lighting coefficient
+    float ks=0.60;//specular lighting coefficient
+    float specular_exponent=50.0;
 
     vec3 normal = normalize(getGradient(voxel));
     vec3 viewDir = normalize(uCameraPos-pos);
@@ -37,21 +37,14 @@ float normlizedDistance(vec3 pos)
 float computeProbability(vec3 pos,ivec3 voxel)
 {
     // pos: current sample position
-    // accColor.a: previously accumulated opacity value .. due to (1.0-accColor.a) structures located 
+    // accOpacity: previously accumulated opacity value .. due to (1.0-accOpacity) structures located 
     // behind semitransparent regions will appear more opaque. 
     // ks & kt two parameters allow intuitive control of the visualization
     float SP=shadingIntensity(pos,voxel);
     float DP=normlizedDistance(pos);
-    //float exponent=pow((uKt*SP*(1.0-DP)*(1.0-accColor.a)),uKs);
-    float exponent=pow(uKt*SP*(DP),uKs);
-
+    //float exponent=pow((uKt*SP*(1.0-DP)*(1.0-accOpacity)),uKs);
+    float exponent=pow(uKt*SP*(1.0-DP),uKs);
     float GP=normlizedGradientMagnitud(voxel);
     float prob= pow(GP,exponent); 
     return prob;
 }
-
-
-/*
-Regions with low gradient magnitude (left, top) and high shading intensity (left, center) are more likely to be suppressed. 
-Due to the inclusion of the eye distance (left, bottom), this suppression will be strongest for regions close
-*/

@@ -24,10 +24,11 @@ class DOSRenderer extends AbstractRenderer {
             _depth: 1,
             _minDepth: -1,
             _maxDepth: 1,
-            _lightPos: [0.5, 0.5, 0.5],
+             _meltingSourcePos: [0, 0, 0],
             _ks: 0.1,
             _kt: 0.1,
-            _usingCPF: 0
+            _usingCPF: 0,
+            useCameraAsMS: false
         }, options);
         this._GUIObject = null;
         this._idVolume = idVolume;
@@ -50,11 +51,12 @@ class DOSRenderer extends AbstractRenderer {
         this._maxDist =0;
         this._minGm = 0;
         this._maxGm = 0;
-
+        this._isTreeRules =false;
         this._attrib = gl.createBuffer();
         this._groupMembership = gl.createBuffer();
         this._visibilityStatus = gl.createBuffer();
         this._rulesOutInfo = [];
+        this._rulesInInfo = null;
         this._localSize = {
             x: 128,
             y: 1,
@@ -188,7 +190,8 @@ class DOSRenderer extends AbstractRenderer {
 
     setHtreeRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
-
+        this._rulesInInfo = rules;
+        this._isTreeRules =true;
         this._rulesOutInfo.length=0;
         this.clearVisStatusArray();
         this._nRules = rules.length;
@@ -200,7 +203,7 @@ class DOSRenderer extends AbstractRenderer {
             const hi = rule.hi;
             const lo = rule.lo;
             var instancesStRule = this._getRuleElements(attribute, hi, lo);
-            this._sort_by_key(instancesStRule, 'avgProb');
+            this._sortAscending(instancesStRule, 'avgProb');
             const visibility = (rule.visibility / 100).toFixed(4);
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
             ruleObj.nInstances = instancesStRule.length;
@@ -248,6 +251,8 @@ class DOSRenderer extends AbstractRenderer {
 
     setRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
+        this._rulesInInfo = rules;
+        this._isTreeRules = false;
         this._nRules = rules.length;
         this._rulesOutInfo.length=0;
         this.clearVisStatusArray();
@@ -258,7 +263,8 @@ class DOSRenderer extends AbstractRenderer {
             const lo = rule.range.x.toFixed(4);
             const hi = rule.range.y.toFixed(4);
             var instancesStRule = this._getRuleElements([attribute], [hi], [lo]);
-            this._sort_by_key(instancesStRule, 'avgProb');
+            this._sortAscending(instancesStRule, 'avgProb');
+            console.log(instancesStRule);
             const visibility = (rule.visibility / 100).toFixed(4);
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
             ruleObj.nInstances = instancesStRule.length;
@@ -298,12 +304,18 @@ class DOSRenderer extends AbstractRenderer {
                 this._visStatusArray[instancesStRule[i]['id']] = 2;//visible
         }
     }
-
-    _sort_by_key(array, key) {
+    _sortAscending(array, key) {
         return array.sort(function (a, b) {
             var x = a[key];
             var y = b[key];
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+        });
+    }
+    _sortDescending(array, key) {
+        return array.sort(function (a, b) {
+            var x = a[key];
+            var y = b[key];
+            return ((x > y) ? -1 : ((x < y) ? 1 : 0));
         });
     }
     _rebuildAttribCompute() {
@@ -394,8 +406,12 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1f(program.uniforms.uMaxDist, this._maxDist );
         gl.uniform1f(program.uniforms.uKs, this._ks );
         gl.uniform1f(program.uniforms.uKt, this._kt );
-        gl.uniform3fv(program.uniforms.uLightPos, this._lightPos );
         gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
+        if(this.useCameraAsMS==true)
+            gl.uniform3fv(program.uniforms.uLightPos, this._camera.get3DPosition());
+        else
+            gl.uniform3fv(program.uniforms.uLightPos, this._meltingSourcePos);
+        
         //----------------------------------------------------------------
         gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
@@ -536,6 +552,14 @@ class DOSRenderer extends AbstractRenderer {
         //========= recompute avgProb ==========
         this._recomputeMinMaxDistance();
         this._rebuildProbCompute();
+        //==== recomput mask =========
+        /*if(this._rulesInInfo!=null)
+        {
+          if(this._isTreeRules==false)
+               this.setRules(this._rulesInInfo, this._GUIObject);
+          else
+               this.setHtreeRules(this._rulesInInfo, this._GUIObject);
+        }*/
     }
 
     _integrateFrame() {
@@ -574,6 +598,20 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1i(program.uniforms.uDataTransferFunction, 8);
         gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
 
+        //--------------------------------------------------------
+        gl.uniform1i(program.uniforms.uCPF, this._usingCPF );
+        gl.uniform1f(program.uniforms.uMinGM, this._minGm );
+        gl.uniform1f(program.uniforms.uMaxGM, this._maxGm );
+        gl.uniform1f(program.uniforms.uMinDist, this._minDist );
+        gl.uniform1f(program.uniforms.uMaxDist, this._maxDist );
+        gl.uniform1f(program.uniforms.uKs, this._ks );
+        gl.uniform1f(program.uniforms.uKt, this._kt );
+        gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
+        if(this.useCameraAsMS==true)
+            gl.uniform3fv(program.uniforms.uLightPos, this._camera.get3DPosition());
+        else
+            gl.uniform3fv(program.uniforms.uLightPos, this._meltingSourcePos);
+        //----------------------------------------------------------
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
         gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
@@ -734,6 +772,7 @@ class DOSRenderer extends AbstractRenderer {
             }
             if (this._GUIObject != null)
                 this._GUIObject._updateOccludedInstance(this._rulesOutInfo);
+
         }
     }
 

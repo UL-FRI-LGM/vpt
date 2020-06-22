@@ -30,8 +30,13 @@ vec3 getPosition3D(ivec3 voxel)
 {    
     vec3 pos = vec3(float(voxel.x) * vx, float(voxel.y) * vy, float(voxel.z) * vz); // corner
     pos += vec3(vx * 0.5, vy * 0.5, vz * 0.5); // center
+    //vec4 dirty = uMvpInverseMatrix * vec4(pos, 1);
+    return pos;//(dirty.xyz / dirty.w); // division by 1?
+}
+float getDepth(vec3 pos)
+{    
     vec4 dirty = uMvpInverseMatrix * vec4(pos, 1);
-    return (dirty.xyz / dirty.w); // division by 1?
+    return (dirty.xyz / dirty.w).z; // division by 1?
 }
 vec3 getGradient(ivec3 voxel) {
     vec4 dataVolumeSample = imageLoad(uDataVolume, voxel);
@@ -51,10 +56,12 @@ void main() {
         float prob;
         if(uCPF == 0)
         {
-            prob = pos.z; //prob based on depth
+            //prob = distance(pos,uCameraPos); 
+            prob =getDepth(pos);//prob based on depth
         }
         else
         {
+           // float accOpacity = imageLoad(uColor, voxel).a;
             prob = computeProbability(pos,voxel); // prob based on context preserved formula
         }
         uint p = convertProbToInt(prob); 
