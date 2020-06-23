@@ -112,7 +112,7 @@ float computeCPF(vec3 pos,float accOpacity)
     float SP=shadingIntensity(pos);
     float DP=normlizedDistance(pos);
     float exponent=pow((uKt*SP*(1.0-DP)*(1.0-accOpacity)),uKs);
-    float GP=normlizedGradientMagnitud(pos);
+    float GP=1.0;//normlizedGradientMagnitud(pos);
     return pow(GP,exponent); 
     
 }
@@ -191,8 +191,8 @@ void main() {
 
     vec4 transferSample = getSample(vPosition3D);
     
-    if(uCPF==1)
-        transferSample.a *= computeCPF(vPosition3D,color.a);
+   // if(uCPF==1)
+       // transferSample.a *= computeCPF(vPosition3D,color.a);
     transferSample.rgb *= (transferSample.a * occlusion) ;
     oColor = color + transferSample * (1.0 - color.a);
     // TODO: do this calculation right

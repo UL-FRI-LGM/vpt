@@ -160,12 +160,11 @@
           "label": "ks:",
           "children": [
             {
-              "type": "slider",
+              "type": "spinner",
               "bind": "ks",
               "value": 0.1,
-              "min": 0.01,
-              "max": 2.0,
-              "step": 0.01
+              "min": 0,
+              "step": 0.1
             }
           ]
         },
@@ -174,12 +173,11 @@
           "label": "kt:",
           "children": [
             {
-              "type": "slider",
+              "type": "spinner",
               "bind": "kt",
               "value": 0.1,
-              "min": 0.01,
-              "max": 2.0,
-              "step": 0.01
+              "min": 0,
+              "step": 0.1
             }
           ]
         }
