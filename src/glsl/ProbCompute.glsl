@@ -56,8 +56,8 @@ void main() {
         float prob;
         if(uCPF == 0)
         {
-            //prob = distance(pos,uCameraPos); 
-            prob =getDepth(pos);//prob based on depth
+            prob = distance(pos,uCameraPos); 
+            //prob =getDepth(pos);//prob based on depth
         }
         else
         {
