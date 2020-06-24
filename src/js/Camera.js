@@ -36,7 +36,11 @@ class Camera {
     }
 
     get3DPosition() {
-        return [this.position.x + 0.5, this.position.y + 0.5, this.position.z + 0.5];
+        //var pos = { x: 0, y: 0, z: 1.5, w: 0 };
+        //this.transformationMatrix.transform(pos);
+        return [this.position.x + 0.5, this.position.y + 0.5, this.position.z + 0.5]; 
+        //var pos = [this.viewMatrix.m[12], this.viewMatrix.m[13], this.viewMatrix.m[14]];
+        //return [pos.x, pos.y, pos.z];
     }
     updateMatrices() {
         this.updateViewMatrix();
