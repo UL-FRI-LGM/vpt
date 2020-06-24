@@ -380,7 +380,7 @@ class DOSRenderer extends AbstractRenderer {
         this._programs.compute = WebGL.buildPrograms(gl, {
             compute: SHADERS.ProbCompute
         }, {
-            computeProbability: MIXINS.computeProbability,
+            computeCPF: MIXINS.computeCPF,
             localSizeX: this._localSize.x,
             localSizeY: this._localSize.y,
             localSizeZ: this._localSize.z,

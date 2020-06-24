@@ -46,7 +46,7 @@ uint convertProbToInt(float x)
 {
     return uint(round(x*100.0));
 }
-@computeProbability
+@computeCPF
 void main() {
     ivec3 voxel = ivec3(gl_GlobalInvocationID);
     ivec3 imageSize = imageSize(iID);
@@ -57,12 +57,12 @@ void main() {
         if(uCPF == 0)
         {
             prob = distance(pos,uCameraPos); 
-            //prob =getDepth(pos);//prob based on depth
+            //prob =getDepth(pos); //prob based on depth
         }
         else
         {
            // float accOpacity = imageLoad(uColor, voxel).a;
-            prob = computeProbability(pos,voxel); // prob based on context preserved formula
+            prob = computeCPF(pos,voxel); // prob based on context preserved formula
         }
         uint p = convertProbToInt(prob); 
         int index=(int(id))*2;

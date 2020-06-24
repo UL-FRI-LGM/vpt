@@ -70,7 +70,8 @@ layout (std430, binding = 0) buffer bGroupMembership {
 float computeGradientMagnitude(vec3 g) {
 	return sqrt(g.x*g.x + g.y*g.y + g.z*g.z);
 }
-//=======================================================
+//==== just for testing CPF ========================
+/*
 vec3 getGradient(vec3 pos) {
     vec4 dataVolumeSample = texture(uDataVolume, pos);
     return dataVolumeSample.gba;
@@ -115,7 +116,7 @@ float computeCPF(vec3 pos,float accOpacity)
     float GP=1.0;//normlizedGradientMagnitud(pos);
     return pow(GP,exponent); 
     
-}
+}*/
 //=====================================================
 vec4 getSample(vec3 position) {
     vec4 maskVolumeSample = texture(uMaskVolume, position);
@@ -191,8 +192,8 @@ void main() {
 
     vec4 transferSample = getSample(vPosition3D);
     
-    if(uCPF==1)
-       transferSample.a *= computeCPF(vPosition3D,color.a);
+   // if(uCPF==1)
+      // transferSample.a *= computeCPF(vPosition3D,color.a);
     transferSample.rgb *= (transferSample.a * occlusion) ;
     oColor = color + transferSample * (1.0 - color.a);
     // TODO: do this calculation right

@@ -1,6 +1,6 @@
 // #package glsl/mixins
 
-// #section computeProbability
+// #section computeCPF
 
 float shadingIntensity(vec3 pos ,ivec3 voxel)
 {
@@ -34,7 +34,7 @@ float normlizedDistance(vec3 pos)
 { 
     return  (distance(pos,uCameraPos)-uMinDist)/(uMaxDist-uMinDist);
 }
-float computeProbability(vec3 pos,ivec3 voxel)
+float computeCPF(vec3 pos,ivec3 voxel)
 {
     // pos: current sample position
     // accOpacity: previously accumulated opacity value .. due to (1.0-accOpacity) structures located 
