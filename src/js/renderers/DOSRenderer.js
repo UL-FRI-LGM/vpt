@@ -24,9 +24,9 @@ class DOSRenderer extends AbstractRenderer {
             _depth: 1,
             _minDepth: -1,
             _maxDepth: 1,
-             _meltingSourcePos: [0, 0, 0],
-            _ks: 0.1,
-            _kt: 0.1,
+             _meltingSourcePos: [2, 2, 2],
+            _ks: 0.4,
+            _kt: 6.0,
             _usingCPF: 0,
             useCameraAsMS: false
         }, options);
@@ -597,21 +597,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.activeTexture(gl.TEXTURE8);
         gl.uniform1i(program.uniforms.uDataTransferFunction, 8);
         gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
-
-        //--------------------------------------------------------
-        gl.uniform1i(program.uniforms.uCPF, this._usingCPF );
-        gl.uniform1f(program.uniforms.uMinGM, this._minGm );
-        gl.uniform1f(program.uniforms.uMaxGM, this._maxGm );
-        gl.uniform1f(program.uniforms.uMinDist, this._minDist );
-        gl.uniform1f(program.uniforms.uMaxDist, this._maxDist );
-        gl.uniform1f(program.uniforms.uKs, this._ks );
-        gl.uniform1f(program.uniforms.uKt, this._kt );
-        gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
-        if(this.useCameraAsMS==true)
-            gl.uniform3fv(program.uniforms.uLightPos, this._camera.get3DPosition());
-        else
-            gl.uniform3fv(program.uniforms.uLightPos, this._meltingSourcePos);
-        //----------------------------------------------------------
+ 
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
         gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);

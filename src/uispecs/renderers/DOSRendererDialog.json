@@ -139,7 +139,7 @@
             {
               "type": "vector",
               "bind": "meltingPos",
-              "value": 0,
+              "value": 2,
               "step": 0.1
             }
           ]
@@ -162,7 +162,7 @@
             {
               "type": "spinner",
               "bind": "ks",
-              "value": 0.1,
+              "value": 0.4,
               "min": 0,
               "step": 0.1
             }
@@ -175,7 +175,7 @@
             {
               "type": "spinner",
               "bind": "kt",
-              "value": 0.1,
+              "value": 6.0,
               "min": 0,
               "step": 0.1
             }

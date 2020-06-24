@@ -48,17 +48,7 @@ uniform float uAlphaTransfer;
 
 in vec2 vPosition2D;
 in vec3 vPosition3D;
-//-------- for context preserve formula --- 
-uniform int uCPF; //bool
-uniform float uMinGM;
-uniform float uMaxGM;
-uniform float uMinDist;
-uniform float uMaxDist;
-uniform float uKs;
-uniform float uKt;
-uniform vec3 uLightPos;
-uniform vec3 uCameraPos;
-//-----------------------------------------
+
 layout (location = 0) out vec4 oColor;
 layout (location = 1) out float oOcclusion;
 layout (location = 2) out uint oInstanceID;
@@ -70,54 +60,7 @@ layout (std430, binding = 0) buffer bGroupMembership {
 float computeGradientMagnitude(vec3 g) {
 	return sqrt(g.x*g.x + g.y*g.y + g.z*g.z);
 }
-//==== just for testing CPF ========================
-/*
-vec3 getGradient(vec3 pos) {
-    vec4 dataVolumeSample = texture(uDataVolume, pos);
-    return dataVolumeSample.gba;
-}
-float shadingIntensity(vec3 pos )
-{
-    //Blinn-Phong model
-    float ka=0.20;//ambient lighting coefficient
-    float kd=0.20;//diffuse lighting coefficient
-    float ks=0.60;//specular lighting coefficient
-    float specular_exponent=10.0;
 
-    vec3 normal = normalize(getGradient(pos));
-    vec3 viewDir = normalize(uCameraPos-pos);
-    vec3 lightDir = normalize(uLightPos-pos);
-
-    float Cd = max(dot(normal,lightDir), 0.0)*kd;
-    vec3 H = normalize(lightDir+viewDir);
-    float Cs = pow((max(dot(normal,H), 0.0)),specular_exponent)*ks;
-    float Ca = ka;
-    return (Cd+Cs+Ca);
-}
-float normlizedGradientMagnitud(vec3 pos)
-{
-    vec3 g = getGradient(pos);
-    float gm = computeGradientMagnitude(g);
-	return  (gm-uMinGM)/(uMaxGM-uMinGM);
-}
-float normlizedDistance(vec3 pos)
-{ 
-    return  (distance(pos,uCameraPos)-uMinDist)/(uMaxDist-uMinDist);
-}
-float computeCPF(vec3 pos,float accOpacity)
-{
-    // pos: current sample position
-    // accOpacity: previously accumulated opacity value .. due to (1.0-accOpacity) structures located 
-    // behind semitransparent regions will appear more opaque. 
-    // ks & kt two parameters allow intuitive control of the visualization
-    float SP=shadingIntensity(pos);
-    float DP=normlizedDistance(pos);
-    float exponent=pow((uKt*SP*(1.0-DP)*(1.0-accOpacity)),uKs);
-    float GP=1.0;//normlizedGradientMagnitud(pos);
-    return pow(GP,exponent); 
-    
-}*/
-//=====================================================
 vec4 getSample(vec3 position) {
     vec4 maskVolumeSample = texture(uMaskVolume, position);
     vec4 dataVolumeSample = texture(uDataVolume, position);
@@ -192,8 +135,6 @@ void main() {
 
     vec4 transferSample = getSample(vPosition3D);
     
-   // if(uCPF==1)
-      // transferSample.a *= computeCPF(vPosition3D,color.a);
     transferSample.rgb *= (transferSample.a * occlusion) ;
     oColor = color + transferSample * (1.0 - color.a);
     // TODO: do this calculation right
