@@ -191,8 +191,8 @@ void main() {
 
     vec4 transferSample = getSample(vPosition3D);
     
-   // if(uCPF==1)
-       // transferSample.a *= computeCPF(vPosition3D,color.a);
+    if(uCPF==1)
+       transferSample.a *= computeCPF(vPosition3D,color.a);
     transferSample.rgb *= (transferSample.a * occlusion) ;
     oColor = color + transferSample * (1.0 - color.a);
     // TODO: do this calculation right

@@ -40,11 +40,11 @@ float computeProbability(vec3 pos,ivec3 voxel)
     // accOpacity: previously accumulated opacity value .. due to (1.0-accOpacity) structures located 
     // behind semitransparent regions will appear more opaque. 
     // ks & kt two parameters allow intuitive control of the visualization
-    float SP=shadingIntensity(pos,voxel);
-    float DP=normlizedDistance(pos);
+    float SP= shadingIntensity(pos,voxel);
+    float DP= normlizedDistance(pos);
     //float exponent=pow((uKt*SP*(1.0-DP)*(1.0-accOpacity)),uKs);
     float exponent=pow(uKt*SP*(1.0-DP),uKs);
-    float GP=normlizedGradientMagnitud(voxel);
+    float GP= normlizedGradientMagnitud(voxel);
     float prob= pow(GP,exponent); 
     return prob;
 }
