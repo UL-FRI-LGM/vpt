@@ -12,7 +12,6 @@ layout (location = 0) in vec2 aPosition;
 
 out vec2 vPosition2D;
 out vec3 vPosition3D;
-
 void main() {
     vec4 dirty = uMvpInverseMatrix * vec4(aPosition, uDepth, 1);
     vPosition3D = dirty.xyz / dirty.w;
@@ -32,6 +31,7 @@ precision mediump usampler3D;
 uniform sampler3D uMaskVolume;
 uniform usampler3D uIDVolume;
 uniform sampler3D uDataVolume;
+uniform sampler3D uAccOpacityVolume;
 uniform sampler2D uMaskTransferFunction;
 uniform sampler2D uDataTransferFunction;
 
@@ -57,6 +57,8 @@ layout (location = 3) out uint oGroupID;
 layout (std430, binding = 0) buffer bGroupMembership {
     uint sGroupMembership[];
 };
+layout (rgba8, binding = 1) restrict writeonly highp uniform image3D oAccColorVolume;
+
 float computeGradientMagnitude(vec3 g) {
 	return sqrt(g.x*g.x + g.y*g.y + g.z*g.z);
 }
@@ -103,7 +105,6 @@ float getOcclusion() {
 
     return occlusion;
 }
-
 void main() {
     float occlusion = getOcclusion();
     vec4 color = texture(uColor, vPosition2D);

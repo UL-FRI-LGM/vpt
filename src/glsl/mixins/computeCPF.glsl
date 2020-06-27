@@ -34,7 +34,7 @@ float normlizedDistance(vec3 pos)
 { 
     return  (distance(pos,uCameraPos)-uMinDist)/(uMaxDist-uMinDist);
 }
-float computeCPF(vec3 pos,ivec3 voxel)
+float computeCPF(vec3 pos,ivec3 voxel,float accOpacity)
 {
     // pos: current sample position
     // accOpacity: previously accumulated opacity value .. due to (1.0-accOpacity) structures located 
@@ -42,8 +42,8 @@ float computeCPF(vec3 pos,ivec3 voxel)
     // ks & kt two parameters allow intuitive control of the visualization
     float SP= shadingIntensity(pos,voxel);
     float DP= normlizedDistance(pos);
-    //float exponent=pow((uKt*SP*(1.0-DP)*(1.0-accOpacity)),uKs);
-    float exponent=pow(uKt*SP*(1.0-DP),uKs);
+    float exponent=pow((uKt*SP*(1.0-DP)*(1.0-accOpacity)),uKs);
+    //float exponent=pow(uKt*SP*(1.0-DP),uKs);
     float GP= normlizedGradientMagnitud(voxel);
     float prob= pow(GP,exponent); 
     return prob;
