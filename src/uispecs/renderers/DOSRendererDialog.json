@@ -131,16 +131,16 @@
               "options": [
                 {
                   "value": "depth",
-                  "label": "Depth Based Approach",
+                  "label": "Depth Based",
                   "selected": true
                 },
                 {
                   "value": "CPF",
-                  "label": "Context-Preserved Approach"
+                  "label": "Context-Preserved"
                 },
                 {
                   "value": "random",
-                  "label": "Randomly"
+                  "label": "Random"
                 }
               ]
             }

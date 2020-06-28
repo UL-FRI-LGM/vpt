@@ -49,6 +49,7 @@ class DOSRenderer extends AbstractRenderer {
         
         this._numberInstance = 0;
         this._visStatusArray = null;
+        this._visMembership =null;
         this._rules = [];
         this._layout = [];
         this._accColorArray=[];
@@ -178,6 +179,7 @@ class DOSRenderer extends AbstractRenderer {
             this._numberInstance = numberOfInstances;
             this.initInstancesArray();
             this._elements = elements;
+            this.clearVisStatusArray();
         }
     }
 
@@ -216,7 +218,7 @@ class DOSRenderer extends AbstractRenderer {
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
             ruleObj.nInstances = instancesStRule.length;
             this._rulesOutInfo.push(ruleObj);
-            this.updateVisStatusArray(instancesStRule, this._rulesOutInfo[index].nRemoved);
+            this.updateVisStatusArray(instancesStRule, this._rulesOutInfo[index].nRemoved,index+1);
             const phi = (index / rules.length) * 2 * Math.PI;
             const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
             const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
@@ -252,22 +254,29 @@ class DOSRenderer extends AbstractRenderer {
 
     initInstancesArray() {
         this._visStatusArray = new Uint32Array(this._numberInstance);
+        this._visMembership = new Uint32Array(this._numberInstance);
+        this._isOccupied = new Boolean(this._numberInstance);
     }
 
     clearVisStatusArray() {
         for (var i = 0; i < this._numberInstance; i++) {
             this._visStatusArray[i] = 1;
+            this._visMembership[i] = 0;
+            this._isOccupied[i]=false;
         }
     }
-
+    clearBookingStatus() {
+        for (var i = 0; i < this._numberInstance; i++) {
+            this._isOccupied[i]=false;
+        }
+    }
     setRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
         this._rulesInInfo = rules;
         this._isTreeRules = false;
         this._nRules = rules.length;
         this._rulesOutInfo.length=0;
-        this.clearVisStatusArray();
-
+        this.clearBookingStatus() ;
         const _rules = rules.map((rule, index) => {
             var ruleObj = new Object();
             const attribute = rule.attribute;
@@ -280,16 +289,14 @@ class DOSRenderer extends AbstractRenderer {
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
             ruleObj.nInstances = instancesStRule.length;
             this._rulesOutInfo.push(ruleObj);
-            this.updateVisStatusArray(instancesStRule, this._rulesOutInfo[index].nRemoved);
+            this.updateVisStatusArray(instancesStRule, this._rulesOutInfo[index].nRemoved,index+1);
             const phi = (index / rules.length) * 2 * Math.PI;
             const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
             const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
 
             const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
 
-            
             //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
-           
             const visibilityCondition = `visStatus> uint(0)`;
             const groupStatement = `sGroupMembership[id] = ${index + 1}u; return vec2(${tfx}, ${tfy});`;
             const backgroundStatement = `sGroupMembership[id] = 0u; return vec2(0.5);`;
@@ -307,15 +314,60 @@ class DOSRenderer extends AbstractRenderer {
         this._rebuildAttribCompute();
     }
 
-    updateVisStatusArray(instancesStRule, numberRemoved) {
-
-        for (var i = 0; i < numberRemoved; i++) {
-            if (this._visStatusArray[instancesStRule[i]['id']] == 1)
-                this._visStatusArray[instancesStRule[i]['id']] = 0;//invisible 
+    updateVisStatusArray(instancesStRule, numberRemoved, index) {
+        var count=0;
+        for (var i=0; i < instancesStRule.length; i++) {
+            if (this._isOccupied[instancesStRule[i]['id']]==false &&
+                this._visStatusArray[instancesStRule[i]['id']] == 0  && 
+                this._visMembership[instancesStRule[i]['id']] == index)
+            {//if this instance has been removed previously by this rule  
+               count++; //keep it
+               this._isOccupied[instancesStRule[i]['id']]=true;
+            }
+            if(count>=numberRemoved)
+                break;
         }
-        for (var i = numberRemoved; i < instancesStRule.length; i++) {
-            if (this._visStatusArray[instancesStRule[i]['id']] == 1)
-                this._visStatusArray[instancesStRule[i]['id']] = 2;//visible
+
+        var i=0;
+        for (; i < instancesStRule.length; i++) 
+        {
+            if (this._isOccupied[instancesStRule[i]['id']] == false)// not occupied yet ..
+            {
+                this._visStatusArray[instancesStRule[i]['id']] = 0;//remove this instance 
+                this._visMembership[instancesStRule[i]['id']] = index; // book it
+                this._isOccupied[instancesStRule[i]['id']]=true;
+                count++;
+            }
+            /*else if (this._visMembership[instancesStRule[i]['id']] < index) //Occupied by a rule with higher priority 
+            {
+                // TODO: to remove this if-statement we need to fix instance count in sliders
+                count++;
+                
+            }*/
+            else if (this._visMembership[instancesStRule[i]['id']] > index)//Occupied by a rule with lower priority 
+            {
+                this._visStatusArray[instancesStRule[i]['id']] = 0; //remove this instance 
+                this._visMembership[instancesStRule[i]['id']] = index; //book it
+                this._isOccupied[instancesStRule[i]['id']]=true;
+                count++;
+            }
+            
+            if(count>=numberRemoved)
+                break;
+        }
+        //------------------------------------------------------------
+        for (; i < instancesStRule.length; i++) {
+            if (this._isOccupied[instancesStRule[i]['id']] == false)
+            {
+                this._visStatusArray[instancesStRule[i]['id']] = 1
+                this._visMembership[instancesStRule[i]['id']] = index;
+                this._isOccupied[instancesStRule[i]['id']]=true;
+            }
+            else if (this._visMembership[instancesStRule[i]['id']] > index)//Occupied by a rule with lower priority 
+            {
+                this._visStatusArray[instancesStRule[i]['id']] = 1;  
+                this._visMembership[instancesStRule[i]['id']] = index; 
+            }
         }
     }
     _sortAscending(array, key) {
@@ -579,6 +631,7 @@ class DOSRenderer extends AbstractRenderer {
         //==== removal Automatic Update =========
         if(this._removalAutoUpdate==true &&this._rulesInInfo!=null)
         {
+            //this.clearVisStatusArray();
             if(this._isTreeRules==false)
                 this.setRules(this._rulesInInfo, this._GUIObject);
             else
