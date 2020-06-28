@@ -430,7 +430,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1f(program.uniforms.uKs, this._ks );
         gl.uniform1f(program.uniforms.uKt, this._kt );
         gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
-        if(this.useCameraAsMS==true)
+        if(this._useCameraAsMS==true)
             gl.uniform3fv(program.uniforms.uLightPos, this._camera.get3DPosition());
         else
             gl.uniform3fv(program.uniforms.uLightPos, this._meltingSourcePos);
