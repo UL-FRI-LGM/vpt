@@ -41,9 +41,15 @@ float computeCPF(vec3 pos,ivec3 voxel)//,float accOpacity)
     // behind semitransparent regions will appear more opaque. 
     // ks & kt two parameters allow intuitive control of the visualization
     float SP= shadingIntensity(pos,voxel);
-    float DP= normlizedDistance(pos);
-    //float exponent=pow((uKt*SP*(1.0-DP)*(1.0-accOpacity)),uKs);
-    float exponent=pow(uKt*SP*(1.0-DP),uKs);
+    if(uShadingTerm==0)
+        SP=1.0;
+
+    float DP= ( 1.0 - normlizedDistance(pos));
+    if(uDistTerm==0)
+        DP=1.0;
+        
+    //float exponent=pow((uKt*SP*DP*(1.0-accOpacity)),uKs);
+    float exponent=pow(uKt*SP*DP,uKs);
     float GP= normlizedGradientMagnitud(voxel);
     float prob= pow(GP,exponent); 
     return prob;

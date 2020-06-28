@@ -66,9 +66,9 @@ _handleChange() {
 
     this._renderer._useCameraAsMS = this._binds.useCameraAsMS.isChecked();
     this._renderer._removalAutoUpdate = this._binds.removalAutoUpdate.isChecked();
-    this._renderer._useShadingTerm = this._binds.useShadingTerm.isChecked();
-    //this._renderer._useAccOpacityTerm = this._binds.useAccOpacityTerm.isChecked();
-    this._renderer._useDistTerm = this._binds.useDistTerm.isChecked();
+    this._renderer._useShadingTerm = this._binds.useShadingTerm.isChecked()? 1:0 ;
+    //this._renderer._useAccOpacityTerm = this._binds.useAccOpacityTerm.isChecked()? 1:0 ;
+    this._renderer._useDistTerm = this._binds.useDistTerm.isChecked()? 1:0 ;
 
     const position = this._binds.meltingPos.getValue();
     this._renderer._meltingSourcePos[0] = position.x;

@@ -11,7 +11,7 @@ uniform float vx;
 uniform float vy;
 uniform float vz;
 uniform int uRemovalSelect; 
-//-------- for context preserve formula --- 
+//------------ for context preserve formula ---------- 
 uniform float uMinGM;
 uniform float uMaxGM;
 uniform float uMinDist;
@@ -20,7 +20,10 @@ uniform float uKs;
 uniform float uKt;
 uniform vec3 uLightPos;
 uniform vec3 uCameraPos;
-//-----------------------------------------
+//----------- for testing context preserve formula ----
+uniform int uShadingTerm;
+uniform int uDistTerm;
+//------------------------------------------------------
 layout (r32ui, binding = 1) restrict readonly highp uniform uimage3D iID;
 layout (rgba8, binding = 2) restrict readonly highp uniform image3D uDataVolume;
 //uniform sampler2DArray uAccColorVolume;

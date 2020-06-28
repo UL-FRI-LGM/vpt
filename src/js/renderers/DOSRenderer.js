@@ -30,9 +30,9 @@ class DOSRenderer extends AbstractRenderer {
             _removalSelect: 0,
             _useCameraAsMS: true,
             _removalAutoUpdate: true,
-            _useShadingTerm: true,
-            //_useAccOpacityTerm: true,
-            _useDistTerm: true
+            _useShadingTerm: 1,
+            //_useAccOpacityTerm: 1,
+            _useDistTerm: 1
         }, options);
         this._GUIObject = null;
         this._idVolume = idVolume;
@@ -419,6 +419,9 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1i(program.uniforms.uAccColorVolume, 0);
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);*/
         //-------- for context preserve formula ----------------------
+        gl.uniform1i(program.uniforms.uShadingTerm, this._useShadingTerm );
+        gl.uniform1i(program.uniforms.uDistTerm, this._useDistTerm );
+
         gl.uniform1i(program.uniforms.uRemovalSelect, this._removalSelect );
         gl.uniform1f(program.uniforms.uMinGM, this._minGm );
         gl.uniform1f(program.uniforms.uMaxGM, this._maxGm );
