@@ -3,7 +3,7 @@
 // #section ProbCompute/compute
 
 #version 310 es
-precision mediump sampler3D;
+precision mediump sampler2DArray;
 layout (local_size_x = @localSizeX, local_size_y = @localSizeY, local_size_z = @localSizeZ) in;
 
 uniform mat4 uMvpInverseMatrix;
@@ -23,6 +23,9 @@ uniform vec3 uCameraPos;
 //-----------------------------------------
 layout (r32ui, binding = 1) restrict readonly highp uniform uimage3D iID;
 layout (rgba8, binding = 2) restrict readonly highp uniform image3D uDataVolume;
+//layout (rgba8, binding = 3) restrict readonly highp uniform image3D uAccColorVolume;
+uniform sampler2DArray uAccColorVolume;
+
 layout (std430, binding = 0) buffer ssbo {
 	uint counter[];
 };
@@ -33,10 +36,12 @@ vec3 getPosition3D(ivec3 voxel)
     //vec4 dirty = uMvpInverseMatrix * vec4(pos, 1);
     return pos;//(dirty.xyz / dirty.w); // division by 1?
 }
-float getDepth(vec3 pos)
+vec3 getMvpPosition3D(ivec3 voxel)
 {    
+    vec3 pos = vec3(float(voxel.x) * vx, float(voxel.y) * vy, float(voxel.z) * vz); // corner
+    pos += vec3(vx * 0.5, vy * 0.5, vz * 0.5); // center
     vec4 dirty = uMvpInverseMatrix * vec4(pos, 1);
-    return (dirty.xyz / dirty.w).z; // division by 1?
+    return (dirty.xyz / dirty.w); // division by 1?
 }
 vec3 getGradient(ivec3 voxel) {
     vec4 dataVolumeSample = imageLoad(uDataVolume, voxel);
@@ -57,12 +62,13 @@ void main() {
         if(uCPF == 0)
         {
             prob = distance(pos,uCameraPos); 
-            //prob =getDepth(pos); //prob based on depth
+            //prob =getMvpPosition3D(voxel).z; //prob based on depth
         }
         else
         {
-           // float accOpacity = imageLoad(uColor, voxel).a;
-            prob = computeCPF(pos,voxel); // prob based on context preserved formula
+            //float accOpacity = imageLoad(uAccColorVolume, voxel).a;
+            float accOpacity = texture(uAccColorVolume, pos).a;
+            prob = computeCPF(pos,voxel,accOpacity); // prob based on context preserved formula
         }
         uint p = convertProbToInt(prob); 
         int index=(int(id))*2;
