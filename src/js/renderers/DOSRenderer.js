@@ -203,7 +203,7 @@ class DOSRenderer extends AbstractRenderer {
         this._rulesInInfo = rules;
         this._isTreeRules =true;
         this._rulesOutInfo.length=0;
-        this.clearVisStatusArray();
+        this.clearIsOccupiedArray();
         this._nRules = rules.length;
         this._rules = '';
         var _x = rules.map((rule, index) => {
@@ -265,7 +265,7 @@ class DOSRenderer extends AbstractRenderer {
             this._isOccupied[i]=false;
         }
     }
-    clearBookingStatus() {
+    clearIsOccupiedArray() {
         for (var i = 0; i < this._numberInstance; i++) {
             this._isOccupied[i]=false;
         }
@@ -276,7 +276,7 @@ class DOSRenderer extends AbstractRenderer {
         this._isTreeRules = false;
         this._nRules = rules.length;
         this._rulesOutInfo.length=0;
-        this.clearBookingStatus() ;
+        this.clearIsOccupiedArray() ;
         const _rules = rules.map((rule, index) => {
             var ruleObj = new Object();
             const attribute = rule.attribute;
