@@ -251,24 +251,12 @@ _updateVisibility() {
     }, this._visibilityUpdateInterval);
 }
 
-_throttleVisibility() {
-    if (this._loadingDiv) {
-        return;
-    }
-
-    if (!this._visibilityUpdateTimeout) {
-        this._updateVisibility();
-    } else {
-        this._visibilityUpdatePending = true;
-    }
-}
-
 _handleVisibilityRetopo(options) {
-    this._throttleVisibility();
+    this._throttleTreeVisibility();
 }
 
 _handleVisibilityChange(options) {
-    this._throttleVisibility();
+    this._throttleTreeVisibility();
 }
 
 _handleTreeSliderChange(options) {
@@ -279,9 +267,9 @@ _throttleTreeVisibility() {
         return;
     }
 
-    if (!this._visibilityUpdateTimeout) {
+    if (!this._visibilityUpdateTimeout) {        
         this._updateTreeVisibility();
-    } else {
+    } else {        
         this._visibilityUpdatePending = true;
     }
 }

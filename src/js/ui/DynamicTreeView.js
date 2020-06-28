@@ -22,6 +22,8 @@ class DynamicTreeView extends UIObject {
         this.headerId = "property-tree-header";
         this.containerId = "property-tree-container";
         this.properties = [];
+
+        this._tree = null;
     }
 
     createHeader(properties) {
@@ -230,7 +232,7 @@ class DynamicTreeView extends UIObject {
         min.value = minValue;
         min.addEventListener("mousemove", (e) => {
             e.preventDefault();
-        });        
+        });
         range.appendChild(min);
 
         var max = _this.createElement("input", "property-range-max");
@@ -238,7 +240,7 @@ class DynamicTreeView extends UIObject {
         max.value = Math.ceil(maxValue);
         max.addEventListener("mousemove", (e) => {
             e.preventDefault();
-        });        
+        });
         range.appendChild(max);
 
         var addButton = _this.createElement("div", "property-range-add-button add-button");
@@ -348,12 +350,20 @@ class DynamicTreeView extends UIObject {
     getJSON(node = null) {
         if (node == null) {
             node = document.getElementById('property-tree-container');
-            var json = [];
+            var json = {};
+
+            // abstract tree definition
+            json.abstractTree = [];
 
             for (var i = 0; i < node.childNodes.length; i++) {
                 var child = node.childNodes[i];
                 var subnode = this.getJSON(child);
-                json.push(subnode);
+                json.abstractTree.push(subnode);
+            }
+
+            // colors specification
+            if(this._tree) {
+                json.colors = this._tree.getColors();
             }
 
             return json;
@@ -447,9 +457,20 @@ class DynamicTreeView extends UIObject {
     }
 
     setJSON(json) {
-        for (var i = 0; i < json.length; i++) {
-            var node = json[i];
+        // tree nodes
+        for (var i = 0; i < json.abstractTree.length; i++) {
+            var node = json.abstractTree[i];
             this.createNodeFromJSON(node);
+        }
+
+        if (this._tree) {
+            // generation of the tree
+            this._tree._handleCreateHTreeButton();
+
+            // setting of colors
+            if (json.colors) {
+                this._tree.setColors(json.colors);
+            }
         }
     }
 
@@ -459,7 +480,7 @@ class DynamicTreeView extends UIObject {
         if (prop) {
             var node = this.addPropertyNode(prop.text);
 
-            if(parent) {
+            if (parent) {
                 this.insertChild(parent, node);
             }
 
@@ -488,6 +509,10 @@ class DynamicTreeView extends UIObject {
 
     _handleMouseMove(e) {
 
+    }
+
+    setGeneratedTree(tree) {
+        this._tree = tree;            
     }
 }
 

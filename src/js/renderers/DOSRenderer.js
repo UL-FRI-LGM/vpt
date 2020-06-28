@@ -39,11 +39,7 @@ class DOSRenderer extends AbstractRenderer {
         this._dataVolume = dataVolume;
         this._maskVolume = null;
         this._accColorVolume = null;
-<<<<<<< Updated upstream
-        this._camera= camera;
-=======
         this._camera = camera;
->>>>>>> Stashed changes
         this._programs = WebGL.buildPrograms(gl, {
             integrate: SHADERS.DOSIntegrate,
             render: SHADERS.DOSRender,
@@ -423,20 +419,6 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1i(program.uniforms.uAccColorVolume, 0);
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);*/
         //-------- for context preserve formula ----------------------
-<<<<<<< Updated upstream
-        gl.uniform1i(program.uniforms.uShadingTerm, this._useShadingTerm );
-        gl.uniform1i(program.uniforms.uDistTerm, this._useDistTerm );
-
-        gl.uniform1i(program.uniforms.uRemovalSelect, this._removalSelect );
-        gl.uniform1f(program.uniforms.uMinGM, this._minGm );
-        gl.uniform1f(program.uniforms.uMaxGM, this._maxGm );
-        gl.uniform1f(program.uniforms.uMinDist, this._minDist );
-        gl.uniform1f(program.uniforms.uMaxDist, this._maxDist );
-        gl.uniform1f(program.uniforms.uKs, this._ks );
-        gl.uniform1f(program.uniforms.uKt, this._kt );
-        gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
-        if(this._useCameraAsMS==true)
-=======
         gl.uniform1i(program.uniforms.uCPF, this._usingCPF);
         gl.uniform1f(program.uniforms.uMinGM, this._minGm);
         gl.uniform1f(program.uniforms.uMaxGM, this._maxGm);
@@ -446,7 +428,6 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1f(program.uniforms.uKt, this._kt);
         gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
         if (this.useCameraAsMS == true)
->>>>>>> Stashed changes
             gl.uniform3fv(program.uniforms.uLightPos, this._camera.get3DPosition());
         else
             gl.uniform3fv(program.uniforms.uLightPos, this._meltingSourcePos);
@@ -638,11 +619,8 @@ class DOSRenderer extends AbstractRenderer {
         gl.activeTexture(gl.TEXTURE8);
         gl.uniform1i(program.uniforms.uDataTransferFunction, 8);
         gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
-<<<<<<< Updated upstream
-=======
 
 
->>>>>>> Stashed changes
 
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
@@ -817,8 +795,6 @@ class DOSRenderer extends AbstractRenderer {
         const texture = this._accumulationBuffer.getAttachments().color[3];
         return this._mapTextureToArray(texture);
     }
-<<<<<<< Updated upstream
-=======
     _clearAccColorArray() {
         this._accColorArray.length = 0;
     }
@@ -886,7 +862,6 @@ class DOSRenderer extends AbstractRenderer {
         });
         return accArray;
     }
->>>>>>> Stashed changes
     _mapTextureToArray(texture) {
         var gl = this._gl;
 
