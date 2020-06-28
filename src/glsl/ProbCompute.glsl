@@ -3,15 +3,15 @@
 // #section ProbCompute/compute
 
 #version 310 es
-precision mediump sampler2DArray;
+//precision mediump sampler2DArray;
 layout (local_size_x = @localSizeX, local_size_y = @localSizeY, local_size_z = @localSizeZ) in;
 
 uniform mat4 uMvpInverseMatrix;
 uniform float vx;
 uniform float vy;
 uniform float vz;
+uniform int uRemovalSelect; 
 //-------- for context preserve formula --- 
-uniform int uCPF; //bool
 uniform float uMinGM;
 uniform float uMaxGM;
 uniform float uMinDist;
@@ -23,8 +23,7 @@ uniform vec3 uCameraPos;
 //-----------------------------------------
 layout (r32ui, binding = 1) restrict readonly highp uniform uimage3D iID;
 layout (rgba8, binding = 2) restrict readonly highp uniform image3D uDataVolume;
-//layout (rgba8, binding = 3) restrict readonly highp uniform image3D uAccColorVolume;
-uniform sampler2DArray uAccColorVolume;
+//uniform sampler2DArray uAccColorVolume;
 
 layout (std430, binding = 0) buffer ssbo {
 	uint counter[];
@@ -52,6 +51,7 @@ uint convertProbToInt(float x)
     return uint(round(x*100.0));
 }
 @computeCPF
+@rand
 void main() {
     ivec3 voxel = ivec3(gl_GlobalInvocationID);
     ivec3 imageSize = imageSize(iID);
@@ -59,16 +59,19 @@ void main() {
     if (voxel.x < imageSize.x && voxel.y < imageSize.y && voxel.z < imageSize.z) {
         vec3 pos = getPosition3D(voxel);
         float prob;
-        if(uCPF == 0)
+        if(uRemovalSelect == 0) // based on depth
         {
             prob = distance(pos,uCameraPos); 
-            //prob =getMvpPosition3D(voxel).z; //prob based on depth
+            //prob = getMvpPosition3D(voxel).z; 
         }
-        else
+        else if(uRemovalSelect == 1) // based on context preserved formula
         {
-            //float accOpacity = imageLoad(uAccColorVolume, voxel).a;
-            float accOpacity = texture(uAccColorVolume, pos).a;
-            prob = computeCPF(pos,voxel,accOpacity); // prob based on context preserved formula
+           // float accOpacity = texture(uAccColorVolume, pos).a;
+            prob = computeCPF(pos,voxel);//,accOpacity); // prob 
+        }
+        else  // random
+        {  
+            prob = (rand(vec2(float(id))).x);
         }
         uint p = convertProbToInt(prob); 
         int index=(int(id))*2;
