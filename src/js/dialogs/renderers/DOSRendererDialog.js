@@ -25,10 +25,14 @@ constructor(renderer, options) {
     this._binds.cutDepth.addEventListener('change', this._handleChange);
 
     this._binds.useCameraAsMS.addEventListener('change', this._handleChange);
-    this._binds.usingCPF.addEventListener('change', this._handleChange);
+    this._binds.removalSelect.addEventListener('change', this._handleChange);
     this._binds.ks.addEventListener('change', this._handleChange);
     this._binds.kt.addEventListener('change', this._handleChange);
     this._binds.meltingPos.addEventListener('change', this._handleChange);
+    this._binds.removalAutoUpdate.addEventListener('change', this._handleChange);
+    this._binds.useShadingTerm.addEventListener('change', this._handleChange);
+    //this._binds.useAccOpacityTerm.addEventListener('change', this._handleChange);
+    this._binds.useDistTerm.addEventListener('change', this._handleChange);
 
     this._tfwidget = new TransferFunctionWidget();
     this._binds.tfContainer.add(this._tfwidget);
@@ -47,13 +51,30 @@ _handleChange() {
 
     this._renderer._ks = this._binds.ks.getValue();
     this._renderer._kt = this._binds.kt.getValue();
-    this._renderer._usingCPF = this._binds.usingCPF.isChecked()? 1 :0;
-    this._renderer.useCameraAsMS = this._binds.useCameraAsMS.isChecked();
+
+    const removalMethod=this._binds.removalSelect.getValue()
+    if( removalMethod =='depth')
+    {
+        this._renderer._removalSelect = 0;
+    }
+    else if( removalMethod =='CPF')
+    {
+        this._renderer._removalSelect = 1;
+    }
+    else //if( this._binds.removalSelect=='Random')
+        this._renderer._removalSelect = 2;
+
+    this._renderer._useCameraAsMS = this._binds.useCameraAsMS.isChecked();
+    this._renderer._removalAutoUpdate = this._binds.removalAutoUpdate.isChecked();
+    this._renderer._useShadingTerm = this._binds.useShadingTerm.isChecked()? 1:0 ;
+    //this._renderer._useAccOpacityTerm = this._binds.useAccOpacityTerm.isChecked()? 1:0 ;
+    this._renderer._useDistTerm = this._binds.useDistTerm.isChecked()? 1:0 ;
+
     const position = this._binds.meltingPos.getValue();
     this._renderer._meltingSourcePos[0] = position.x;
     this._renderer._meltingSourcePos[1] = position.y;
     this._renderer._meltingSourcePos[2] = position.z;
-    this._renderer.reset();
+    this._renderer.reset(); 
 }
 
 _handleTFChange() {

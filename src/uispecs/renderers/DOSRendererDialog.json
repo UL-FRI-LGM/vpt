@@ -119,68 +119,122 @@
     },
     {
       "type": "accordion",
-      "label": "Probability parameters",
+      "label": "Instances Removal settings",
       "children": [
         {
           "type": "field",
-          "label": "Using CPF:",
+          "label": "Removal Approach:",
+          "children": [
+            {
+              "type": "dropdown",
+              "bind": "removalSelect",
+              "options": [
+                {
+                  "value": "depth",
+                  "label": "Depth Based Approach",
+                  "selected": true
+                },
+                {
+                  "value": "CPF",
+                  "label": "Context-Preserved Approach"
+                },
+                {
+                  "value": "random",
+                  "label": "Randomly"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "field",
+          "label": "Auto-update:",
           "children": [
             {
               "type": "checkbox",
-              "bind": "usingCPF",
+              "bind": "removalAutoUpdate",
               "checked": false
             }
           ]
         },
         {
-          "type": "field",
-          "label": "Melting Source(MS):",
+          "type": "accordion",
+          "label": "context-preserved",
           "children": [
             {
-              "type": "vector",
-              "bind": "meltingPos",
-              "value": 2,
-              "step": 0.1
-            }
-          ]
-        },
-        {
-          "type": "field",
-          "label": "Camera as MS:",
-          "children": [
+              "type": "field",
+              "label": "ks:",
+              "children": [
+                {
+                  "type": "spinner",
+                  "bind": "ks",
+                  "value": 0.4,
+                  "min": 0,
+                  "step": 0.1
+                }
+              ]
+            },
             {
-              "type": "checkbox",
-              "bind": "useCameraAsMS",
-              "checked": false
-            }
-          ]
-        },
-        {
-          "type": "field",
-          "label": "ks:",
-          "children": [
+              "type": "field",
+              "label": "kt:",
+              "children": [
+                {
+                  "type": "spinner",
+                  "bind": "kt",
+                  "value": 6.0,
+                  "min": 0,
+                  "step": 0.1
+                }
+              ]
+            },
             {
-              "type": "spinner",
-              "bind": "ks",
-              "value": 0.4,
-              "min": 0,
-              "step": 0.1
-            }
-          ]
-        },
-        {
-          "type": "field",
-          "label": "kt:",
-          "children": [
+              "type": "field",
+              "label": "Melting Source(MS):",
+              "children": [
+                {
+                  "type": "vector",
+                  "bind": "meltingPos",
+                  "value": 2,
+                  "step": 0.1
+                }
+              ]
+            },
             {
-              "type": "spinner",
-              "bind": "kt",
-              "value": 6.0,
-              "min": 0,
-              "step": 0.1
+              "type": "field",
+              "label": "Camera as MS:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "useCameraAsMS",
+                  "checked": true
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "shading term:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "useShadingTerm",
+                  "checked": true
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "distance term:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "useDistTerm",
+                  "checked": true
+                }
+              ]
             }
           ]
         }
+        
       ]
     }
   ]

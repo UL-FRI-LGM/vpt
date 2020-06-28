@@ -27,14 +27,18 @@ class DOSRenderer extends AbstractRenderer {
              _meltingSourcePos: [2, 2, 2],
             _ks: 0.4,
             _kt: 6.0,
-            _usingCPF: 0,
-            useCameraAsMS: false
+            _removalSelect: 0,
+            _useCameraAsMS: true,
+            _removalAutoUpdate: true,
+            _useShadingTerm: 1,
+            //_useAccOpacityTerm: 1,
+            _useDistTerm: 1
         }, options);
         this._GUIObject = null;
         this._idVolume = idVolume;
         this._dataVolume = dataVolume;
         this._maskVolume = null;
-        this._accColorVolume =null;
+        this._accColorVolume = null;
         this._camera= camera;
         this._programs = WebGL.buildPrograms(gl, {
             integrate: SHADERS.DOSIntegrate,
@@ -232,6 +236,9 @@ class DOSRenderer extends AbstractRenderer {
                 rangeCondition += `instance.${attribute[0]} >= float(${lo[0]}) && instance.${attribute[0]} <= float(${hi[0]})`;
 
             }
+
+            
+             //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
             const visibilityCondition = `visStatus> uint(0)`;
             const groupStatement = `sGroupMembership[id] = ${index + 1}u; return vec2(${tfx}, ${tfy});`;
             const backgroundStatement = `sGroupMembership[id] = 0u; return vec2(0.5);`;
@@ -279,7 +286,10 @@ class DOSRenderer extends AbstractRenderer {
             const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
 
             const rangeCondition = `instance.${attribute} >= ${lo} && instance.${attribute} <= ${hi}`;
-            // const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
+
+            
+            //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
+           
             const visibilityCondition = `visStatus> uint(0)`;
             const groupStatement = `sGroupMembership[id] = ${index + 1}u; return vec2(${tfx}, ${tfy});`;
             const backgroundStatement = `sGroupMembership[id] = 0u; return vec2(0.5);`;
@@ -385,11 +395,12 @@ class DOSRenderer extends AbstractRenderer {
             compute: SHADERS.ProbCompute
         }, {
             computeCPF: MIXINS.computeCPF,
+            rand: MIXINS.rand,
             localSizeX: this._localSize.x,
             localSizeY: this._localSize.y,
             localSizeZ: this._localSize.z,
         }).compute;
-        this._createAccColorTexture();
+        //this._createAccColorTexture();
         this._recomputeProbability();
     }
 
@@ -403,13 +414,15 @@ class DOSRenderer extends AbstractRenderer {
         const dimensions = this._idVolume._currentModality.dimensions;
         gl.bindImageTexture(1, this._idVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.R32UI);
         gl.bindImageTexture(2, this._dataVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.RGBA8);
-        //gl.bindImageTexture(3, this._accColorVolume, 0, true, 0, gl.READ_ONLY, gl.RGBA8);
 
-        gl.activeTexture(gl.TEXTURE0);
+        /*gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.uAccColorVolume, 0);
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);
+        gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);*/
         //-------- for context preserve formula ----------------------
-        gl.uniform1i(program.uniforms.uCPF, this._usingCPF );
+        gl.uniform1i(program.uniforms.uShadingTerm, this._useShadingTerm );
+        gl.uniform1i(program.uniforms.uDistTerm, this._useDistTerm );
+
+        gl.uniform1i(program.uniforms.uRemovalSelect, this._removalSelect );
         gl.uniform1f(program.uniforms.uMinGM, this._minGm );
         gl.uniform1f(program.uniforms.uMaxGM, this._maxGm );
         gl.uniform1f(program.uniforms.uMinDist, this._minDist );
@@ -417,7 +430,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1f(program.uniforms.uKs, this._ks );
         gl.uniform1f(program.uniforms.uKt, this._kt );
         gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
-        if(this.useCameraAsMS==true)
+        if(this._useCameraAsMS==true)
             gl.uniform3fv(program.uniforms.uLightPos, this._camera.get3DPosition());
         else
             gl.uniform3fv(program.uniforms.uLightPos, this._meltingSourcePos);
@@ -559,17 +572,19 @@ class DOSRenderer extends AbstractRenderer {
         gl.useProgram(program.program);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
+        //-----------------------------------------------------
         //========= recompute avgProb ==========
         this._recomputeMinMaxDistance();
         this._rebuildProbCompute();
-        //==== recomput mask =========
-        /*if(this._rulesInInfo!=null)
+        //==== removal Automatic Update =========
+        if(this._removalAutoUpdate==true &&this._rulesInInfo!=null)
         {
-          if(this._isTreeRules==false)
-               this.setRules(this._rulesInInfo, this._GUIObject);
-          else
-               this.setHtreeRules(this._rulesInInfo, this._GUIObject);
-        }*/
+            if(this._isTreeRules==false)
+                this.setRules(this._rulesInInfo, this._GUIObject);
+            else
+                this.setHtreeRules(this._rulesInInfo, this._GUIObject);
+        }
+        //-------------------------------------------------------
     }
 
     _integrateFrame() {
@@ -607,8 +622,6 @@ class DOSRenderer extends AbstractRenderer {
         gl.activeTexture(gl.TEXTURE8);
         gl.uniform1i(program.uniforms.uDataTransferFunction, 8);
         gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
- 
-       
 
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
@@ -621,7 +634,6 @@ class DOSRenderer extends AbstractRenderer {
         gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, this._groupMembership);
         const depthStep = (this._maxDepth - this._minDepth) / this.slices;
 
-        this._clearAccColorArray();
         for (let step = 0; step < this.steps; step++) {
             if (this._depth > this._maxDepth) {                
                 break;
@@ -648,15 +660,14 @@ class DOSRenderer extends AbstractRenderer {
 
             this._accumulationBuffer.use();
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-            this._pushToAccColorArray();
             this._accumulationBuffer.swap();
             this._depth += depthStep;
         }
 
         // Swap again to undo the last swap by AbstractRenderer
         this._accumulationBuffer.swap();
-
         this._countOccludedInstance();
+
     }
 
     _renderFrame() {
@@ -785,77 +796,6 @@ class DOSRenderer extends AbstractRenderer {
         const texture = this._accumulationBuffer.getAttachments().color[3];
         return this._mapTextureToArray(texture);
     }
-    _clearAccColorArray()
-    {
-        this._accColorArray.length=0;
-    }
-    _pushToAccColorArray()
-    {
-        const texture = this._accumulationBuffer.getAttachments().color[0];
-
-        this._accColorArray.push(texture);
-        
-    }
-    _mergeTypedArrays(arrayOne, arrayTwo) {
-    
-        // Checks for truthy values or empty arrays on each argument
-        // to avoid the unnecessary construction of a new array and
-        // the type comparison
-        if(!arrayTwo || arrayTwo.length === 0) return arrayOne;
-        if(!arrayOne || arrayOne.length === 0) return arrayTwo;
-    
-        var mergedArray = new Uint8Array(arrayOne.length + arrayTwo.length);
-        mergedArray.set(arrayOne);
-        mergedArray.set(arrayTwo, arrayOne.length);
-    
-        return mergedArray;
-    }
-    _createAccColorTexture() {
-        if(this._accColorArray.length>0)
-        {
-            const gl = this._gl;
-            const layerCount=this._accColorArray.length;
-
-            if (this._accColorVolume) {
-                gl.deleteTexture(this._accColorVolume);
-            }
-
-            this._accColorVolume = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);
-           
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
-            gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8,this._bufferSize, this._bufferSize, layerCount);
-           
-            const Data=this._mergeArrayOfTextures(this._accColorArray);
-            const dataBuffer= gl.createBuffer();             
-            WebGL.createBuffer(gl, {
-                target: gl.PIXEL_UNPACK_BUFFER,
-                buffer: dataBuffer,
-                data: Data.buffer
-            });
-            gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, dataBuffer); 
-            gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, 0,
-                this._bufferSize, this._bufferSize, layerCount, 
-                gl.RGBA, gl.UNSIGNED_BYTE, dataBuffer);
-          
-            gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, null); 
-            gl.deleteBuffer(dataBuffer);
-            
-        }
-    }
-    _mergeArrayOfTextures(textures)
-    {
-        var accArray=new Uint8Array();
-        textures.forEach(texture=>{
-            const array=this._mapTextureToArray(texture);
-            accArray = this._mergeTypedArrays(accArray, array);
-        });
-        return accArray;
-    }
     _mapTextureToArray(texture) {
         var gl = this._gl;
 
@@ -935,6 +875,81 @@ class DOSRenderer extends AbstractRenderer {
        // console.log(this._maxGm);  
         gl.deleteBuffer(gm_ssbo);
     }
+    //=================== accOpacity ===============================
+        /*_clearAccColorArray()
+    {
+        this._accColorArray.length=0;
+    }
+    _pushToAccColorArray()
+    {
+        const texture = this._accumulationBuffer.getAttachments().color[0];
+        this._accColorArray.push(texture);
+        
+    }
+    _mergeTypedArrays(arrayOne, arrayTwo) {
+    
+        // Checks for truthy values or empty arrays on each argument
+        // to avoid the unnecessary construction of a new array and
+        // the type comparison
+        if(!arrayTwo || arrayTwo.length === 0) return arrayOne;
+        if(!arrayOne || arrayOne.length === 0) return arrayTwo;
+    
+        var mergedArray = new Uint8Array(arrayOne.length + arrayTwo.length);
+        mergedArray.set(arrayOne);
+        mergedArray.set(arrayTwo, arrayOne.length);
+    
+        return mergedArray;
+    }
+    _createAccColorTexture() {
+        if(this._accColorArray.length>0)
+        {
+            const gl = this._gl;
+            const layerCount=this._accColorArray.length;
+
+            if (this._accColorVolume) {
+                gl.deleteTexture(this._accColorVolume);
+            }
+
+            this._accColorVolume = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);
+           
+            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+            gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8,this._bufferSize, this._bufferSize, layerCount);
+           
+            const Data=this._mergeArrayOfTextures(this._accColorArray);
+            const dataBuffer= gl.createBuffer();             
+            WebGL.createBuffer(gl, {
+                target: gl.PIXEL_UNPACK_BUFFER,
+                buffer: dataBuffer,
+                data: Data.buffer
+            });
+            
+            gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, dataBuffer); 
+            gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, 0,
+                this._bufferSize, this._bufferSize, layerCount, 
+                gl.RGBA, gl.UNSIGNED_BYTE, dataBuffer);
+          
+            gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, null); 
+            gl.deleteBuffer(dataBuffer);
+            
+        }
+    }
+    _mergeArrayOfTextures(textures)
+    {
+        var accArray=new Uint8Array();
+        console.log('start');
+        textures.forEach(texture=>{
+            const array=this._mapTextureToArray(texture);
+            //console.log(this._computeSum(array));
+            accArray = this._mergeTypedArrays(accArray, array);
+        });
+        console.log('done');
+        return accArray;
+    }*/
 }
 
    
