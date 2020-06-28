@@ -24,7 +24,7 @@ class DOSRenderer extends AbstractRenderer {
             _depth: 1,
             _minDepth: -1,
             _maxDepth: 1,
-             _meltingSourcePos: [2, 2, 2],
+            _meltingSourcePos: [2, 2, 2],
             _ks: 0.4,
             _kt: 6.0,
             _removalSelect: 0,
@@ -39,26 +39,26 @@ class DOSRenderer extends AbstractRenderer {
         this._dataVolume = dataVolume;
         this._maskVolume = null;
         this._accColorVolume = null;
-        this._camera= camera;
+        this._camera = camera;
         this._programs = WebGL.buildPrograms(gl, {
             integrate: SHADERS.DOSIntegrate,
             render: SHADERS.DOSRender,
             reset: SHADERS.DOSReset,
             transfer: SHADERS.PolarTransferFunction,
         }, MIXINS);
-        
+
         this._numberInstance = 0;
         this._visStatusArray = null;
         this._visMembership =null;
         this._rules = [];
         this._layout = [];
-        this._accColorArray=[];
+        this._accColorArray = [];
         this._nRules = 0;
-        this._minDist =0;
-        this._maxDist =0;
+        this._minDist = 0;
+        this._maxDist = 0;
         this._minGm = 0;
         this._maxGm = 0;
-        this._isTreeRules =false;
+        this._isTreeRules = false;
         this._attrib = gl.createBuffer();
         this._groupMembership = gl.createBuffer();
         this._visibilityStatus = gl.createBuffer();
@@ -144,7 +144,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
 
-        
+
     }
 
     setDataVolume(volume) {
@@ -152,8 +152,8 @@ class DOSRenderer extends AbstractRenderer {
         const dimensions = volume._currentModality.dimensions;
 
         this._dataVolume = volume;
-        this._recomputeMinMaxGM() ;
-        
+        this._recomputeMinMaxGM();
+
     }
 
     setAttributes(attributes, layout, elements) {
@@ -471,22 +471,19 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1i(program.uniforms.uAccColorVolume, 0);
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);*/
         //-------- for context preserve formula ----------------------
-        gl.uniform1i(program.uniforms.uShadingTerm, this._useShadingTerm );
-        gl.uniform1i(program.uniforms.uDistTerm, this._useDistTerm );
-
-        gl.uniform1i(program.uniforms.uRemovalSelect, this._removalSelect );
-        gl.uniform1f(program.uniforms.uMinGM, this._minGm );
-        gl.uniform1f(program.uniforms.uMaxGM, this._maxGm );
-        gl.uniform1f(program.uniforms.uMinDist, this._minDist );
-        gl.uniform1f(program.uniforms.uMaxDist, this._maxDist );
-        gl.uniform1f(program.uniforms.uKs, this._ks );
-        gl.uniform1f(program.uniforms.uKt, this._kt );
+        gl.uniform1i(program.uniforms.uCPF, this._usingCPF);
+        gl.uniform1f(program.uniforms.uMinGM, this._minGm);
+        gl.uniform1f(program.uniforms.uMaxGM, this._maxGm);
+        gl.uniform1f(program.uniforms.uMinDist, this._minDist);
+        gl.uniform1f(program.uniforms.uMaxDist, this._maxDist);
+        gl.uniform1f(program.uniforms.uKs, this._ks);
+        gl.uniform1f(program.uniforms.uKt, this._kt);
         gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
-        if(this._useCameraAsMS==true)
+        if (this.useCameraAsMS == true)
             gl.uniform3fv(program.uniforms.uLightPos, this._camera.get3DPosition());
         else
             gl.uniform3fv(program.uniforms.uLightPos, this._meltingSourcePos);
-        
+
         //----------------------------------------------------------------
         gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
@@ -524,7 +521,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.deleteBuffer(ssbo);
         //var t1 = performance.now();
         //console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
-        
+
     }
 
     _recomputeTransferFunction(rules) {
@@ -676,6 +673,8 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1i(program.uniforms.uDataTransferFunction, 8);
         gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
 
+
+
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
         gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
@@ -688,7 +687,7 @@ class DOSRenderer extends AbstractRenderer {
         const depthStep = (this._maxDepth - this._minDepth) / this.slices;
 
         for (let step = 0; step < this.steps; step++) {
-            if (this._depth > this._maxDepth) {                
+            if (this._depth > this._maxDepth) {
                 break;
             }
 
@@ -849,6 +848,73 @@ class DOSRenderer extends AbstractRenderer {
         const texture = this._accumulationBuffer.getAttachments().color[3];
         return this._mapTextureToArray(texture);
     }
+    _clearAccColorArray() {
+        this._accColorArray.length = 0;
+    }
+    _pushToAccColorArray() {
+        const texture = this._accumulationBuffer.getAttachments().color[0];
+
+        this._accColorArray.push(texture);
+
+    }
+    _mergeTypedArrays(arrayOne, arrayTwo) {
+
+        // Checks for truthy values or empty arrays on each argument
+        // to avoid the unnecessary construction of a new array and
+        // the type comparison
+        if (!arrayTwo || arrayTwo.length === 0) return arrayOne;
+        if (!arrayOne || arrayOne.length === 0) return arrayTwo;
+
+        var mergedArray = new Uint8Array(arrayOne.length + arrayTwo.length);
+        mergedArray.set(arrayOne);
+        mergedArray.set(arrayTwo, arrayOne.length);
+
+        return mergedArray;
+    }
+    _createAccColorTexture() {
+        if (this._accColorArray.length > 0) {
+            const gl = this._gl;
+            const layerCount = this._accColorArray.length;
+
+            if (this._accColorVolume) {
+                gl.deleteTexture(this._accColorVolume);
+            }
+
+            this._accColorVolume = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);
+
+            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+            gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, this._bufferSize, this._bufferSize, layerCount);
+
+            const Data = this._mergeArrayOfTextures(this._accColorArray);
+            const dataBuffer = gl.createBuffer();
+            WebGL.createBuffer(gl, {
+                target: gl.PIXEL_UNPACK_BUFFER,
+                buffer: dataBuffer,
+                data: Data.buffer
+            });
+            gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, dataBuffer);
+            gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, 0,
+                this._bufferSize, this._bufferSize, layerCount,
+                gl.RGBA, gl.UNSIGNED_BYTE, dataBuffer);
+
+            gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, null);
+            gl.deleteBuffer(dataBuffer);
+
+        }
+    }
+    _mergeArrayOfTextures(textures) {
+        var accArray = new Uint8Array();
+        textures.forEach(texture => {
+            const array = this._mapTextureToArray(texture);
+            accArray = this._mergeTypedArrays(accArray, array);
+        });
+        return accArray;
+    }
     _mapTextureToArray(texture) {
         var gl = this._gl;
 
@@ -860,7 +926,7 @@ class DOSRenderer extends AbstractRenderer {
         if (res == gl.FRAMEBUFFER_COMPLETE) {
             const format = gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_FORMAT);
             const type = gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_TYPE);
-            if(type == gl.UNSIGNED_BYTE)
+            if (type == gl.UNSIGNED_BYTE)
                 var pixels = new Uint8Array(this._bufferSize * this._bufferSize * 4);
             else
                 var pixels = new Uint32Array(this._bufferSize * this._bufferSize);
@@ -875,17 +941,16 @@ class DOSRenderer extends AbstractRenderer {
 
     }
     //=============================================================================
-    _recomputeMinMaxDistance()
-    {
-        var distFinder=new DistanceFinder();
-        const result=distFinder._findShortestANDLongestDistance(this._camera.get3DPosition());
-        this._minDist=result[0];
-        this._maxDist=result[1];
+    _recomputeMinMaxDistance() {
+        var distFinder = new DistanceFinder();
+        const result = distFinder._findShortestANDLongestDistance(this._camera.get3DPosition());
+        this._minDist = result[0];
+        this._maxDist = result[1];
 
         //console.log('minDist',this._minDist);
         //console.log('maxDist',this._maxDist);
 
-        
+
     }
     _recomputeMinMaxGM() {
         const gl = this._gl;
@@ -901,7 +966,7 @@ class DOSRenderer extends AbstractRenderer {
             localSizeY: this._localSize.y,
             localSizeZ: this._localSize.z,
         }).compute;
-        
+
         const program = this._programs.compute;
         gl.useProgram(program.program);
 
@@ -922,10 +987,10 @@ class DOSRenderer extends AbstractRenderer {
         gl.dispatchCompute(groupsX, groupsY, groupsZ);
         gl.getBufferSubData(gl.SHADER_STORAGE_BUFFER, 0, gm_result);
 
-        this._minGm=gm_result[0]/ 10000.0;;
-        this._maxGm=gm_result[1]/ 10000.0;;
-       // console.log(this._minGm);
-       // console.log(this._maxGm);  
+        this._minGm = gm_result[0] / 10000.0;;
+        this._maxGm = gm_result[1] / 10000.0;;
+        // console.log(this._minGm);
+        // console.log(this._maxGm);  
         gl.deleteBuffer(gm_ssbo);
     }
     //=================== accOpacity ===============================
@@ -1005,4 +1070,4 @@ class DOSRenderer extends AbstractRenderer {
     }*/
 }
 
-   
+

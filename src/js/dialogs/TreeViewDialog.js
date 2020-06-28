@@ -16,25 +16,23 @@ class TreeViewDialog extends AbstractDialog {
     this.rules = [];
     this._createAbstractTree = this._createAbstractTree.bind(this);
     this._binds.resetTreeButton.addEventListener('click', this._createAbstractTree);
+
+    this._binds.dynamicTree.setGeneratedTree(this);
   }
-  _updateOccludedInstance(_rulesInfo)
-  {
-      var index=0;
-      for(var index=0;index<this.rules.length;index++)  
-      {
-        var nVisInstances = _rulesInfo[index].nInstances-_rulesInfo[index].nRemoved;
-        this.rulesNodes[index].occludedInstance = nVisInstances-_rulesInfo[index].nSeen;
-      }
-      this._countOccludedInstances(Htree);
+  _updateOccludedInstance(_rulesInfo) {
+    var index = 0;
+    for (var index = 0; index < this.rules.length; index++) {
+      var nVisInstances = _rulesInfo[index].nInstances - _rulesInfo[index].nRemoved;
+      this.rulesNodes[index].occludedInstance = nVisInstances - _rulesInfo[index].nSeen;
+    }
+    this._countOccludedInstances(Htree);
   }
   _countOccludedInstances(node) {
-    if(node.children==null)
-    {
+    if (node.children == null) {
       this.updateSliderTracks(node);
       return node.occludedInstance;
     }
-    else
-    {
+    else {
       var count = 0;
       node.children.forEach((item) => {
         count += this._countOccludedInstances(item);
@@ -46,7 +44,7 @@ class TreeViewDialog extends AbstractDialog {
   }
   updateSliderTracks(node) {
     node.sliderObj.object.setValue2(node.sliderObj.object.getMaxValue() - node.sliderObj.object.getValue());
-    node.sliderObj.object.setValue3((node.occludedInstance/node.nInstances)*100);
+    node.sliderObj.object.setValue3((node.occludedInstance / node.nInstances) * 100);
   }
   _getGroupOfRules() {
     //console.log(Htree);
@@ -100,6 +98,43 @@ class TreeViewDialog extends AbstractDialog {
 
     }
   }
+
+  getColors() {
+    var root = document.getElementsByClassName("root")[0];
+
+    var colors = [];
+    for (var i = 0; i < root.childElementCount; i++) {
+      var line = root.children[i];
+      var color = line.querySelector('.primary_color');
+
+      if (color == null) {
+        colors.push("#808080");
+      } else {
+        colors.push(color.value);
+      }
+    }
+
+    return colors;
+  }
+
+  setColors(colors) {
+    var root = document.getElementsByClassName("root")[0];
+
+    for (var i = 0; i < root.childElementCount && i < colors.length; i++) {
+      var line = root.children[i];
+      var color = line.querySelector('.primary_color');
+
+      if (color != null) {        
+        color.value = colors[i];
+
+        var event = document.createEvent('Event');
+        event.initEvent('change', true, true);
+
+        color.dispatchEvent(event);        
+      }
+    }
+  }
+
   //instance.sort((a, b) => parseFloat(a.avgProb) - parseFloat(b.avgProb));
   setAttributes(layout, elementsJSON) {
 
@@ -185,7 +220,7 @@ class TreeViewDialog extends AbstractDialog {
     var roots = document.getElementsByClassName("root");
     for (var i = 0; i < roots.length; i++) {
       var root = roots[i];
-      while (root.firstChild) {        
+      while (root.firstChild) {
         root.removeChild(root.lastChild);
       }
     }
@@ -583,7 +618,7 @@ function createJSONHierarchyTree(nav) {
         }
       },
       ColorChange: function () {
-        this.color = (getColor(this)).value;
+        this.color = (getColor(this)).value;        
         updateChildrenColorValue(this, this.color);
         TVDClass.trigger('treeSliderChange');
       },
@@ -622,9 +657,9 @@ function createJSONHierarchyTree(nav) {
     computeMinMaxRange(node);
   }
   function updateSliderTracks(node) {
-   // node.occludedInstance = 50;// node.sliderValue*0.10;
+    // node.occludedInstance = 50;// node.sliderValue*0.10;
     node.sliderObj.object.setValue2(node.sliderObj.object.getMaxValue() - node.sliderObj.object.getValue());
-   // node.sliderObj.object.setValue3(node.occludedInstance);
+    // node.sliderObj.object.setValue3(node.occludedInstance);
 
   }
   function changeParentsMinMaxRange(node) {
@@ -930,8 +965,13 @@ function createJSONHierarchyTree(nav) {
   window.jsonView = {
     format: function (jsonData, targetElem) {
       let parsedData = jsonData;
-      if (typeof jsonData === 'string' || jsonData instanceof String)
+      if (typeof jsonData === 'string' || jsonData instanceof String) {
         parsedData = JSON.parse(jsonData);
+
+        if (parsedData.abstractTree) {
+          parsedData = parsedData.abstractTree;
+        }
+      }
 
       Htree = createTree(parsedData, false);
       Htree.nInstances = elementsArray.length;
