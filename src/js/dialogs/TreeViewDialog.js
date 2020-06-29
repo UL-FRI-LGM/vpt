@@ -135,6 +135,47 @@ class TreeViewDialog extends AbstractDialog {
     }
   }
 
+  /* NEEDS TO BE REWORKED!
+  getValues() {
+    var root = document.getElementsByClassName("root")[0];
+
+    var values = [];
+    for (var i = 0; i < root.childElementCount; i++) {
+      var line = root.children[i];
+      var value = line.querySelector('.value');
+
+      if (value == null) {
+        values.push(0);
+      } else {
+        values.push(value.value);
+      }
+    }
+
+    return values;
+  }
+
+  setValues(values) {
+    var root = document.getElementsByClassName("root")[0];
+    console.log(values);
+    
+    console.log(Htree);
+
+    for (var i = 0; i < root.childElementCount && i < values.length; i++) {
+      var line = root.children[i];
+      var value = line.querySelector('.value');
+
+      if (value != null) {        
+        value.value = values[i];
+
+        var event = document.createEvent('Event');
+        event.initEvent('change', true, true);
+
+        value.dispatchEvent(event);        
+      }
+    }
+  }
+  */
+
   //instance.sort((a, b) => parseFloat(a.avgProb) - parseFloat(b.avgProb));
   setAttributes(layout, elementsJSON) {
 
