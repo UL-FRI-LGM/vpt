@@ -284,7 +284,7 @@ class DOSRenderer extends AbstractRenderer {
             const hi = rule.range.y.toFixed(4);
             var instancesStRule = this._getRuleElements([attribute], [hi], [lo]);
             this._sortAscending(instancesStRule, 'avgProb');
-            console.log(instancesStRule);
+            //console.log(instancesStRule);
             const visibility = (rule.visibility / 100).toFixed(4);
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
             ruleObj.nInstances = instancesStRule.length;
@@ -356,6 +356,7 @@ class DOSRenderer extends AbstractRenderer {
                 break;
         }
         //------------------------------------------------------------
+        i = 0;
         for (; i < instancesStRule.length; i++) {
             if (this._isOccupied[instancesStRule[i]['id']] == false)
             {

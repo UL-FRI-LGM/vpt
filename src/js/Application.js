@@ -252,11 +252,23 @@ _updateVisibility() {
 }
 
 _handleVisibilityRetopo(options) {
-    this._throttleTreeVisibility();
+    this._throttleVisibility();    
 }
 
 _handleVisibilityChange(options) {
-    this._throttleTreeVisibility();
+    this._throttleVisibility();    
+}
+
+_throttleVisibility() {
+    if (this._loadingDiv) {
+        return;
+    }
+
+    if (!this._visibilityUpdateTimeout) {
+        this._updateVisibility();
+    } else {
+        this._visibilityUpdatePending = true;
+    }
 }
 
 _handleTreeSliderChange(options) {

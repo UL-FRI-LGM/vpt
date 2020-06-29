@@ -65,6 +65,8 @@ class SliderMultiTrack extends UIObject {
         
         this.value = newValue;
 
+        this._binds.value.value = this.value;
+
         /* TESTING
         this.limitLeft = newValue * 0.1 + 5;
         this.limitRight = this.max - this.limitLeft * 2;        
