@@ -11,7 +11,6 @@ constructor(options) {
 
     this.groups = [];
     this.attributes = [];
-    this._elementsArray = [];
     this._colorSeed = Math.random();
 
     this._registerEventListeners();
@@ -35,9 +34,8 @@ reset() {
     this.groups = [];
 }
 
-setAttributes(attributes,elementsJSON) {
+setAttributes(attributes) {
     this.attributes = attributes;
-    this._elementsArray = elementsJSON;
 }
 
 getGroups() {
@@ -46,7 +44,7 @@ getGroups() {
         range      : group.binds.range.getValue(),
         visibility : group.binds.visibility.getValue(),
         color      : group.binds.color.getValue(),
-        isLocked    : false,// TODO: add locked  
+        isLocked    : group.object.isLocked,// TODO: add locked  
     }));
 }
 
@@ -55,9 +53,7 @@ _handleAddGroupClick() {
 }
 
 _handleGroupChange(group) {
-    const { object, binds } = group;
-    
-    binds.visibility.setValue2(binds.visibility.getMaxValue() - binds.visibility.getValue());
+    group.binds.visibility.setValue2(group.binds.visibility.getMaxValue() - group.binds.visibility.getValue());
     this.trigger('change');
 }
 
@@ -67,7 +63,7 @@ _handleColorChange() {
 _addGroup() {
     const group = UI.create(UISPECS.VisibilityGroup);
     const { object, binds } = group;
-
+    group.object.isLocked = false;
     this.groups.push(group);
 
     this._binds.group_container.add(object);
@@ -97,6 +93,7 @@ _addGroup() {
     controlPanelButtons.up.addEventListener('click', e => this._moveUp(group));
     controlPanelButtons.down.addEventListener('click', e => this._moveDown(group));
     controlPanelButtons.delete.addEventListener('click', e => this._delete(group));
+    controlPanelButtons.locked.addEventListener('click', e => this._lockedChange(group));
 
     binds.attribute.addEventListener('change', e => this._handleGroupChange(group));
     binds.range.addEventListener('change', e => this._handleGroupChange(group));
@@ -143,8 +140,19 @@ _delete(group) {
     const index = this.groups.indexOf(group);
     this.groups.splice(index, 1);
     group.object.destroy();
-
     this.trigger('retopo');
+}
+_lockedChange(group) {
+    group.object.isLocked = !(group.object.isLocked);
+    if(group.object.isLocked==true)
+    {
+        group.binds.visibility.disable();
+    }
+    else
+    {
+        group.binds.visibility.enable();
+    }
+    this.trigger('change');
 }
   _updateOccludedInstance(_rulesInfo)
   {
