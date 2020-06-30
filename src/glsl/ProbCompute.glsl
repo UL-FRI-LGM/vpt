@@ -72,7 +72,7 @@ void main() {
            // float accOpacity = texture(uAccColorVolume, pos).a;
             prob = computeCPF(pos,voxel);//,accOpacity); // prob 
         }
-        else  // random
+        else  // if(uRemovalSelect == 2) random
         {  
             prob = (rand(vec2(float(id))).x);
         }

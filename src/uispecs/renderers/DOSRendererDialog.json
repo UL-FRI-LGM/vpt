@@ -119,7 +119,7 @@
     },
     {
       "type": "accordion",
-      "label": "Instances Removal settings",
+      "label": "Removal Method Settings",
       "children": [
         {
           "type": "field",

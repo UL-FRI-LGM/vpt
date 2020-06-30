@@ -29,7 +29,7 @@ class DOSRenderer extends AbstractRenderer {
             _kt: 6.0,
             _removalSelect: 0,
             _useCameraAsMS: true,
-            _removalAutoUpdate: true,
+            _removalAutoUpdate: false,
             _useShadingTerm: 1,
             //_useAccOpacityTerm: 1,
             _useDistTerm: 1
@@ -472,7 +472,9 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1i(program.uniforms.uAccColorVolume, 0);
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);*/
         //-------- for context preserve formula ----------------------
-        gl.uniform1i(program.uniforms.uCPF, this._usingCPF);
+        gl.uniform1i(program.uniforms.uShadingTerm, this._useShadingTerm);
+        gl.uniform1i(program.uniforms.uDistTerm, this._useDistTerm);
+        gl.uniform1i(program.uniforms.uRemovalSelect, this._removalSelect);
         gl.uniform1f(program.uniforms.uMinGM, this._minGm);
         gl.uniform1f(program.uniforms.uMaxGM, this._maxGm);
         gl.uniform1f(program.uniforms.uMinDist, this._minDist);
@@ -480,11 +482,10 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniform1f(program.uniforms.uKs, this._ks);
         gl.uniform1f(program.uniforms.uKt, this._kt);
         gl.uniform3fv(program.uniforms.uCameraPos, this._camera.get3DPosition());
-        if (this.useCameraAsMS == true)
+        if (this._useCameraAsMS == true)
             gl.uniform3fv(program.uniforms.uLightPos, this._camera.get3DPosition());
         else
             gl.uniform3fv(program.uniforms.uLightPos, this._meltingSourcePos);
-
         //----------------------------------------------------------------
         gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
@@ -629,7 +630,7 @@ class DOSRenderer extends AbstractRenderer {
         //==== removal Automatic Update =========
         if(this._removalAutoUpdate==true &&this._rulesInInfo!=null)
         {
-            //this.clearVisStatusArray();
+            this.clearVisStatusArray();
             if(this._isTreeRules==false)
                 this.setRules(this._rulesInInfo, this._GUIObject);
             else
