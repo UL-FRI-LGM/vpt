@@ -46,6 +46,7 @@ getGroups() {
         range      : group.binds.range.getValue(),
         visibility : group.binds.visibility.getValue(),
         color      : group.binds.color.getValue(),
+        isLocked    : false,// TODO: add locked  
     }));
 }
 

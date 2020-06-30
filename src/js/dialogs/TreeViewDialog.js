@@ -71,6 +71,7 @@ class TreeViewDialog extends AbstractDialog {
       obj.visibility = node.sliderValue;
       obj.nInstances = node.nInstances;
       obj.color = node.color;
+      obj.isLocked =node.isDisabled;
       this.rulesNodes.push(node);
       this.rules.push(JSON.parse(JSON.stringify(obj)));
       //---------------------------------------
@@ -675,6 +676,7 @@ function createJSONHierarchyTree(nav) {
             unlockedParents(this.parent);
             //changeMinMaxRange(this.parent);
           }
+          TVDClass.trigger('treeSliderChange');
         }
       }
     }
