@@ -65,14 +65,18 @@
 .property-collapse-button {
     width: 15px;
     height: 15px;
-    background-color: blue;
     float: right;
 }
 
 .property-delete-button {
     width: 15px;
     height: 15px;
-    background-color: red;
+    float: right;
+}
+
+.property-unpin-button {
+    width: 15px;
+    height: 15px;
     float: right;
 }
 
@@ -145,6 +149,13 @@
 
 .delete-button {
     background: url("../images/icons/cross.svg") no-repeat;
+    background-size: 8px;
+    background-position: 2px 50%;
+    cursor: pointer;
+}
+
+.unpin-button {
+    background: url("../images/icons/counterclockwise-circular-arrow.svg") no-repeat;
     background-size: 8px;
     background-position: 2px 50%;
     cursor: pointer;

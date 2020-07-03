@@ -841,17 +841,20 @@ class DOSRenderer extends AbstractRenderer {
             const ruleID = this._getGroupIDFramebuffer();
 
             var frameBufferSize = this._bufferSize * this._bufferSize;
-
+            
             for (var index = 0; index < this._nRules; index++) {
                 var count = new Uint32Array(this._numberInstance);
                 for (var j = 0; j < frameBufferSize; j++) {
                     if (ruleID[j] == index + 1)
                         count[InstanceID[j]] = 1;
                 }
-                this._rulesOutInfo[index].nSeen = this._computeSum(count);
+                this._rulesOutInfo[index].nSeen = this._computeSum(count);                
+                this._rulesOutInfo[index].occlusion = count;                
             }
-            if (this._GUIObject != null)
-                this._GUIObject._updateOccludedInstance(this._rulesOutInfo);
+
+            if (this._GUIObject != null) {
+                this._GUIObject._updateOccludedInstance(this._rulesOutInfo);                
+            }
 
         }
     }

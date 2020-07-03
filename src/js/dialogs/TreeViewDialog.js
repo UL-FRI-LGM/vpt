@@ -19,14 +19,20 @@ class TreeViewDialog extends AbstractDialog {
 
     this._binds.dynamicTree.setGeneratedTree(this);
   }
+
   _updateOccludedInstance(_rulesInfo) {
     var index = 0;
     for (var index = 0; index < this.rules.length; index++) {
       var nVisInstances = _rulesInfo[index].nInstances - _rulesInfo[index].nRemoved;
       this.rulesNodes[index].occludedInstance = nVisInstances - _rulesInfo[index].nSeen;
+
+      this._computeNodeHistogram(this.rulesNodes[index], _rulesInfo[index].occlusion);
     }
+
     this._countOccludedInstances(Htree);
+    this._syncHistograms(Htree);
   }
+
   _countOccludedInstances(node) {
     if (node.children == null) {
       this.updateSliderTracks(node);
@@ -42,6 +48,62 @@ class TreeViewDialog extends AbstractDialog {
     }
     return node.occludedInstance;
   }
+
+  _syncHistograms(node) {
+    if (node.children == null) {      
+      return node.sliderObj.object.histogram;
+    }
+    else {
+      var hist = [];
+      
+      for (var i = 0; i < node.sliderObj.object.histColumns; i++) {
+        hist[i] = 0;
+      }
+
+      node.children.forEach((item) => {
+        var chist = this._syncHistograms(item);
+
+        for(var i = 0; i < chist.length; i++) {
+          hist[i] += chist[i];
+        }
+      });
+
+      node.sliderObj.object.setHistogram(hist);      
+    }
+
+    return node.sliderObj.object.histogram;
+  }
+
+  _computeNodeHistogram(node, occlusion) {
+    //console.log(occlusion);
+    //console.log(node);
+    //console.log(elementsArray);
+
+    var histogram = [];
+
+    for (var i = node.lo; i <= node.hi; i++) {
+      histogram[i] = 0;
+    }
+
+    //console.log(histogram);
+    // select all visible instances based on [min-max] interval
+    for (var i = 0; i < occlusion.length; i++) {
+      if (occlusion[i] == 1) {
+        continue;
+      }
+
+      var value = elementsArray[i][node.name.indexOf("[") > -1 ? node.parent.name : node.name];
+
+      if (value >= node.lo && value < node.hi) {
+        var index = Math.round(value);
+        histogram[index] += 1;
+      }
+    }
+
+    //console.log(histogram);
+    node.sliderObj.object.setHistogram(histogram);
+  }
+
   updateSliderTracks(node) {
     node.sliderObj.object.setValue2(node.sliderObj.object.getMaxValue() - node.sliderObj.object.getValue());
     node.sliderObj.object.setValue3((node.occludedInstance / node.nInstances) * 100);
@@ -71,7 +133,7 @@ class TreeViewDialog extends AbstractDialog {
       obj.visibility = node.sliderValue;
       obj.nInstances = node.nInstances;
       obj.color = node.color;
-      obj.isLocked =node.isDisabled;
+      obj.isLocked = node.isDisabled;
       this.rulesNodes.push(node);
       this.rules.push(JSON.parse(JSON.stringify(obj)));
       //---------------------------------------
@@ -125,13 +187,13 @@ class TreeViewDialog extends AbstractDialog {
       var line = root.children[i];
       var color = line.querySelector('.primary_color');
 
-      if (color != null) {        
+      if (color != null) {
         color.value = colors[i];
 
         var event = document.createEvent('Event');
         event.initEvent('change', true, true);
 
-        color.dispatchEvent(event);        
+        color.dispatchEvent(event);
       }
     }
   }
@@ -178,7 +240,7 @@ class TreeViewDialog extends AbstractDialog {
   */
 
   //instance.sort((a, b) => parseFloat(a.avgProb) - parseFloat(b.avgProb));
-  setAttributes(layout, elementsJSON) {
+  setAttributes(layout, elementsData) {
 
     this.layout = layout;
     propertyList = [];
@@ -210,7 +272,7 @@ class TreeViewDialog extends AbstractDialog {
     //elementsArray = this.csvJSON(csv);
 
 
-    elementsArray = elementsJSON;
+    elementsArray = elementsData;
     //console.log(elementsArray);
   }
 
@@ -339,7 +401,6 @@ function createJSONFromDTree(nav) {
   for (n = 0; n < nav.length; n++) {
     obj.push(createJSONHierarchyTree(nav[n]));
   }
-  //console.log(obj);
   return obj;
 }
 function createJSONHierarchyTree(nav) {
@@ -349,6 +410,7 @@ function createJSONHierarchyTree(nav) {
     var obj = new Object();
 
     obj.name = nav['suiTreeviewListItem']['text'];
+    obj.path = obj.path ? "." : "" + node.parent.property;
     //obj.id=nav['suiTreeviewListItem']['id'];
     obj.lo = Math.floor(nav['suiTreeviewListItem']['lo']);
     obj.hi = Math.ceil(nav['suiTreeviewListItem']['hi']);
@@ -374,6 +436,7 @@ function createJSONHierarchyTree(nav) {
         obj.children.push(createJSONHierarchyTree(x));
       });
     }
+
     return obj;
   }
   return null;
@@ -583,6 +646,7 @@ function createJSONHierarchyTree(nav) {
       color: '#808080',//gray
       elem: null,
       parent: null,
+      path: "",
       children: null,
       expanded: false,
       storageType: null,
@@ -598,6 +662,7 @@ function createJSONHierarchyTree(nav) {
       isEmpty: false,
       //   hasLocked: false,
       //  hasSlider: false,
+
       setCaretIconRight() {
         const icon = this.elem.querySelector('.fas');
         icon.classList.replace('fa-caret-down', 'fa-caret-right');
@@ -659,11 +724,13 @@ function createJSONHierarchyTree(nav) {
           }
         }
       },
+
       ColorChange: function () {
-        this.color = (getColor(this)).value;        
+        this.color = (getColor(this)).value;
         updateChildrenColorValue(this, this.color);
         TVDClass.trigger('treeSliderChange');
       },
+
       LockChange: function () {
         if (this.isEmpty == false) {
           if (this.isDisabled == false) {
@@ -681,6 +748,7 @@ function createJSONHierarchyTree(nav) {
       }
     }
   }
+
   function getSliderValue(node) {
     return node.sliderObj.object.getValue();
   }
@@ -927,6 +995,7 @@ function createJSONHierarchyTree(nav) {
       child.expanded = false;
       child.isroot = false;
       child.name = x.name;
+      child.path = parent.path + "." + x.name;
       if (hasChildren == true) {
         child.children = [];
         parent.children.push(child);
@@ -951,9 +1020,9 @@ function createJSONHierarchyTree(nav) {
       child.expanded = false;
       child.isroot = false
       child.name = x.name;
+      child.path = parent.path + "." + x.name;
       child.isClassName = true;
       child.children = [];
-      //console.log(child);
       parent.children.push(child);
       if (x.children.length > 0)
         traverseObject_groups(child, x.groups, x.children, true);
@@ -962,6 +1031,7 @@ function createJSONHierarchyTree(nav) {
       child.elem = createExpandedElement(child);
     });
   }
+
   function createTree(obj) {
     const tree = createNode();
     tree.storageType = getType(obj);
@@ -970,9 +1040,10 @@ function createJSONHierarchyTree(nav) {
     tree.expanded = true;
     tree.isroot = true;
     tree.isClassName = false;
+    tree.path = "";
+
     traverseObject(obj, tree);
     tree.elem = createExpandedElement(tree);
-    //console.log(tree);
     return tree;
   }
 

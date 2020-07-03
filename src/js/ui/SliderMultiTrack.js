@@ -13,14 +13,15 @@ class SliderMultiTrack extends UIObject {
             value2: 0,
             value3: 0,
             min: 0,
-            max: 10,
+            max: 100,
             step: 1,
             enabled: true,
             logarithmic: false,
             focused: false,
             limitLeft: 0,
             limitRight: 100,
-            histogram: []
+            histogram: [],
+            histColumns: 10
         }, options);
 
         this._handleMouseDown = this._handleMouseDown.bind(this);
@@ -70,7 +71,7 @@ class SliderMultiTrack extends UIObject {
         this.value = newValue;
 
         this._binds.value.value = this.value;
-        
+
         this._updateUI();
 
         if (this.focused) {
@@ -224,13 +225,14 @@ class SliderMultiTrack extends UIObject {
 
     clearHistogram() {
         this.histogram = [];
-        for (var i = 0; i < this.max - this.min; i++) {
-            this.histogram[i] = i;
+        for (var i = 0; i < this.histColumns; i++) {
+            this.histogram.push(0);
         }
-        console.log(this.histogram);
+
+        //this.setHistogram([123, 56, 4, 4, 4, 3, 0, 1, 2, 2, 3, 2, 7, 4, 3, 6, 4, 5, 0, 6, 0]);        
     }
 
-    createHistogramElements() {             
+    createHistogramElements() {
         var hist = this._element.querySelector('.histogram');
         while (hist.firstChild) {
             hist.removeChild(hist.firstChild);
@@ -245,16 +247,52 @@ class SliderMultiTrack extends UIObject {
 
     updateHistogram() {
         var hist = this._element.querySelector('.histogram');
-                        
+
+        var maxHistValue = 0;
         for (var i = 0; i < this.histogram.length; i++) {
+            maxHistValue = Math.max(maxHistValue, this.histogram[i]);
+        }
+
+        //maxHistValue = Math.log10(maxHistValue);
+
+        for (var i = 0; i < this.histogram.length; i++) {
+            var value = this.histogram[i];
             var div = hist.children[i];
-            var height = ((this.histogram[i] / this.histogram.length) * 50 + 1);
-            div.style.height = height + "%";            
-            div.style.width = (100 / this.histogram.length) + "%";
+            //var height = ((Math.log10(value) / maxHistValue) * 50 + 1);
+            var height = (value / maxHistValue) * 50 + 1;
+            div.style.height = height + "%";
             div.style.top = (50 - height - 6) + "%";
+            div.style.width = (100 / this.histColumns) + "%";            
         }
     }
 
+    setHistogram(histogram) {
 
+        var tmp = [];
+
+        for (var key in histogram) {
+            tmp.push(histogram[key]);
+        }
+
+        if (histogram.length > this.histogram.length) {
+            var sparse = Math.ceil(histogram.length / this.histogram.length);
+
+            var counter = 0;
+            for (var i = 0; i < tmp.length; i += sparse) {
+                var sum = 0;
+                for(var j = 0; j < sparse; j++) {
+                    if(i + j < tmp.length) {
+                        sum += tmp[i + j];
+                    }
+                }
+                this.histogram[counter++] = sum;
+            }   
+                
+        } else if (histogram.length < this.histogram.length) {
+            // TODO: implement
+        } else {
+            this.histogram = histogram;
+        }
+    }
 
 }
