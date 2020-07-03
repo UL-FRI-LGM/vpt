@@ -24,15 +24,15 @@ constructor(renderer, options) {
     this._binds.alphaTransfer.addEventListener('change', this._handleChange);
     this._binds.cutDepth.addEventListener('change', this._handleChange);
 
-    this._binds.useCameraAsMS.addEventListener('change', this._handleChange);
+    //this._binds.useCameraAsMS.addEventListener('change', this._handleChange);
     this._binds.removalSelect.addEventListener('change', this._handleChange);
     this._binds.ks.addEventListener('change', this._handleChange);
     this._binds.kt.addEventListener('change', this._handleChange);
-    this._binds.meltingPos.addEventListener('change', this._handleChange);
+    //this._binds.meltingPos.addEventListener('change', this._handleChange);
     this._binds.removalAutoUpdate.addEventListener('change', this._handleChange);
-    this._binds.useShadingTerm.addEventListener('change', this._handleChange);
+    //this._binds.useShadingTerm.addEventListener('change', this._handleChange);
     //this._binds.useAccOpacityTerm.addEventListener('change', this._handleChange);
-    this._binds.useDistTerm.addEventListener('change', this._handleChange);
+   // this._binds.useDistTerm.addEventListener('change', this._handleChange);
 
     this._tfwidget = new TransferFunctionWidget();
     this._binds.tfContainer.add(this._tfwidget);
@@ -64,16 +64,16 @@ _handleChange() {
     else //if( this._binds.removalSelect=='Random')
         this._renderer._removalSelect = 2;
 
-    this._renderer._useCameraAsMS = this._binds.useCameraAsMS.isChecked();
+    this._renderer._useCameraAsMS = true;//this._binds.useCameraAsMS.isChecked();
     this._renderer._removalAutoUpdate = this._binds.removalAutoUpdate.isChecked();
-    this._renderer._useShadingTerm = this._binds.useShadingTerm.isChecked()? 1:0 ;
+    this._renderer._useShadingTerm = 1;//this._binds.useShadingTerm.isChecked()? 1:0 ;
     //this._renderer._useAccOpacityTerm = this._binds.useAccOpacityTerm.isChecked()? 1:0 ;
-    this._renderer._useDistTerm = this._binds.useDistTerm.isChecked()? 1:0 ;
+    this._renderer._useDistTerm = 1;//this._binds.useDistTerm.isChecked()? 1:0 ;
 
-    const position = this._binds.meltingPos.getValue();
-    this._renderer._meltingSourcePos[0] = position.x;
-    this._renderer._meltingSourcePos[1] = position.y;
-    this._renderer._meltingSourcePos[2] = position.z;
+    //const position = this._binds.meltingPos.getValue();
+    //this._renderer._meltingSourcePos[0] = position.x;
+   // this._renderer._meltingSourcePos[1] = position.y;
+   // this._renderer._meltingSourcePos[2] = position.z;
     this._renderer.reset(); 
 }
 
