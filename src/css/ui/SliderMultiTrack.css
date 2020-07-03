@@ -1,7 +1,7 @@
 /* #package css/main */
 
 .slider-multi-track {
-    --height         : 18px;
+    --height         : 20px;
     --button-size    : 16px;
     --track-height   : 3px;    
     --track-height2   : 4px;    
@@ -47,7 +47,7 @@
 
 .slider-multi-track .track3 {
     position: absolute;
-    top: calc(((var(--height) - var(--track-height)) / 2) - var(--track-height2));
+    top: calc(((var(--height) - var(--track-height)) / 2) + 2 * var(--track-height2));
     width: 100%;
     height: var(--track-height);
 
@@ -85,4 +85,16 @@
     height: 100%;
 
     background-color: #ddddddaa;
+}
+
+.slider-multi-track .histogram {
+    width: 100%;
+    height: 100%;
+}
+
+.slider-multi-track .histogram .hist-val {
+    position: relative;    
+    height: 50%;        
+    background-color: lightgray;
+    float: left;
 }

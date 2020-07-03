@@ -13,19 +13,23 @@ class SliderMultiTrack extends UIObject {
             value2: 0,
             value3: 0,
             min: 0,
-            max: 100,
+            max: 10,
             step: 1,
             enabled: true,
             logarithmic: false,
             focused: false,
             limitLeft: 0,
-            limitRight: 100
+            limitRight: 100,
+            histogram: []
         }, options);
 
         this._handleMouseDown = this._handleMouseDown.bind(this);
         this._handleMouseUp = this._handleMouseUp.bind(this);
         this._handleMouseMove = this._handleMouseMove.bind(this);
         this._handleWheel = this._handleWheel.bind(this);
+
+        this.clearHistogram();
+        this.createHistogramElements();
 
         this._updateUI();
 
@@ -60,20 +64,13 @@ class SliderMultiTrack extends UIObject {
             return;
         }
 
-        var newValue = CommonUtils.clamp(value, this.min, this.max);        
+        var newValue = CommonUtils.clamp(value, this.min, this.max);
         newValue = CommonUtils.clamp(newValue, this.limitLeft, this.limitRight);
-        
+
         this.value = newValue;
 
         this._binds.value.value = this.value;
-
-        /* TESTING
-        this.limitLeft = newValue * 0.1 + 5;
-        this.limitRight = this.max - this.limitLeft * 2;        
-        this.value2 = this.value * 0.3;
-        this.value3 = this.value * 0.6;
-        */
-
+        
         this._updateUI();
 
         if (this.focused) {
@@ -94,12 +91,12 @@ class SliderMultiTrack extends UIObject {
     }
 
     setLimitLeft(value) {
-        this.limitLeft = value; 
+        this.limitLeft = value;
         this._updateUI();
     }
 
     setLimitRight(value) {
-        this.limitRight = value; 
+        this.limitRight = value;
         this._updateUI();
     }
 
@@ -137,8 +134,8 @@ class SliderMultiTrack extends UIObject {
                 const ratio = (this.limitLeft - this.min) / (this.max - this.min) * 100;
                 this._binds.limitLeft.style.width = ratio + '%';
             }
-            else{
-                this._binds.limitLeft.style.width ='0%';
+            else {
+                this._binds.limitLeft.style.width = '0%';
             }
 
             if (this.limitRight < this.max) {
@@ -146,10 +143,12 @@ class SliderMultiTrack extends UIObject {
                 this._binds.limitRight.style.left = ratio + '%';
                 this._binds.limitRight.style.width = (100 - ratio) + '%';
             }
-            else{
+            else {
                 this._binds.limitRight.style.left = '0%';
                 this._binds.limitRight.style.width = '0%';
             }
+
+            this.updateHistogram();
         }
     }
 
@@ -173,11 +172,11 @@ class SliderMultiTrack extends UIObject {
 
     _handleMouseDown(e) {
         this.focused = true;
-        
+
         if (!this.enabled) {
             return;
         }
-        
+
         document.addEventListener('mouseup', this._handleMouseUp);
         document.addEventListener('mousemove', this._handleMouseMove);
         this._setValueByEvent(e);
@@ -222,5 +221,40 @@ class SliderMultiTrack extends UIObject {
         const delta = this.logarithmic ? this.value * this.step * wheel : this.step * wheel;
         this.setValue(this.value + delta);
     }
+
+    clearHistogram() {
+        this.histogram = [];
+        for (var i = 0; i < this.max - this.min; i++) {
+            this.histogram[i] = i;
+        }
+        console.log(this.histogram);
+    }
+
+    createHistogramElements() {             
+        var hist = this._element.querySelector('.histogram');
+        while (hist.firstChild) {
+            hist.removeChild(hist.firstChild);
+        }
+
+        for (var i = 0; i < this.histogram.length; i++) {
+            var div = document.createElement("div");
+            div.className = "hist-val";
+            hist.appendChild(div);
+        }
+    }
+
+    updateHistogram() {
+        var hist = this._element.querySelector('.histogram');
+                        
+        for (var i = 0; i < this.histogram.length; i++) {
+            var div = hist.children[i];
+            var height = ((this.histogram[i] / this.histogram.length) * 50 + 1);
+            div.style.height = height + "%";            
+            div.style.width = (100 / this.histogram.length) + "%";
+            div.style.top = (50 - height - 6) + "%";
+        }
+    }
+
+
 
 }
