@@ -159,7 +159,7 @@
         },
         {
           "type": "accordion",
-          "label": "context-preserved parameters",
+          "label": "Context-Preserved parameters",
           "children": [
             {
               "type": "field",
@@ -184,6 +184,34 @@
                   "value": 6.0,
                   "min": 0,
                   "step": 0.1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "accordion",
+          "label": "Gizmos",
+          "children": [
+            {
+              "type": "field",
+              "label": "Show BB:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "showBoundingBox",
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "Color:",
+              "children": [
+                {
+                  "type": "color-chooser",
+                  "bind": "boundingBoxColor",
+                  "value": "#ff0000"
                 }
               ]
             }

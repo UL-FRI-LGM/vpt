@@ -21,7 +21,7 @@ class SliderMultiTrack extends UIObject {
             limitLeft: 0,
             limitRight: 100,
             histogram: [],
-            histColumns: 10
+            histColumns: 50
         }, options);
 
         this._handleMouseDown = this._handleMouseDown.bind(this);

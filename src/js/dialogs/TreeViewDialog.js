@@ -24,12 +24,17 @@ class TreeViewDialog extends AbstractDialog {
     var index = 0;
     for (var index = 0; index < this.rules.length; index++) {
       var nVisInstances = _rulesInfo[index].nInstances - _rulesInfo[index].nRemoved;
-      this.rulesNodes[index].occludedInstance = nVisInstances - _rulesInfo[index].nSeen;
-
-      this._computeNodeHistogram(this.rulesNodes[index], _rulesInfo[index].occlusion);
+      this.rulesNodes[index].occludedInstance = nVisInstances - _rulesInfo[index].nSeen;      
     }
 
-    this._countOccludedInstances(Htree);
+    this._countOccludedInstances(Htree);    
+  }
+
+  computeHistograms(visibility) {
+    for (var index = 0; index < this.rules.length; index++) {
+      this._computeNodeHistogram(this.rulesNodes[index], visibility);
+    }
+
     this._syncHistograms(Htree);
   }
 
@@ -74,7 +79,7 @@ class TreeViewDialog extends AbstractDialog {
     return node.sliderObj.object.histogram;
   }
 
-  _computeNodeHistogram(node, occlusion) {
+  _computeNodeHistogram(node, visibility) {
     //console.log(occlusion);
     //console.log(node);
     //console.log(elementsArray);
@@ -87,8 +92,8 @@ class TreeViewDialog extends AbstractDialog {
 
     //console.log(histogram);
     // select all visible instances based on [min-max] interval
-    for (var i = 0; i < occlusion.length; i++) {
-      if (occlusion[i] == 1) {
+    for (var i = 0; i < visibility.length; i++) {
+      if (visibility[i] == 0) {
         continue;
       }
 

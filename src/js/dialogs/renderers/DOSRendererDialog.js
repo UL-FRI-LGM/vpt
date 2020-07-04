@@ -32,7 +32,9 @@ constructor(renderer, options) {
     this._binds.removalAutoUpdate.addEventListener('change', this._handleChange);
     //this._binds.useShadingTerm.addEventListener('change', this._handleChange);
     //this._binds.useAccOpacityTerm.addEventListener('change', this._handleChange);
-   // this._binds.useDistTerm.addEventListener('change', this._handleChange);
+    // this._binds.useDistTerm.addEventListener('change', this._handleChange);
+    this._binds.showBoundingBox.addEventListener('change', this._handleChange);
+    this._binds.boundingBoxColor.addEventListener('change', this._handleChange);
 
     this._tfwidget = new TransferFunctionWidget();
     this._binds.tfContainer.add(this._tfwidget);
@@ -51,6 +53,10 @@ _handleChange() {
 
     this._renderer._ks = this._binds.ks.getValue();
     this._renderer._kt = this._binds.kt.getValue();
+
+    this._renderer.showBoundingBox = this._binds.showBoundingBox.isChecked();
+    var rgb = CommonUtils.hex2rgb(this._binds.boundingBoxColor.getValue());
+    this._renderer.boundingBoxColor = [rgb.r, rgb.g, rgb.b]; 
 
     const removalMethod=this._binds.removalSelect.getValue()
     if( removalMethod =='depth')

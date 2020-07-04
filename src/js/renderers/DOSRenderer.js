@@ -32,7 +32,9 @@ class DOSRenderer extends AbstractRenderer {
             _removalAutoUpdate: false,
             _useShadingTerm: 1,
             //_useAccOpacityTerm: 1,
-            _useDistTerm: 1
+            _useDistTerm: 1,
+            showBoundingBox: false,
+            boundingBoxColor: [1.0, 0.0, 0.0]
         }, options);
         this._GUIObject = null;
         this._idVolume = idVolume;
@@ -45,11 +47,12 @@ class DOSRenderer extends AbstractRenderer {
             render: SHADERS.DOSRender,
             reset: SHADERS.DOSReset,
             transfer: SHADERS.PolarTransferFunction,
+            lines: SHADERS.DrawLines
         }, MIXINS);
 
         this._numberInstance = 0;
         this._visStatusArray = null;
-        this._visMembership =null;
+        this._visMembership = null;
         this._rules = [];
         this._layout = [];
         this._accColorArray = [];
@@ -69,6 +72,8 @@ class DOSRenderer extends AbstractRenderer {
             y: 1,
             z: 1,
         };
+        this._linesVerticesArray = [];
+        this._linesBuffer = gl.createBuffer();
 
         this._colorStrip = WebGL.createTexture(gl, {
             min: gl.LINEAR,
@@ -201,8 +206,8 @@ class DOSRenderer extends AbstractRenderer {
     setHtreeRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
         this._rulesInInfo = rules;
-        this._isTreeRules =true;
-        this._rulesOutInfo.length=0;
+        this._isTreeRules = true;
+        this._rulesOutInfo.length = 0;
         this.clearIsOccupiedArray();
         this._nRules = rules.length;
         this._rules = '';
@@ -213,16 +218,16 @@ class DOSRenderer extends AbstractRenderer {
             const hi = rule.hi;
             const lo = rule.lo;
             const visibility = (rule.visibility / 100).toFixed(4);
-            
-           
+
+
             var instancesStRule = this._getRuleElements(attribute, hi, lo);
             this._sortAscending(instancesStRule, 'avgProb');
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
             ruleObj.nInstances = instancesStRule.length;
             ruleObj.isLocked = rule.isLocked;
             this._rulesOutInfo.push(ruleObj);
-            this.updateVisStatusArray(instancesStRule, this._rulesOutInfo[index].nRemoved,index+1);
-            
+            this.updateVisStatusArray(instancesStRule, this._rulesOutInfo[index].nRemoved, index + 1);
+
             const phi = (index / rules.length) * 2 * Math.PI;
             const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
             const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
@@ -243,8 +248,8 @@ class DOSRenderer extends AbstractRenderer {
 
             }
 
-            
-             //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
+
+            //const visibilityCondition = `rand(vec2(float(id))).x < ${visibility}`;
             const visibilityCondition = `visStatus> uint(0)`;
             const groupStatement = `sGroupMembership[id] = ${index + 1}u; return vec2(${tfx}, ${tfy});`;
             const backgroundStatement = `sGroupMembership[id] = 0u; return vec2(0.5);`;
@@ -264,24 +269,21 @@ class DOSRenderer extends AbstractRenderer {
 
     clearVisStatusArray() {
         for (var i = 0; i < this._numberInstance; i++) {
-            if(this._rulesOutInfo.length>0)
-            {
-                if(this._rulesOutInfo[this._visMembership[i]-1].isLocked==true)
-                {
-                    this._isOccupied[i]=true;
+            if (this._rulesOutInfo.length > 0) {
+                if (this._rulesOutInfo[this._visMembership[i] - 1].isLocked == true) {
+                    this._isOccupied[i] = true;
                 }
-                else 
-                {
+                else {
                     this._visStatusArray[i] = 1;
                     this._visMembership[i] = 0;
-                    this._isOccupied[i]=false;
+                    this._isOccupied[i] = false;
                 }
             }
         }
     }
     clearIsOccupiedArray() {
         for (var i = 0; i < this._numberInstance; i++) {
-            this._isOccupied[i]=false;
+            this._isOccupied[i] = false;
         }
     }
     setRules(rules, GUIObject) {
@@ -289,8 +291,8 @@ class DOSRenderer extends AbstractRenderer {
         this._rulesInInfo = rules;
         this._isTreeRules = false;
         this._nRules = rules.length;
-        this._rulesOutInfo.length=0;
-        this.clearIsOccupiedArray() ;
+        this._rulesOutInfo.length = 0;
+        this.clearIsOccupiedArray();
         const _rules = rules.map((rule, index) => {
             var ruleObj = new Object();
             const attribute = rule.attribute;
@@ -304,7 +306,7 @@ class DOSRenderer extends AbstractRenderer {
             ruleObj.nInstances = instancesStRule.length;
             ruleObj.isLocked = rule.isLocked;
             this._rulesOutInfo.push(ruleObj);
-            this.updateVisStatusArray(instancesStRule, this._rulesOutInfo[index].nRemoved,index+1);
+            this.updateVisStatusArray(instancesStRule, this._rulesOutInfo[index].nRemoved, index + 1);
             const phi = (index / rules.length) * 2 * Math.PI;
             const tfx = (Math.cos(phi) * 0.5 + 0.5).toFixed(4);
             const tfy = (Math.sin(phi) * 0.5 + 0.5).toFixed(4);
@@ -330,27 +332,24 @@ class DOSRenderer extends AbstractRenderer {
     }
 
     updateVisStatusArray(instancesStRule, numberRemoved, index) {
-        var count=0;
-        for (var i=0; i < instancesStRule.length; i++) {
-            if (this._isOccupied[instancesStRule[i]['id']]==false &&
-                this._visStatusArray[instancesStRule[i]['id']] == 0  && 
-                this._visMembership[instancesStRule[i]['id']] == index)
-            {
-               count++; 
-               this._isOccupied[instancesStRule[i]['id']]=true;
+        var count = 0;
+        for (var i = 0; i < instancesStRule.length; i++) {
+            if (this._isOccupied[instancesStRule[i]['id']] == false &&
+                this._visStatusArray[instancesStRule[i]['id']] == 0 &&
+                this._visMembership[instancesStRule[i]['id']] == index) {
+                count++;
+                this._isOccupied[instancesStRule[i]['id']] = true;
             }
-            if(count>=numberRemoved)
+            if (count >= numberRemoved)
                 break;
         }
 
-        var i=0;
-        for (; i < instancesStRule.length; i++) 
-        {
-            if (this._isOccupied[instancesStRule[i]['id']] == false)
-            {
+        var i = 0;
+        for (; i < instancesStRule.length; i++) {
+            if (this._isOccupied[instancesStRule[i]['id']] == false) {
                 this._visStatusArray[instancesStRule[i]['id']] = 0;
-                this._visMembership[instancesStRule[i]['id']] = index; 
-                this._isOccupied[instancesStRule[i]['id']]=true;
+                this._visMembership[instancesStRule[i]['id']] = index;
+                this._isOccupied[instancesStRule[i]['id']] = true;
                 count++;
             }
             /*else if (this._visMembership[instancesStRule[i]['id']] < index)
@@ -359,31 +358,32 @@ class DOSRenderer extends AbstractRenderer {
                 count++;
                 
             }*/
-            else if (this._visMembership[instancesStRule[i]['id']] > index)
-            {
-                this._visStatusArray[instancesStRule[i]['id']] = 0; 
-                this._visMembership[instancesStRule[i]['id']] = index; 
-                this._isOccupied[instancesStRule[i]['id']]=true;
+            else if (this._visMembership[instancesStRule[i]['id']] > index) {
+                this._visStatusArray[instancesStRule[i]['id']] = 0;
+                this._visMembership[instancesStRule[i]['id']] = index;
+                this._isOccupied[instancesStRule[i]['id']] = true;
                 count++;
             }
-            
-            if(count>=numberRemoved)
+
+            if (count >= numberRemoved)
                 break;
         }
         //------------------------------------------------------------
         i = 0;
         for (; i < instancesStRule.length; i++) {
-            if (this._isOccupied[instancesStRule[i]['id']] == false)
-            {
+            if (this._isOccupied[instancesStRule[i]['id']] == false) {
                 this._visStatusArray[instancesStRule[i]['id']] = 1
                 this._visMembership[instancesStRule[i]['id']] = index;
-                this._isOccupied[instancesStRule[i]['id']]=true;
+                this._isOccupied[instancesStRule[i]['id']] = true;
             }
-            else if (this._visMembership[instancesStRule[i]['id']] > index)
-            {
-                this._visStatusArray[instancesStRule[i]['id']] = 1;  
-                this._visMembership[instancesStRule[i]['id']] = index; 
+            else if (this._visMembership[instancesStRule[i]['id']] > index) {
+                this._visStatusArray[instancesStRule[i]['id']] = 1;
+                this._visMembership[instancesStRule[i]['id']] = index;
             }
+        }
+
+        if (this._GUIObject != null) {
+            this._GUIObject.computeHistograms(this._visStatusArray);
         }
     }
     _sortAscending(array, key) {
@@ -643,15 +643,18 @@ class DOSRenderer extends AbstractRenderer {
         this._recomputeMinMaxDistance();
         this._rebuildProbCompute();
         //==== removal Automatic Update =========
-        if(this._removalAutoUpdate==true &&this._rulesInInfo!=null)
-        {
+        if (this._removalAutoUpdate == true && this._rulesInInfo != null) {
             this.clearVisStatusArray();
-            if(this._isTreeRules==false)
+            if (this._isTreeRules == false)
                 this.setRules(this._rulesInInfo, this._GUIObject);
             else
                 this.setHtreeRules(this._rulesInInfo, this._GUIObject);
         }
         //-------------------------------------------------------
+    }
+
+    _generateFrame() {
+        
     }
 
     _integrateFrame() {
@@ -660,6 +663,7 @@ class DOSRenderer extends AbstractRenderer {
         if (!this._maskVolume) {
             return;
         }
+        
         const program = this._programs.integrate;
         gl.useProgram(program.program);
 
@@ -691,7 +695,6 @@ class DOSRenderer extends AbstractRenderer {
         gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
 
 
-
         // TODO: calculate correct blur radius (occlusion scale)
         gl.uniform2f(program.uniforms.uOcclusionScale, this.occlusionScale, this.occlusionScale);
         gl.uniform1f(program.uniforms.uOcclusionDecay, this.occlusionDecay);
@@ -712,7 +715,6 @@ class DOSRenderer extends AbstractRenderer {
             gl.uniform1i(program.uniforms.uColor, 0);
             gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[0]);
 
-
             gl.activeTexture(gl.TEXTURE1);
             gl.uniform1i(program.uniforms.uOcclusion, 1);
             gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[1]);
@@ -732,7 +734,7 @@ class DOSRenderer extends AbstractRenderer {
             this._accumulationBuffer.swap();
             this._depth += depthStep;
         }
-
+        
         // Swap again to undo the last swap by AbstractRenderer
         this._accumulationBuffer.swap();
         this._countOccludedInstance();
@@ -741,7 +743,7 @@ class DOSRenderer extends AbstractRenderer {
 
     _renderFrame() {
         const gl = this._gl;
-
+                        
         const program = this._programs.render;
         gl.useProgram(program.program);
 
@@ -750,7 +752,81 @@ class DOSRenderer extends AbstractRenderer {
 
         gl.uniform1i(program.uniforms.uAccumulator, 0);
 
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);        
+
+        // TODO: merge textures...
+        if(this.showBoundingBox) {
+            this._renderGizmos();
+        }
+    }
+
+    _renderGizmos() {
+        const gl = this._gl;
+
+        if (this._linesVerticesArray.length == 0) {
+            this._linesVerticesArray = [
+                0.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,                
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 1.0,
+                1.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 0.0,
+                
+                0.0, 1.0, 0.0,
+                1.0, 1.0, 0.0,                
+                1.0, 1.0, 0.0,
+                1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0,
+                0.0, 1.0, 1.0,
+                0.0, 1.0, 1.0,
+                0.0, 1.0, 0.0,
+
+                0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 1.0, 0.0,
+                1.0, 0.0, 1.0,
+                1.0, 1.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 1.0, 1.0,
+            ];
+
+            // Bind appropriate array buffer to it
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._linesBuffer);
+
+            // Pass the vertex data to the buffer
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._linesVerticesArray), gl.STATIC_DRAW);
+
+            // Bind appropriate array buffer to it
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        }
+        
+        const program = this._programs.lines;
+        gl.useProgram(program.program);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[0]);
+
+        // Bind appropriate array buffer to it
+        gl.bindBuffer(gl.ARRAY_BUFFER, this._linesBuffer);
+
+        // Get the attribute location
+        const coord = program.attributes.coordinates;
+
+        gl.enableVertexAttribArray(coord);
+        gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
+
+        gl.uniform3fv(program.uniforms.color, this.boundingBoxColor);
+        gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpMatrix.m);
+
+        // Draw the triangle
+        gl.drawArrays(gl.LINES, 0, 24);    
+        
+        gl.disableVertexAttribArray(coord);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);  
+        gl.bindTexture(gl.TEXTURE_2D, null);      
     }
 
     _getFrameBufferSpec() {
@@ -841,21 +917,19 @@ class DOSRenderer extends AbstractRenderer {
             const ruleID = this._getGroupIDFramebuffer();
 
             var frameBufferSize = this._bufferSize * this._bufferSize;
-            
+
             for (var index = 0; index < this._nRules; index++) {
                 var count = new Uint32Array(this._numberInstance);
                 for (var j = 0; j < frameBufferSize; j++) {
                     if (ruleID[j] == index + 1)
                         count[InstanceID[j]] = 1;
                 }
-                this._rulesOutInfo[index].nSeen = this._computeSum(count);                
-                this._rulesOutInfo[index].occlusion = count;                
+                this._rulesOutInfo[index].nSeen = this._computeSum(count);
             }
 
             if (this._GUIObject != null) {
-                this._GUIObject._updateOccludedInstance(this._rulesOutInfo);                
+                this._GUIObject._updateOccludedInstance(this._rulesOutInfo);
             }
-
         }
     }
 
@@ -1014,80 +1088,80 @@ class DOSRenderer extends AbstractRenderer {
         gl.deleteBuffer(gm_ssbo);
     }
     //=================== accOpacity ===============================
-        /*_clearAccColorArray()
+    /*_clearAccColorArray()
+{
+    this._accColorArray.length=0;
+}
+_pushToAccColorArray()
+{
+    const texture = this._accumulationBuffer.getAttachments().color[0];
+    this._accColorArray.push(texture);
+    
+}
+_mergeTypedArrays(arrayOne, arrayTwo) {
+ 
+    // Checks for truthy values or empty arrays on each argument
+    // to avoid the unnecessary construction of a new array and
+    // the type comparison
+    if(!arrayTwo || arrayTwo.length === 0) return arrayOne;
+    if(!arrayOne || arrayOne.length === 0) return arrayTwo;
+ 
+    var mergedArray = new Uint8Array(arrayOne.length + arrayTwo.length);
+    mergedArray.set(arrayOne);
+    mergedArray.set(arrayTwo, arrayOne.length);
+ 
+    return mergedArray;
+}
+_createAccColorTexture() {
+    if(this._accColorArray.length>0)
     {
-        this._accColorArray.length=0;
-    }
-    _pushToAccColorArray()
-    {
-        const texture = this._accumulationBuffer.getAttachments().color[0];
-        this._accColorArray.push(texture);
+        const gl = this._gl;
+        const layerCount=this._accColorArray.length;
+
+        if (this._accColorVolume) {
+            gl.deleteTexture(this._accColorVolume);
+        }
+
+        this._accColorVolume = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);
+       
+        gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+        gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8,this._bufferSize, this._bufferSize, layerCount);
+       
+        const Data=this._mergeArrayOfTextures(this._accColorArray);
+        const dataBuffer= gl.createBuffer();             
+        WebGL.createBuffer(gl, {
+            target: gl.PIXEL_UNPACK_BUFFER,
+            buffer: dataBuffer,
+            data: Data.buffer
+        });
+        
+        gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, dataBuffer); 
+        gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, 0,
+            this._bufferSize, this._bufferSize, layerCount, 
+            gl.RGBA, gl.UNSIGNED_BYTE, dataBuffer);
+      
+        gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, null); 
+        gl.deleteBuffer(dataBuffer);
         
     }
-    _mergeTypedArrays(arrayOne, arrayTwo) {
-    
-        // Checks for truthy values or empty arrays on each argument
-        // to avoid the unnecessary construction of a new array and
-        // the type comparison
-        if(!arrayTwo || arrayTwo.length === 0) return arrayOne;
-        if(!arrayOne || arrayOne.length === 0) return arrayTwo;
-    
-        var mergedArray = new Uint8Array(arrayOne.length + arrayTwo.length);
-        mergedArray.set(arrayOne);
-        mergedArray.set(arrayTwo, arrayOne.length);
-    
-        return mergedArray;
-    }
-    _createAccColorTexture() {
-        if(this._accColorArray.length>0)
-        {
-            const gl = this._gl;
-            const layerCount=this._accColorArray.length;
-
-            if (this._accColorVolume) {
-                gl.deleteTexture(this._accColorVolume);
-            }
-
-            this._accColorVolume = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._accColorVolume);
-           
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
-            gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8,this._bufferSize, this._bufferSize, layerCount);
-           
-            const Data=this._mergeArrayOfTextures(this._accColorArray);
-            const dataBuffer= gl.createBuffer();             
-            WebGL.createBuffer(gl, {
-                target: gl.PIXEL_UNPACK_BUFFER,
-                buffer: dataBuffer,
-                data: Data.buffer
-            });
-            
-            gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, dataBuffer); 
-            gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, 0,
-                this._bufferSize, this._bufferSize, layerCount, 
-                gl.RGBA, gl.UNSIGNED_BYTE, dataBuffer);
-          
-            gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, null); 
-            gl.deleteBuffer(dataBuffer);
-            
-        }
-    }
-    _mergeArrayOfTextures(textures)
-    {
-        var accArray=new Uint8Array();
-        console.log('start');
-        textures.forEach(texture=>{
-            const array=this._mapTextureToArray(texture);
-            //console.log(this._computeSum(array));
-            accArray = this._mergeTypedArrays(accArray, array);
-        });
-        console.log('done');
-        return accArray;
-    }*/
+}
+_mergeArrayOfTextures(textures)
+{
+    var accArray=new Uint8Array();
+    console.log('start');
+    textures.forEach(texture=>{
+        const array=this._mapTextureToArray(texture);
+        //console.log(this._computeSum(array));
+        accArray = this._mergeTypedArrays(accArray, array);
+    });
+    console.log('done');
+    return accArray;
+}*/
 }
 
 
