@@ -23,6 +23,10 @@ uniform vec3 uCameraPos;
 //----------- for testing context preserve formula ----
 uniform int uShadingTerm;
 uniform int uDistTerm;
+uniform float k_ambient;//ambient lighting coefficient
+uniform float k_diffuse;//diffuse lighting coefficient
+uniform float k_specular;//specular lighting coefficient
+uniform float shininess;
 //------------------------------------------------------
 layout (r32ui, binding = 1) restrict readonly highp uniform uimage3D iID;
 layout (rgba8, binding = 2) restrict readonly highp uniform image3D uDataVolume;
@@ -72,9 +76,14 @@ void main() {
            // float accOpacity = texture(uAccColorVolume, pos).a;
             prob = computeCPF(pos,voxel);//,accOpacity); // prob 
         }
-        else  // if(uRemovalSelect == 2) random
+        else if(uRemovalSelect == 2) // random
+        {
+           prob = (rand(vec2(float(id))).x);
+        }
+        else  // if(uRemovalSelect == 2) random + CPF
         {  
-            prob = (rand(vec2(float(id))).x);
+            float r = (rand(vec2(float(id))).x);
+            prob = computeCPF(pos,voxel) * r;
         }
         uint p = convertProbToInt(prob); 
         int index=(int(id))*2;

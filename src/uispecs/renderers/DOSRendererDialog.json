@@ -142,6 +142,11 @@
                   "value": "random",
                   "label": "Random"
                 }
+                ,
+                {
+                  "value": "CPFRandom",
+                  "label": "CPF + Random"
+                }
               ]
             }
           ]
@@ -186,7 +191,111 @@
                   "step": 0.1
                 }
               ]
+            },
+            {
+              "type": "field",
+              "label": "melting-source:",
+              "children": [
+                {
+                  "type": "vector",
+                  "bind": "meltingPos",
+                  "value": 1,
+                  "step": 1
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "camera as MS:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "useCameraAsMS",
+                  "checked": true
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "Shading Term:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "useShadingTerm",
+                  "checked": true
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "Dist Term:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "useDistTerm",
+                  "checked": true
+                }
+              ]
             }
+          ]
+        },
+        {
+          "type": "accordion",
+          "label": "Blinn-Phong model",
+          "children": [
+            {
+              "type": "field",
+              "label": "k ambient:",
+              "children": [
+                {
+                  "type": "spinner",
+                  "bind": "Kambient",
+                  "value": 0.2,
+                  "min": 0,
+                  "step": 0.1
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "k diffuse:",
+              "children": [
+                {
+                  "type": "spinner",
+                  "bind": "Kdiffuse",
+                  "value": 0.2,
+                  "min": 0,
+                  "step": 0.1
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "k specular:",
+              "children": [
+                {
+                  "type": "spinner",
+                  "bind": "Kspecular",
+                  "value": 0.2,
+                  "min": 0,
+                  "step": 0.1
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "shininess:",
+              "children": [
+                {
+                  "type": "spinner",
+                  "bind": "Kambient",
+                  "value": 100,
+                  "min": 0,
+                  "step": 1
+                }
+              ]
+            }
+                
           ]
         }
         

@@ -31,6 +31,10 @@ class DOSRenderer extends AbstractRenderer {
             _useCameraAsMS: true,
             _removalAutoUpdate: false,
             _useShadingTerm: 1,
+            _Kambient:0.2,
+            _Kdiffuse:0.2,
+            _Kspecular:0.2,
+            _shininess:100,
             //_useAccOpacityTerm: 1,
             _useDistTerm: 1
         }, options);
@@ -501,6 +505,13 @@ class DOSRenderer extends AbstractRenderer {
             gl.uniform3fv(program.uniforms.uLightPos, this._camera.get3DPosition());
         else
             gl.uniform3fv(program.uniforms.uLightPos, this._meltingSourcePos);
+        //-------- for testing ----------------------
+        gl.uniform1i(program.uniforms.uShadingTerm, this._useShadingTerm);
+        gl.uniform1i(program.uniforms.uDistTerm, this._useDistTerm);
+        gl.uniform1f(program.uniforms.k_ambient, this._Kambient);
+        gl.uniform1f(program.uniforms.k_diffuse, this._Kdiffuse);
+        gl.uniform1f(program.uniforms.k_specular, this._Kspecular);
+        gl.uniform1f(program.uniforms.shininess, this._shininess);
         //----------------------------------------------------------------
         gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
@@ -1006,8 +1017,8 @@ class DOSRenderer extends AbstractRenderer {
 
         this._minGm = gm_result[0] / 10000.0;;
         this._maxGm = gm_result[1] / 10000.0;;
-        // console.log(this._minGm);
-        // console.log(this._maxGm);  
+        console.log(this._minGm);
+        console.log(this._maxGm);  
         gl.deleteBuffer(gm_ssbo);
     }
     //=================== accOpacity ===============================
