@@ -15,15 +15,15 @@ float shadingIntensity(vec3 pos ,ivec3 voxel)
     vec3 L = normalize(uLightPos-pos);
     
     //calculate Ambient Term: 
-    float Ca = k_ambient;
+    float Ca = uCa;
 
     //calculate Diffuse Term:  
-    float Cd = k_diffuse * max(dot(N,L), 0.0);
+    float Cd = uCd * max(dot(N,L), 0.0);
     Cd = clamp(Cd, 0.0, 1.0);
 
     // calculate Specular Term:
     vec3 H = normalize(L+E);
-    float Cs = k_specular * pow((max(dot(N,H), 0.0)),shininess);
+    float Cs = uCs * pow((max(dot(N,H), 0.0)),uCe);
     Cs = clamp(Cs, 0.0, 1.0);
 
     return (Cd+Cs+Ca);

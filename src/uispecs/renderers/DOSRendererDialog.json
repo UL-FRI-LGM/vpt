@@ -241,55 +241,58 @@
         },
         {
           "type": "accordion",
-          "label": "Blinn-Phong model",
+          "label": "Lighting coefficients",
           "children": [
             {
               "type": "field",
-              "label": "k ambient:",
+              "label": "Ambient Coef.:",
               "children": [
                 {
                   "type": "spinner",
-                  "bind": "Kambient",
+                  "bind": "Ca",
                   "value": 0.2,
                   "min": 0,
+                  "max": 1,
                   "step": 0.1
                 }
               ]
             },
             {
               "type": "field",
-              "label": "k diffuse:",
+              "label": "Diffuse Coef:",
               "children": [
                 {
                   "type": "spinner",
-                  "bind": "Kdiffuse",
+                  "bind": "Cd",
                   "value": 0.2,
                   "min": 0,
+                  "max": 1,
                   "step": 0.1
                 }
               ]
             },
             {
               "type": "field",
-              "label": "k specular:",
+              "label": "Specular Coef.:",
               "children": [
                 {
                   "type": "spinner",
-                  "bind": "Kspecular",
+                  "bind": "Cs",
                   "value": 0.2,
                   "min": 0,
+                  "max": 1,
                   "step": 0.1
                 }
               ]
             },
             {
               "type": "field",
-              "label": "shininess:",
+              "label": "Shininess:",
               "children": [
                 {
                   "type": "spinner",
-                  "bind": "Kambient",
-                  "value": 100,
+                  "bind": "Ce",
+                  "value": 50,
                   "min": 0,
                   "step": 1
                 }

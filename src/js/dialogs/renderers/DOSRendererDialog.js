@@ -33,6 +33,11 @@ constructor(renderer, options) {
     this._binds.useShadingTerm.addEventListener('change', this._handleChange);
     //this._binds.useAccOpacityTerm.addEventListener('change', this._handleChange);
     this._binds.useDistTerm.addEventListener('change', this._handleChange);
+    this._binds.Ca.addEventListener('change', this._handleChange);
+    this._binds.Cd.addEventListener('change', this._handleChange);
+    this._binds.Cs.addEventListener('change', this._handleChange);
+    this._binds.Ce.addEventListener('change', this._handleChange);
+
 
     this._tfwidget = new TransferFunctionWidget();
     this._binds.tfContainer.add(this._tfwidget);
@@ -70,14 +75,14 @@ _handleChange() {
 
     this._renderer._useCameraAsMS = this._binds.useCameraAsMS.isChecked();
     this._renderer._removalAutoUpdate = this._binds.removalAutoUpdate.isChecked();
-    
+
     this._renderer._useShadingTerm = this._binds.useShadingTerm.isChecked()? 1:0 ;
     //this._renderer._useAccOpacityTerm = this._binds.useAccOpacityTerm.isChecked()? 1:0 ;
     this._renderer._useDistTerm = this._binds.useDistTerm.isChecked()? 1:0 ;
-    this._renderer._Kambient = this._binds.Kambient.getValue();
-    this._renderer._Kdiffuse = this._binds.Kdiffuse .getValue();
-    this._renderer._Kspecular = this._binds.Kspecular.getValue();
-    this._renderer._shininess = this._binds.shininess.getValue();
+    this._renderer._Ca = this._binds.Ca.getValue();
+    this._renderer._Cd = this._binds.Cd .getValue();
+    this._renderer._Cs = this._binds.Cs.getValue();
+    this._renderer._Ce = this._binds.Ce.getValue();
 
     const position = this._binds.meltingPos.getValue();
     this._renderer._meltingSourcePos[0] = position.x;

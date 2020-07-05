@@ -30,12 +30,12 @@ class DOSRenderer extends AbstractRenderer {
             _removalSelect: 0,
             _useCameraAsMS: true,
             _removalAutoUpdate: false,
-            _useShadingTerm: 1,
-            _Kambient:0.2,
-            _Kdiffuse:0.2,
-            _Kspecular:0.2,
-            _shininess:100,
+            _Ca:0.2,
+            _Cd:0.2,
+            _Cs:0.2,
+            _Ce:50,
             //_useAccOpacityTerm: 1,
+            _useShadingTerm: 1,
             _useDistTerm: 1
         }, options);
         this._GUIObject = null;
@@ -327,6 +327,7 @@ class DOSRenderer extends AbstractRenderer {
             }
         }`;
         });
+        console.log(this._elements);
         this._rules = _rules.join('\n');
         this._recomputeTransferFunction(rules);
         this._createVisibilityStatusBuffer();
@@ -508,10 +509,10 @@ class DOSRenderer extends AbstractRenderer {
         //-------- for testing ----------------------
         gl.uniform1i(program.uniforms.uShadingTerm, this._useShadingTerm);
         gl.uniform1i(program.uniforms.uDistTerm, this._useDistTerm);
-        gl.uniform1f(program.uniforms.k_ambient, this._Kambient);
-        gl.uniform1f(program.uniforms.k_diffuse, this._Kdiffuse);
-        gl.uniform1f(program.uniforms.k_specular, this._Kspecular);
-        gl.uniform1f(program.uniforms.shininess, this._shininess);
+        gl.uniform1f(program.uniforms.uCa, this._Ca);
+        gl.uniform1f(program.uniforms.uCd, this._Cd);
+        gl.uniform1f(program.uniforms.uCs, this._Cs);
+        gl.uniform1f(program.uniforms.uCe, this._Ce);
         //----------------------------------------------------------------
         gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);

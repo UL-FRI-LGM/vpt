@@ -23,10 +23,10 @@ uniform vec3 uCameraPos;
 //----------- for testing context preserve formula ----
 uniform int uShadingTerm;
 uniform int uDistTerm;
-uniform float k_ambient;//ambient lighting coefficient
-uniform float k_diffuse;//diffuse lighting coefficient
-uniform float k_specular;//specular lighting coefficient
-uniform float shininess;
+uniform float uCa;//ambient lighting coefficient
+uniform float uCd;//diffuse lighting coefficient
+uniform float uCs;//specular lighting coefficient
+uniform float uCe;//shininess;
 //------------------------------------------------------
 layout (r32ui, binding = 1) restrict readonly highp uniform uimage3D iID;
 layout (rgba8, binding = 2) restrict readonly highp uniform image3D uDataVolume;
