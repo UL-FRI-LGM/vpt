@@ -76,15 +76,15 @@ void main() {
            // float accOpacity = texture(uAccColorVolume, pos).a;
             prob = computeCPF(pos,voxel);//,accOpacity); // prob 
         }
-        else if(uRemovalSelect == 2) // random
+        else //if(uRemovalSelect == 2) // random
         {
            prob = (rand(vec2(float(id))).x);
         }
-        else  // if(uRemovalSelect == 2) random + CPF
+        /*else  // if(uRemovalSelect == 2) random + CPF
         {  
             float r = (rand(vec2(float(id))).x);
             prob = computeCPF(pos,voxel) * r;
-        }
+        }*/
         uint p = convertProbToInt(prob); 
         int index=(int(id))*2;
         atomicAdd(counter[index], p);            

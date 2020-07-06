@@ -348,48 +348,50 @@ class DOSRenderer extends AbstractRenderer {
                 break;
         }
 
-        var i=0;
-        for (; i < instancesStRule.length; i++) 
+        
+        for (var i=0; i < instancesStRule.length; i++) 
         {
-            if (this._isOccupied[instancesStRule[i]['id']] == false)
+            if(count<numberRemoved) // make this instance invisible if possible
             {
-                this._visStatusArray[instancesStRule[i]['id']] = 0;
-                this._visMembership[instancesStRule[i]['id']] = index; 
-                this._isOccupied[instancesStRule[i]['id']]=true;
-                count++;
+                if (this._isOccupied[instancesStRule[i]['id']] == false)
+                {
+                    this._visStatusArray[instancesStRule[i]['id']] = 0;
+                    this._visMembership[instancesStRule[i]['id']] = index; 
+                    this._isOccupied[instancesStRule[i]['id']]=true;
+                    count++;
+                }
+                /*else if (this._visMembership[instancesStRule[i]['id']] < index)
+                {
+                    // TODO: to remove this if-statement we need to fix instance count in sliders
+                    count++;
+                    
+                }*/
+                else if (this._visMembership[instancesStRule[i]['id']] > index)
+                {
+                    this._visStatusArray[instancesStRule[i]['id']] = 0; 
+                    this._visMembership[instancesStRule[i]['id']] = index; 
+                    this._isOccupied[instancesStRule[i]['id']]=true;
+                    count++;
+                }
             }
-            /*else if (this._visMembership[instancesStRule[i]['id']] < index)
+            else  // make this instance visible if possible
             {
-                // TODO: to remove this if-statement we need to fix instance count in sliders
-                count++;
-                
-            }*/
-            else if (this._visMembership[instancesStRule[i]['id']] > index)
-            {
-                this._visStatusArray[instancesStRule[i]['id']] = 0; 
-                this._visMembership[instancesStRule[i]['id']] = index; 
-                this._isOccupied[instancesStRule[i]['id']]=true;
-                count++;
+                if (this._isOccupied[instancesStRule[i]['id']] == false)
+                {
+                    this._visStatusArray[instancesStRule[i]['id']] = 1
+                    this._visMembership[instancesStRule[i]['id']] = index;
+                    this._isOccupied[instancesStRule[i]['id']]=true;
+                }
+                else if (this._visMembership[instancesStRule[i]['id']] > index)
+                {
+                    this._visStatusArray[instancesStRule[i]['id']] = 1;  
+                    this._visMembership[instancesStRule[i]['id']] = index; 
+                }
             }
+
             
-            if(count>=numberRemoved)
-                break;
         }
-        //------------------------------------------------------------
-        i = 0;
-        for (; i < instancesStRule.length; i++) {
-            if (this._isOccupied[instancesStRule[i]['id']] == false)
-            {
-                this._visStatusArray[instancesStRule[i]['id']] = 1
-                this._visMembership[instancesStRule[i]['id']] = index;
-                this._isOccupied[instancesStRule[i]['id']]=true;
-            }
-            else if (this._visMembership[instancesStRule[i]['id']] > index)
-            {
-                this._visStatusArray[instancesStRule[i]['id']] = 1;  
-                this._visMembership[instancesStRule[i]['id']] = index; 
-            }
-        }
+
     }
     _sortAscending(array, key) {
         return array.sort(function (a, b) {

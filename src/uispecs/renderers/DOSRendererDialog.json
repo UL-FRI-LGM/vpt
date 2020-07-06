@@ -142,11 +142,6 @@
                   "value": "random",
                   "label": "Random"
                 }
-                ,
-                {
-                  "value": "CPFRandom",
-                  "label": "CPF + Random"
-                }
               ]
             }
           ]
@@ -217,7 +212,7 @@
             },
             {
               "type": "field",
-              "label": "Shading Term:",
+              "label": "use Shading:",
               "children": [
                 {
                   "type": "checkbox",
@@ -228,7 +223,7 @@
             },
             {
               "type": "field",
-              "label": "Dist Term:",
+              "label": "use Distance:",
               "children": [
                 {
                   "type": "checkbox",

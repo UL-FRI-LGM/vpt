@@ -66,12 +66,12 @@ _handleChange() {
     {
         this._renderer._removalSelect = 1;
     }
-    else if( removalMethod =='Random')
+    else //if( removalMethod =='Random')
     {
         this._renderer._removalSelect = 2;
     }
-    else //if( this._binds.removalSelect=='CPFRandom')
-        this._renderer._removalSelect = 3;
+    //else //if( this._binds.removalSelect=='CPFRandom')
+        //this._renderer._removalSelect = 3;
 
     this._renderer._useCameraAsMS = this._binds.useCameraAsMS.isChecked();
     this._renderer._removalAutoUpdate = this._binds.removalAutoUpdate.isChecked();
