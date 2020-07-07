@@ -30,11 +30,19 @@ class DOSRenderer extends AbstractRenderer {
             _removalSelect: 0,
             _useCameraAsMS: true,
             _removalAutoUpdate: false,
-            _useShadingTerm: 1,
+            _Ca: 0.2,
+            _Cd: 0.2,
+            _Cs: 0.2,
+            _Ce: 50,
             //_useAccOpacityTerm: 1,
+<<<<<<< HEAD
             _useDistTerm: 1,
             showBoundingBox: false,
             boundingBoxColor: [1.0, 0.0, 0.0]
+=======
+            _useShadingTerm: 1,
+            _useDistTerm: 1
+>>>>>>> origin/dos-rh
         }, options);
         this._GUIObject = null;
         this._idVolume = idVolume;
@@ -325,6 +333,7 @@ class DOSRenderer extends AbstractRenderer {
             }
         }`;
         });
+        console.log(this._elements);
         this._rules = _rules.join('\n');
         this._recomputeTransferFunction(rules);
         this._createVisibilityStatusBuffer();
@@ -344,47 +353,49 @@ class DOSRenderer extends AbstractRenderer {
                 break;
         }
 
-        var i = 0;
-        for (; i < instancesStRule.length; i++) {
-            if (this._isOccupied[instancesStRule[i]['id']] == false) {
-                this._visStatusArray[instancesStRule[i]['id']] = 0;
-                this._visMembership[instancesStRule[i]['id']] = index;
-                this._isOccupied[instancesStRule[i]['id']] = true;
-                count++;
-            }
-            /*else if (this._visMembership[instancesStRule[i]['id']] < index)
+
+        for (var i = 0; i < instancesStRule.length; i++) {
+            if (count < numberRemoved) // make this instance invisible if possible
             {
-                // TODO: to remove this if-statement we need to fix instance count in sliders
-                count++;
-                
-            }*/
-            else if (this._visMembership[instancesStRule[i]['id']] > index) {
-                this._visStatusArray[instancesStRule[i]['id']] = 0;
-                this._visMembership[instancesStRule[i]['id']] = index;
-                this._isOccupied[instancesStRule[i]['id']] = true;
-                count++;
+                if (this._isOccupied[instancesStRule[i]['id']] == false) {
+                    this._visStatusArray[instancesStRule[i]['id']] = 0;
+                    this._visMembership[instancesStRule[i]['id']] = index;
+                    this._isOccupied[instancesStRule[i]['id']] = true;
+                    count++;
+                }
+                /*else if (this._visMembership[instancesStRule[i]['id']] < index)
+                {
+                    // TODO: to remove this if-statement we need to fix instance count in sliders
+                    count++;
+                    
+                }*/
+                else if (this._visMembership[instancesStRule[i]['id']] > index) {
+                    this._visStatusArray[instancesStRule[i]['id']] = 0;
+                    this._visMembership[instancesStRule[i]['id']] = index;
+                    this._isOccupied[instancesStRule[i]['id']] = true;
+                    count++;
+                }
+            }
+            else  // make this instance visible if possible
+            {
+                if (this._isOccupied[instancesStRule[i]['id']] == false) {
+                    this._visStatusArray[instancesStRule[i]['id']] = 1
+                    this._visMembership[instancesStRule[i]['id']] = index;
+                    this._isOccupied[instancesStRule[i]['id']] = true;
+                }
+                else if (this._visMembership[instancesStRule[i]['id']] > index) {
+                    this._visStatusArray[instancesStRule[i]['id']] = 1;
+                    this._visMembership[instancesStRule[i]['id']] = index;
+                }
             }
 
-            if (count >= numberRemoved)
-                break;
-        }
-        //------------------------------------------------------------
-        i = 0;
-        for (; i < instancesStRule.length; i++) {
-            if (this._isOccupied[instancesStRule[i]['id']] == false) {
-                this._visStatusArray[instancesStRule[i]['id']] = 1
-                this._visMembership[instancesStRule[i]['id']] = index;
-                this._isOccupied[instancesStRule[i]['id']] = true;
-            }
-            else if (this._visMembership[instancesStRule[i]['id']] > index) {
-                this._visStatusArray[instancesStRule[i]['id']] = 1;
-                this._visMembership[instancesStRule[i]['id']] = index;
-            }
+
         }
 
         if (this._GUIObject != null) {
             this._GUIObject.computeHistograms(this._visStatusArray);
         }
+
     }
     _sortAscending(array, key) {
         return array.sort(function (a, b) {
@@ -501,6 +512,13 @@ class DOSRenderer extends AbstractRenderer {
             gl.uniform3fv(program.uniforms.uLightPos, this._camera.get3DPosition());
         else
             gl.uniform3fv(program.uniforms.uLightPos, this._meltingSourcePos);
+        //-------- for testing ----------------------
+        gl.uniform1i(program.uniforms.uShadingTerm, this._useShadingTerm);
+        gl.uniform1i(program.uniforms.uDistTerm, this._useDistTerm);
+        gl.uniform1f(program.uniforms.uCa, this._Ca);
+        gl.uniform1f(program.uniforms.uCd, this._Cd);
+        gl.uniform1f(program.uniforms.uCs, this._Cs);
+        gl.uniform1f(program.uniforms.uCe, this._Ce);
         //----------------------------------------------------------------
         gl.uniform1f(program.uniforms.uNumInstances, this._numberInstance);
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
@@ -654,7 +672,7 @@ class DOSRenderer extends AbstractRenderer {
     }
 
     _generateFrame() {
-        
+
     }
 
     _integrateFrame() {
@@ -663,7 +681,7 @@ class DOSRenderer extends AbstractRenderer {
         if (!this._maskVolume) {
             return;
         }
-        
+
         const program = this._programs.integrate;
         gl.useProgram(program.program);
 
@@ -734,7 +752,7 @@ class DOSRenderer extends AbstractRenderer {
             this._accumulationBuffer.swap();
             this._depth += depthStep;
         }
-        
+
         // Swap again to undo the last swap by AbstractRenderer
         this._accumulationBuffer.swap();
         this._countOccludedInstance();
@@ -743,7 +761,7 @@ class DOSRenderer extends AbstractRenderer {
 
     _renderFrame() {
         const gl = this._gl;
-                        
+
         const program = this._programs.render;
         gl.useProgram(program.program);
 
@@ -752,10 +770,10 @@ class DOSRenderer extends AbstractRenderer {
 
         gl.uniform1i(program.uniforms.uAccumulator, 0);
 
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);        
+        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
         // TODO: merge textures...
-        if(this.showBoundingBox) {
+        if (this.showBoundingBox) {
             this._renderGizmos();
         }
     }
@@ -766,16 +784,16 @@ class DOSRenderer extends AbstractRenderer {
         if (this._linesVerticesArray.length == 0) {
             this._linesVerticesArray = [
                 0.0, 0.0, 0.0,
-                1.0, 0.0, 0.0,                
+                1.0, 0.0, 0.0,
                 1.0, 0.0, 0.0,
                 1.0, 0.0, 1.0,
                 1.0, 0.0, 1.0,
                 0.0, 0.0, 1.0,
                 0.0, 0.0, 1.0,
                 0.0, 0.0, 0.0,
-                
+
                 0.0, 1.0, 0.0,
-                1.0, 1.0, 0.0,                
+                1.0, 1.0, 0.0,
                 1.0, 1.0, 0.0,
                 1.0, 1.0, 1.0,
                 1.0, 1.0, 1.0,
@@ -802,7 +820,7 @@ class DOSRenderer extends AbstractRenderer {
             // Bind appropriate array buffer to it
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         }
-        
+
         const program = this._programs.lines;
         gl.useProgram(program.program);
 
@@ -822,11 +840,11 @@ class DOSRenderer extends AbstractRenderer {
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpMatrix.m);
 
         // Draw the triangle
-        gl.drawArrays(gl.LINES, 0, 24);    
-        
+        gl.drawArrays(gl.LINES, 0, 24);
+
         gl.disableVertexAttribArray(coord);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);  
-        gl.bindTexture(gl.TEXTURE_2D, null);      
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
     _getFrameBufferSpec() {
@@ -1083,8 +1101,8 @@ class DOSRenderer extends AbstractRenderer {
 
         this._minGm = gm_result[0] / 10000.0;;
         this._maxGm = gm_result[1] / 10000.0;;
-        // console.log(this._minGm);
-        // console.log(this._maxGm);  
+        console.log(this._minGm);
+        console.log(this._maxGm);
         gl.deleteBuffer(gm_ssbo);
     }
     //=================== accOpacity ===============================

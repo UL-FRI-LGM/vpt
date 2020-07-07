@@ -186,7 +186,114 @@
                   "step": 0.1
                 }
               ]
+            },
+            {
+              "type": "field",
+              "label": "melting-source:",
+              "children": [
+                {
+                  "type": "vector",
+                  "bind": "meltingPos",
+                  "value": 1,
+                  "step": 1
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "camera as MS:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "useCameraAsMS",
+                  "checked": true
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "use Shading:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "useShadingTerm",
+                  "checked": true
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "use Distance:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "useDistTerm",
+                  "checked": true
+                }
+              ]
             }
+          ]
+        },
+        {
+          "type": "accordion",
+          "label": "Lighting coefficients",
+          "children": [
+            {
+              "type": "field",
+              "label": "Ambient Coef.:",
+              "children": [
+                {
+                  "type": "spinner",
+                  "bind": "Ca",
+                  "value": 0.2,
+                  "min": 0,
+                  "max": 1,
+                  "step": 0.1
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "Diffuse Coef:",
+              "children": [
+                {
+                  "type": "spinner",
+                  "bind": "Cd",
+                  "value": 0.2,
+                  "min": 0,
+                  "max": 1,
+                  "step": 0.1
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "Specular Coef.:",
+              "children": [
+                {
+                  "type": "spinner",
+                  "bind": "Cs",
+                  "value": 0.2,
+                  "min": 0,
+                  "max": 1,
+                  "step": 0.1
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "Shininess:",
+              "children": [
+                {
+                  "type": "spinner",
+                  "bind": "Ce",
+                  "value": 50,
+                  "min": 0,
+                  "step": 1
+                }
+              ]
+            }
+                
           ]
         },
         {
