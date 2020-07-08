@@ -159,7 +159,7 @@
         },
         {
           "type": "accordion",
-          "label": "context-preserved parameters",
+          "label": "Context-Preserved parameters",
           "children": [
             {
               "type": "field",
@@ -294,6 +294,45 @@
               ]
             }
                 
+          ]
+        },
+        {
+          "type": "accordion",
+          "label": "Gizmos",
+          "children": [
+            {
+              "type": "field",
+              "label": "Show BB:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "showBoundingBox",
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "Color:",
+              "children": [
+                {
+                  "type": "color-chooser",
+                  "bind": "boundingBoxColor",
+                  "value": "#ff0000"
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "Show Axes:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "showAxes",
+                  "checked": false
+                }
+              ]
+            }
           ]
         }
         

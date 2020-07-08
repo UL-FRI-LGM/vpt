@@ -204,6 +204,18 @@ class DynamicTreeView extends UIObject {
         };
         header.appendChild(deleteButton);
 
+        var unpinButton = _this.createElement("div", "property-unpin-button unpin-button");
+        unpinButton.onclick = function () {
+            var node = collapseButton.parentNode.parentNode;
+            var parent = node.parentNode;
+
+            parent.removeChild(node);
+            var container = document.getElementById("property-tree-container");
+            container.appendChild(node);
+
+        };
+        header.appendChild(unpinButton);
+
         var values = _this.createElement("div", "property-values-wrapper collapsed");
         node.appendChild(values);
 
