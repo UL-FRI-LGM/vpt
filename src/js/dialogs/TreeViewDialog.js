@@ -24,26 +24,10 @@ class TreeViewDialog extends AbstractDialog {
     var index = 0;
     for (var index = 0; index < this.rules.length; index++) {
       var nVisInstances = _rulesInfo[index].nInstances - _rulesInfo[index].nRemoved;
-      this.rulesNodes[index].occludedInstance = nVisInstances - _rulesInfo[index].nSeen;      
+      this.rulesNodes[index].occludedInstance = nVisInstances - _rulesInfo[index].nSeen;
     }
 
-    this._countOccludedInstances(Htree);    
-  }
-
-  computeHistograms(visibility) {
-    //console.log(visibility);
-
-    //var count = 0;
-    //for(var i = 0; i < visibility.length; i++) {
-    //  count += visibility[i];
-    //}
-    //console.log(count);
-
-    for (var index = 0; index < this.rules.length; index++) {
-      this._computeNodeHistogram(this.rulesNodes[index], visibility);
-    }
-
-    this._syncHistograms(Htree);
+    this._countOccludedInstances(Htree);
   }
 
   _countOccludedInstances(node) {
@@ -62,35 +46,29 @@ class TreeViewDialog extends AbstractDialog {
     return node.occludedInstance;
   }
 
-  _syncHistograms(node) {
-    if (node.children == null) {      
-      return node.sliderObj.object.histogram;
-    }
-    else {
-      var hist = [];
-      
-      for (var i = 0; i < node.sliderObj.object.histColumns; i++) {
-        hist[i] = 0;
-      }
+  computeHistograms(visibility) {
+    this._computeHistogramForNode(Htree, visibility);
+  }
 
+  _computeHistogramForNode(node, visibility) {
+    
+    if(!node.isroot) {
+      this._computeNodeHistogram(node, visibility);
+    }
+    
+    if(node.children != null) {
       node.children.forEach((item) => {
-        var chist = this._syncHistograms(item);
-
-        for(var i = 0; i < chist.length; i++) {
-          hist[i] += chist[i];
-        }
+        this._computeHistogramForNode(item, visibility);
       });
-
-      node.sliderObj.object.setHistogram(hist);      
     }
-
-    return node.sliderObj.object.histogram;
   }
 
   _computeNodeHistogram(node, visibility) {
     //console.log(occlusion);
     //console.log(node);
     //console.log(elementsArray);
+
+    //console.log(node.elements);
 
     var histogram = [];
 
@@ -99,31 +77,36 @@ class TreeViewDialog extends AbstractDialog {
       histogram[index] = 0;
     }
 
+    var name = node.name.indexOf("[") > -1 ? node.parent.name : node.name;
+    //console.log(name);
+
     //console.log(histogram);
     // select all visible instances based on [min-max] interval
-    for (var i = 0; i < visibility.length; i++) {
-      if (visibility[i] == 0) {
+    for (var i = 0 ; i < node.elements.length; i++) {
+      var elem = node.elements[i];
+
+      if (visibility[elem.id] == 0) {
         continue;
       }
 
-      var value = elementsArray[i][node.name.indexOf("[") > -1 ? node.parent.name : node.name];
-
+      var value = elem[name];
+      
       if (value >= node.lo && value < node.hi) {
         var index = Math.round(value);
         histogram[index] += 1;
-      }      
+      }
     }
     //console.log(histogram);
 
-    var counter = 0;
+    //var counter = 0;
     //console.log(node.lo);
     //console.log(node.hi);
     //for (var value = node.lo; value <= node.hi; value += 1) {
     //  var index = Math.round(value);
 
-      //counter += histogram[index];
-      //console.log(histogram[index]);
-      //console.log(counter);
+    //counter += histogram[index];
+    //console.log(histogram[index]);
+    //console.log(counter);
     //}
     //console.log(histogram);
     //console.log(counter);
@@ -1138,7 +1121,7 @@ function createJSONHierarchyTree(nav) {
   }*/
   function countElementsBasedOnTree(node) {
     if (node.children != null) {
-      var elements =[];
+      var elements = [];
       node.children.forEach((item) => {
         var el = countElementsBasedOnTree(item);
         elements = elements.concat(el);
@@ -1146,7 +1129,7 @@ function createJSONHierarchyTree(nav) {
       node.elements = elements;
       node.nInstances = elements.length;
       node.visInstances = node.nInstances;
-       
+
     }
     return node.elements;
   }
@@ -1170,7 +1153,7 @@ function createJSONHierarchyTree(nav) {
       node.elements = getNodeElements(className, hiList, loList);
       node.nInstances = node.elements.length;//=countElements(className, hiList, loList);
       node.visInstances = node.nInstances;
-      
+
       if (node.nInstances == 0) {
         LockedEmptyNode(node);
       }

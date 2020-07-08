@@ -78,9 +78,9 @@ class DOSRenderer extends AbstractRenderer {
             y: 1,
             z: 1,
         };
-        this._bbLinesVerticesArray = [];        
+        this._bbLinesVerticesArray = [];
         this._bblinesBuffer = gl.createBuffer();
-        this._axesVerticesArray = [];        
+        this._axesVerticesArray = [];
         this._axesBuffer = gl.createBuffer();
 
         this._colorStrip = WebGL.createTexture(gl, {
@@ -349,14 +349,13 @@ class DOSRenderer extends AbstractRenderer {
                 count++;
                 this._isOccupied[instancesStRule[i]['id']] = true;
             }
-            if(count>numberRemoved)
+            if (count > numberRemoved)
                 break;
         }
 
-        
-        for (var i=0; i < instancesStRule.length; i++) 
-        {
-            if(count<=numberRemoved) // make this instance invisible if possible
+
+        for (var i = 0; i < instancesStRule.length; i++) {
+            if (count <= numberRemoved) // make this instance invisible if possible
             {
                 if (this._isOccupied[instancesStRule[i]['id']] == false) {
                     this._visStatusArray[instancesStRule[i]['id']] = 0;
@@ -778,7 +777,7 @@ class DOSRenderer extends AbstractRenderer {
             this._renderBBGizmo();
         }
 
-        if(this.showAxes) {
+        if (this.showAxes) {
             this._renderAxesGizmo();
         }
     }
@@ -850,7 +849,7 @@ class DOSRenderer extends AbstractRenderer {
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         }
 
-        this._drawLines(this._bblinesBuffer);        
+        this._drawLines(this._bblinesBuffer);
     }
 
     _drawLines(dataBuffer) {
@@ -873,7 +872,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.enableVertexAttribArray(colors);
         gl.vertexAttribPointer(coords, 3, gl.FLOAT, false, 6 * 4, 0);
         gl.vertexAttribPointer(colors, 3, gl.FLOAT, false, 6 * 4, 3 * 4);
-        
+
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpMatrix.m);
 
         gl.drawArrays(gl.LINES, 0, 24);
@@ -902,7 +901,7 @@ class DOSRenderer extends AbstractRenderer {
                 0.0, 0.0, 0.0,
                 0.0, 0.0, 1.0,
                 0.0, 0.0, 1.0,
-                0.0, 0.0, 1.0                
+                0.0, 0.0, 1.0
             ];
 
             // Bind appropriate array buffer to it
@@ -915,7 +914,7 @@ class DOSRenderer extends AbstractRenderer {
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         }
 
-        this._drawLines(this._axesBuffer);     
+        this._drawLines(this._axesBuffer);
     }
 
     _getFrameBufferSpec() {
