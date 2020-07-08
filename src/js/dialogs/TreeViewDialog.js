@@ -688,6 +688,7 @@ function createJSONHierarchyTree(nav) {
       // isPropertyTree:false,
       isroot: false,
       isEmpty: false,
+      elements: null,
       //   hasLocked: false,
       //  hasSlider: false,
 
@@ -1120,19 +1121,34 @@ function createJSONHierarchyTree(nav) {
       Htree.visInstances = Htree.nInstances;
       render(Htree, targetElem, 0);
       countElementsOfthisClass(Htree, [], [], []);
-      countElementsBasedVisRule(Htree);
+      countElementsBasedOnTree(Htree);
+      //console.log(Htree);
     }
   }
-  function countElementsBasedVisRule(node) {
+  /*function countElementsBasedVisRule(node) {
     if (node.children != null) {
       var count = 0;
       node.children.forEach((item) => {
         count += countElementsBasedVisRule(item);
       });
       node.nInstances = count;
-      node.visInstances = node.nInstances;
+      node.visInstances = node.nInstances; 
     }
     return node.nInstances;
+  }*/
+  function countElementsBasedOnTree(node) {
+    if (node.children != null) {
+      var elements =[];
+      node.children.forEach((item) => {
+        var el = countElementsBasedOnTree(item);
+        elements = elements.concat(el);
+      });
+      node.elements = elements;
+      node.nInstances = elements.length;
+      node.visInstances = node.nInstances;
+       
+    }
+    return node.elements;
   }
   function setSliderRightLimit(node, newValue) {
     node.sliderObj.object.setLimitRight(newValue);
@@ -1151,8 +1167,10 @@ function createJSONHierarchyTree(nav) {
     if (node.isClassName == true) {
 
       className.push(node.name);
-      node.nInstances = countElements(className, hiList, loList);
+      node.elements = getNodeElements(className, hiList, loList);
+      node.nInstances = node.elements.length;//=countElements(className, hiList, loList);
       node.visInstances = node.nInstances;
+      
       if (node.nInstances == 0) {
         LockedEmptyNode(node);
       }
@@ -1166,7 +1184,8 @@ function createJSONHierarchyTree(nav) {
 
         hiList.push(node.hi);
         loList.push(node.lo);
-        node.nInstances = countElements(className, hiList, loList);
+        node.elements = getNodeElements(className, hiList, loList);
+        node.nInstances = node.elements.length; //=countElements(className, hiList, loList);
         node.visInstances = node.nInstances;
         if (node.nInstances == 0) {
           LockedEmptyNode(node);
@@ -1185,7 +1204,9 @@ function createJSONHierarchyTree(nav) {
 
       hiList.push(node.hi);
       loList.push(node.lo);
-      node.nInstances = countElements(className, hiList, loList);
+      //node.nInstances = countElements(className, hiList, loList);
+      node.elements = getNodeElements(className, hiList, loList);
+      node.nInstances = node.elements.length;
       node.visInstances = node.nInstances;
       if (node.nInstances == 0) {
         LockedEmptyNode(node);
@@ -1205,7 +1226,16 @@ function createJSONHierarchyTree(nav) {
 
     return el.length;
   }
+  function getNodeElements(className, hiList, loList) {
+    var el = clone(elementsArray);
+    for (var j = 0; j < className.length; j++) {
+      if (hiList[j] == null)
+        break;
+      el = el.filter(x => x[className[j]] <= hiList[j] && x[className[j]] >= loList[j])
+    }
 
+    return el;
+  }
   function LockedEmptyNode(node) {
     node.isEmpty = true;
     var element = getLockElement(node);

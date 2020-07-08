@@ -42,13 +42,6 @@ vec3 getPosition3D(ivec3 voxel)
     //vec4 dirty = uMvpInverseMatrix * vec4(pos, 1);
     return pos;//(dirty.xyz / dirty.w); // division by 1?
 }
-vec3 getMvpPosition3D(ivec3 voxel)
-{    
-    vec3 pos = vec3(float(voxel.x) * vx, float(voxel.y) * vy, float(voxel.z) * vz); // corner
-    pos += vec3(vx * 0.5, vy * 0.5, vz * 0.5); // center
-    vec4 dirty = uMvpInverseMatrix * vec4(pos, 1);
-    return (dirty.xyz / dirty.w); // division by 1?
-}
 vec3 getGradient(ivec3 voxel) {
     vec4 dataVolumeSample = imageLoad(uDataVolume, voxel);
     return dataVolumeSample.gba;

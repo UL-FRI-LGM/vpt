@@ -11,6 +11,7 @@ constructor(options) {
 
     this.groups = [];
     this.attributes = [];
+    this.elements=[];
     this._colorSeed = Math.random();
 
     this._registerEventListeners();
@@ -20,6 +21,7 @@ constructor(options) {
 _registerEventListeners() {
     this._handleAddGroupClick = this._handleAddGroupClick.bind(this);
     this._handleGroupChange = this._handleGroupChange.bind(this);
+    this._handleVisChange = this._handleVisChange.bind(this);
     this._handleColorChange =  this._handleColorChange.bind(this);
 }
 
@@ -34,8 +36,9 @@ reset() {
     this.groups = [];
 }
 
-setAttributes(attributes) {
+setAttributes(attributes, elementsJSON) {
     this.attributes = attributes;
+    this.elements = elementsJSON;
 }
 
 getGroups() {
@@ -52,11 +55,17 @@ _handleAddGroupClick() {
     this._addGroup();
 }
 
-_handleGroupChange(group) {
+_handleVisChange(group) {
     group.binds.visibility.setValue2(group.binds.visibility.getMaxValue() - group.binds.visibility.getValue());
     this.trigger('change');
 }
-
+_handleGroupChange(group) {
+    var  className = group.binds.attribute.getValue();
+    var range = group.binds.range.getValue();
+    group.object.elements = this._getGroupElements([className], [range.y], [range.x]);
+    console.log(group.object.elements);
+    this.trigger('change');
+}
 _handleColorChange() {
     this.trigger('change');
 }
@@ -97,13 +106,24 @@ _addGroup() {
 
     binds.attribute.addEventListener('change', e => this._handleGroupChange(group));
     binds.range.addEventListener('change', e => this._handleGroupChange(group));
-    binds.visibility.addEventListener('change',  e => this._handleGroupChange(group));
+    binds.visibility.addEventListener('change',  e => this._handleVisChange(group));
     binds.color.addEventListener('change', this._handleColorChange);
-    
+
+   // var  className = group.binds.attribute.getValue();
+   // var range = group.binds.range.getValue();
+   // group.object.elements = this._getGroupElements([className], [range.y], [range.x]);
     this.trigger('retopo');
     return group;
 }
-
+_getGroupElements(className, hiList, loList) {
+    var el = clone(this.elements);
+    for (var j = 0; j < className.length; j++) {
+      if (hiList[j] == null)
+        break;
+      el = el.filter(x => x[className[j]] <= hiList[j] && x[className[j]] >= loList[j])
+    }
+    return el;
+  }
 _moveUp(group) {
     const index = this.groups.indexOf(group);
     if (index === 0) {

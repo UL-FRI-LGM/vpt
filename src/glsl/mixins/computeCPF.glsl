@@ -5,26 +5,29 @@
 float shadingIntensity(vec3 pos ,ivec3 voxel)
 {
     //Blinn-Phong model
-    //float k_ambient=0.20;//ambient lighting coefficient
-    //float k_diffuse=0.20;//diffuse lighting coefficient
-    //float k_specular=0.60;//specular lighting coefficient
-    //float shininess=50.0;//shininess 
+    //float uCa=0.20;//ambient lighting coefficient
+    //float uCd=0.20;//diffuse lighting coefficient
+    //float uCs=0.60;//specular lighting coefficient
+    //float uCe=50.0;//shininess 
 
     vec3 N = normalize(getGradient(voxel));
     vec3 E = normalize(uCameraPos-pos);
     vec3 L = normalize(uLightPos-pos);
-    
+    //float LDist = distance(uLightPos,pos);
+   // LDist = LDist*LDist;
     //calculate Ambient Term: 
     float Ca = uCa;
 
     //calculate Diffuse Term:  
     float Cd = uCd * max(dot(N,L), 0.0);
-    Cd = clamp(Cd, 0.0, 1.0);
+    //if(LDist>0.0)
+        //Cd = Cd*(1.0/(LDist));
 
     // calculate Specular Term:
     vec3 H = normalize(L+E);
     float Cs = uCs * pow((max(dot(N,H), 0.0)),uCe);
-    Cs = clamp(Cs, 0.0, 1.0);
+    //if(LDist>0.0)
+        //Cs = Cs*(1.0/(LDist));
 
     return (Cd+Cs+Ca);
 }
