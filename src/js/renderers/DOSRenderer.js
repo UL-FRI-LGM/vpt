@@ -327,7 +327,7 @@ class DOSRenderer extends AbstractRenderer {
             }
         }`;
         });
-        console.log(this._elements);
+        //console.log(this._elements);
         this._rules = _rules.join('\n');
         this._recomputeTransferFunction(rules);
         this._createVisibilityStatusBuffer();
@@ -344,14 +344,14 @@ class DOSRenderer extends AbstractRenderer {
                count++; 
                this._isOccupied[instancesStRule[i]['id']]=true;
             }
-            if(count>=numberRemoved)
+            if(count>numberRemoved)
                 break;
         }
 
         
         for (var i=0; i < instancesStRule.length; i++) 
         {
-            if(count<numberRemoved) // make this instance invisible if possible
+            if(count<=numberRemoved) // make this instance invisible if possible
             {
                 if (this._isOccupied[instancesStRule[i]['id']] == false)
                 {
@@ -1020,8 +1020,8 @@ class DOSRenderer extends AbstractRenderer {
 
         this._minGm = gm_result[0] / 10000.0;;
         this._maxGm = gm_result[1] / 10000.0;;
-        console.log(this._minGm);
-        console.log(this._maxGm);  
+        //console.log(this._minGm);
+        //console.log(this._maxGm);  
         gl.deleteBuffer(gm_ssbo);
     }
     //=================== accOpacity ===============================
