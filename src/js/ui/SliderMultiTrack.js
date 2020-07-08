@@ -149,7 +149,7 @@ class SliderMultiTrack extends UIObject {
                 this._binds.limitRight.style.width = '0%';
             }
 
-            this.updateHistogram();
+            //this.updateHistogram();
         }
     }
 
@@ -259,40 +259,40 @@ class SliderMultiTrack extends UIObject {
             var value = this.histogram[i];
             var div = hist.children[i];
             //var height = ((Math.log10(value) / maxHistValue) * 50 + 1);
-            var height = (value / maxHistValue) * 50 + 1;
+            var height = 1;
+
+            if (maxHistValue > 0) {
+                height = (value / maxHistValue) * 50 + 1;
+            }
             div.style.height = height + "%";
             div.style.top = (50 - height - 6) + "%";
-            div.style.width = (100 / this.histColumns) + "%";            
+            div.style.width = (100 / this.histColumns) + "%";
         }
     }
 
-    setHistogram(histogram) {
+    setHistogram(histogram, lo, hi) {
 
-        var tmp = [];
-
-        for (var key in histogram) {
-            tmp.push(histogram[key]);
-        }
-
-        if (histogram.length > this.histogram.length) {
-            var sparse = Math.ceil(histogram.length / this.histogram.length);
+        if (Math.ceil(hi - lo) > this.histogram.length) {
+            var sparse = Math.ceil(Math.ceil(hi - lo) / this.histogram.length);
 
             var counter = 0;
-            for (var i = 0; i < tmp.length; i += sparse) {
+            for (var i = lo; i < hi; i += sparse) {
                 var sum = 0;
-                for(var j = 0; j < sparse; j++) {
-                    if(i + j < tmp.length) {
-                        sum += tmp[i + j];
+                for (var j = 0; j < sparse; j++) {
+                    if (i + j < histogram.length) {
+                        sum += histogram[Math.ceil(i) + j];
                     }
                 }
                 this.histogram[counter++] = sum;
-            }   
-                
+            }
+
         } else if (histogram.length < this.histogram.length) {
             // TODO: implement
         } else {
             this.histogram = histogram;
         }
+
+        this.updateHistogram();
     }
 
 }

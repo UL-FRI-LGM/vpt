@@ -321,6 +321,17 @@
                   "value": "#ff0000"
                 }
               ]
+            },
+            {
+              "type": "field",
+              "label": "Show Axes:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "showAxes",
+                  "checked": false
+                }
+              ]
             }
           ]
         }

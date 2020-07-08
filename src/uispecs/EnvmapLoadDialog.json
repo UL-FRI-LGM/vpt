@@ -107,10 +107,6 @@
           ]
         }
       ]
-    },
-    {
-      "type": "slider-multi-track",
-      "bind": "testslider"
     }
   ]
 }

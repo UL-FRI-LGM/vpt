@@ -6,13 +6,15 @@
 precision highp float;
 
 uniform mat4 uMvpInverseMatrix;
-uniform vec3 color;
+//uniform vec3 color;
 
 in vec3 coordinates;
+in vec3 colors;
+
 out vec3 oColor;
 
 void main() {
-    oColor = color;
+    oColor = colors;
     gl_Position = uMvpInverseMatrix * vec4(coordinates, 1.0);
 }
 

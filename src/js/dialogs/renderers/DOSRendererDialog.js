@@ -34,6 +34,7 @@ constructor(renderer, options) {
     //this._binds.useAccOpacityTerm.addEventListener('change', this._handleChange);
     // this._binds.useDistTerm.addEventListener('change', this._handleChange);
     this._binds.showBoundingBox.addEventListener('change', this._handleChange);
+    this._binds.showAxes.addEventListener('change', this._handleChange);
     this._binds.boundingBoxColor.addEventListener('change', this._handleChange);
     this._binds.useDistTerm.addEventListener('change', this._handleChange);
     this._binds.Ca.addEventListener('change', this._handleChange);
@@ -61,6 +62,7 @@ _handleChange() {
     this._renderer._kt = this._binds.kt.getValue();
 
     this._renderer.showBoundingBox = this._binds.showBoundingBox.isChecked();
+    this._renderer.showAxes = this._binds.showAxes.isChecked();
     var rgb = CommonUtils.hex2rgb(this._binds.boundingBoxColor.getValue());
     this._renderer.boundingBoxColor = [rgb.r, rgb.g, rgb.b]; 
 

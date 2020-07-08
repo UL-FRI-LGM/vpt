@@ -31,6 +31,14 @@ class TreeViewDialog extends AbstractDialog {
   }
 
   computeHistograms(visibility) {
+    //console.log(visibility);
+
+    //var count = 0;
+    //for(var i = 0; i < visibility.length; i++) {
+    //  count += visibility[i];
+    //}
+    //console.log(count);
+
     for (var index = 0; index < this.rules.length; index++) {
       this._computeNodeHistogram(this.rulesNodes[index], visibility);
     }
@@ -86,8 +94,9 @@ class TreeViewDialog extends AbstractDialog {
 
     var histogram = [];
 
-    for (var i = node.lo; i <= node.hi; i++) {
-      histogram[i] = 0;
+    for (var i = node.lo; i <= node.hi; i += 1) {
+      var index = Math.round(i);
+      histogram[index] = 0;
     }
 
     //console.log(histogram);
@@ -102,11 +111,25 @@ class TreeViewDialog extends AbstractDialog {
       if (value >= node.lo && value < node.hi) {
         var index = Math.round(value);
         histogram[index] += 1;
-      }
+      }      
     }
+    //console.log(histogram);
+
+    var counter = 0;
+    //console.log(node.lo);
+    //console.log(node.hi);
+    //for (var value = node.lo; value <= node.hi; value += 1) {
+    //  var index = Math.round(value);
+
+      //counter += histogram[index];
+      //console.log(histogram[index]);
+      //console.log(counter);
+    //}
+    //console.log(histogram);
+    //console.log(counter);
 
     //console.log(histogram);
-    node.sliderObj.object.setHistogram(histogram);
+    node.sliderObj.object.setHistogram(histogram, node.lo, node.hi);
   }
 
   updateSliderTracks(node) {

@@ -35,14 +35,12 @@ class DOSRenderer extends AbstractRenderer {
             _Cs: 0.2,
             _Ce: 50,
             //_useAccOpacityTerm: 1,
-<<<<<<< HEAD
             _useDistTerm: 1,
             showBoundingBox: false,
-            boundingBoxColor: [1.0, 0.0, 0.0]
-=======
+            showAxes: true,
+            boundingBoxColor: [1.0, 0.0, 0.0],
             _useShadingTerm: 1,
             _useDistTerm: 1
->>>>>>> origin/dos-rh
         }, options);
         this._GUIObject = null;
         this._idVolume = idVolume;
@@ -80,8 +78,10 @@ class DOSRenderer extends AbstractRenderer {
             y: 1,
             z: 1,
         };
-        this._linesVerticesArray = [];
-        this._linesBuffer = gl.createBuffer();
+        this._bbLinesVerticesArray = [];        
+        this._bblinesBuffer = gl.createBuffer();
+        this._axesVerticesArray = [];        
+        this._axesBuffer = gl.createBuffer();
 
         this._colorStrip = WebGL.createTexture(gl, {
             min: gl.LINEAR,
@@ -774,52 +774,86 @@ class DOSRenderer extends AbstractRenderer {
 
         // TODO: merge textures...
         if (this.showBoundingBox) {
-            this._renderGizmos();
+            this._renderBBGizmo();
+        }
+
+        if(this.showAxes) {
+            this._renderAxesGizmo();
         }
     }
 
-    _renderGizmos() {
+    _renderBBGizmo() {
         const gl = this._gl;
 
-        if (this._linesVerticesArray.length == 0) {
-            this._linesVerticesArray = [
+        if (this._bbLinesVerticesArray.length == 0) {
+            this._bbLinesVerticesArray = [
                 0.0, 0.0, 0.0,
                 1.0, 0.0, 0.0,
                 1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
                 1.0, 0.0, 1.0,
+                1.0, 0.0, 0.0,
                 1.0, 0.0, 1.0,
+                1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0,
+                1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0,
+                1.0, 0.0, 0.0,
                 0.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
 
                 0.0, 1.0, 0.0,
-                1.0, 1.0, 0.0,
-                1.0, 1.0, 0.0,
-                1.0, 1.0, 1.0,
-                1.0, 1.0, 1.0,
-                0.0, 1.0, 1.0,
-                0.0, 1.0, 1.0,
-                0.0, 1.0, 0.0,
-
-                0.0, 0.0, 0.0,
-                0.0, 1.0, 0.0,
                 1.0, 0.0, 0.0,
                 1.0, 1.0, 0.0,
-                1.0, 0.0, 1.0,
+                1.0, 0.0, 0.0,
+                1.0, 1.0, 0.0,
+                1.0, 0.0, 0.0,
                 1.0, 1.0, 1.0,
-                0.0, 0.0, 1.0,
+                1.0, 0.0, 0.0,
+                1.0, 1.0, 1.0,
+                1.0, 0.0, 0.0,
                 0.0, 1.0, 1.0,
+                1.0, 0.0, 0.0,
+                0.0, 1.0, 1.0,
+                1.0, 0.0, 0.0,
+                0.0, 1.0, 0.0,
+                1.0, 0.0, 0.0,
+
+                0.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                0.0, 1.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 1.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 1.0,
+                1.0, 0.0, 0.0,
+                1.0, 1.0, 1.0,
+                1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0,
+                1.0, 0.0, 0.0,
+                0.0, 1.0, 1.0,
+                1.0, 0.0, 0.0,
             ];
 
             // Bind appropriate array buffer to it
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._linesBuffer);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._bblinesBuffer);
 
             // Pass the vertex data to the buffer
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._linesVerticesArray), gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._bbLinesVerticesArray), gl.STATIC_DRAW);
 
             // Bind appropriate array buffer to it
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         }
+
+        this._drawLines(this._bblinesBuffer);        
+    }
+
+    _drawLines(dataBuffer) {
+        const gl = this._gl;
 
         const program = this._programs.lines;
         gl.useProgram(program.program);
@@ -828,23 +862,59 @@ class DOSRenderer extends AbstractRenderer {
         gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[0]);
 
         // Bind appropriate array buffer to it
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._linesBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, dataBuffer);
 
         // Get the attribute location
-        const coord = program.attributes.coordinates;
+        const coords = program.attributes.coordinates;
+        const colors = program.attributes.colors;
 
-        gl.enableVertexAttribArray(coord);
-        gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
-
-        gl.uniform3fv(program.uniforms.color, this.boundingBoxColor);
+        gl.enableVertexAttribArray(coords);
+        gl.enableVertexAttribArray(colors);
+        gl.vertexAttribPointer(coords, 3, gl.FLOAT, false, 6 * 4, 0);
+        gl.vertexAttribPointer(colors, 3, gl.FLOAT, false, 6 * 4, 3 * 4);
+        
         gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpMatrix.m);
 
-        // Draw the triangle
         gl.drawArrays(gl.LINES, 0, 24);
 
-        gl.disableVertexAttribArray(coord);
+        gl.disableVertexAttribArray(coords);
+        gl.disableVertexAttribArray(colors);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    _renderAxesGizmo() {
+        const gl = this._gl;
+
+        if (this._axesVerticesArray.length == 0) {
+            this._axesVerticesArray = [
+                0.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+
+                0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,
+
+                0.0, 0.0, 0.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0                
+            ];
+
+            // Bind appropriate array buffer to it
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._axesBuffer);
+
+            // Pass the vertex data to the buffer
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._axesVerticesArray), gl.STATIC_DRAW);
+
+            // Bind appropriate array buffer to it
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        }
+
+        this._drawLines(this._axesBuffer);     
     }
 
     _getFrameBufferSpec() {
