@@ -16,7 +16,7 @@ class TreeViewDialog extends AbstractDialog {
     this.rules = [];
     this._createAbstractTree = this._createAbstractTree.bind(this);
     this._binds.resetTreeButton.addEventListener('click', this._createAbstractTree);
-
+    this._colo
     this._binds.dynamicTree.setGeneratedTree(this);
   }
 
@@ -341,7 +341,6 @@ function removeElement(elementId) {
   element.parentNode.removeChild(element);
 }
 var index_counter = 0;
-
 function extractInfoTree(node, index_prop) {
   var obj = new Object();
   if (node !== null) {
@@ -510,7 +509,7 @@ function createJSONHierarchyTree(nav) {
     //--------------------------------------------------------
 
 
-
+    node.color = getRandomHexColor();
     const div_colorChooser = createElement('div', {
       className: 'treeColor'
     });
@@ -519,7 +518,7 @@ function createJSONHierarchyTree(nav) {
     });
     div4.setAttribute('type', "color");
     div4.setAttribute('data-bind', "input");
-    div4.setAttribute('value', "#808080");
+    div4.setAttribute('value', node.color);
     const handleColorChange = node.ColorChange.bind(node);
     div4.addEventListener('change', handleColorChange);
     div_colorChooser.appendChild(div4);
@@ -590,6 +589,7 @@ function createJSONHierarchyTree(nav) {
     const handleSliderChange = node.sliderChange.bind(node);
     node.sliderObj.binds.sliderChange.addEventListener('change', handleSliderChange);
     //--------------------------------------------------------
+    node.color = getRandomHexColor();
     const div_colorChooser = createElement('div', {
       className: 'treeColor'
     });
@@ -597,7 +597,7 @@ function createJSONHierarchyTree(nav) {
       className: 'primary_color'
     });
     div4.setAttribute('type', "color");
-    div4.setAttribute('value', "#808080");
+    div4.setAttribute('value', node.color);
     const handleColorChange = node.ColorChange.bind(node);
     div4.addEventListener('change', handleColorChange);
     div4.setAttribute('data-bind', "input");
@@ -617,7 +617,21 @@ function createJSONHierarchyTree(nav) {
     return lineElem;
   }
 
-
+  var _colorSeed = Math.random();
+  function getRandomHexColor()
+      {
+        const hsvColor = {
+          h: this._colorSeed,
+          s: 0.5,
+          v: 0.95
+      };
+      const rgbColor = CommonUtils.hsv2rgb(hsvColor);
+      const hexColor = CommonUtils.rgb2hex(rgbColor);
+  
+      const goldenRatioInverse = 0.618033988749895;
+      _colorSeed = (this._colorSeed + goldenRatioInverse) % 1;
+      return hexColor;
+  }
 
   function createNode() {
     return {
@@ -631,7 +645,7 @@ function createJSONHierarchyTree(nav) {
       //maxSliderValue: 100,
       lo: 0,
       hi: 0,
-      color: '#808080',//gray
+      //color: '#808080',//gray
       elem: null,
       parent: null,
       path: "",
@@ -1030,7 +1044,6 @@ function createJSONHierarchyTree(nav) {
     tree.isroot = true;
     tree.isClassName = false;
     tree.path = "";
-
     traverseObject(obj, tree);
     tree.elem = createExpandedElement(tree);
     return tree;
@@ -1176,7 +1189,7 @@ function createJSONHierarchyTree(nav) {
     }
   }
 
-  function countElements(className, hiList, loList) {
+  /*function countElements(className, hiList, loList) {
     var el = clone(elementsArray);
     for (var j = 0; j < className.length; j++) {
       if (hiList[j] == null)
@@ -1185,7 +1198,7 @@ function createJSONHierarchyTree(nav) {
     }
 
     return el.length;
-  }
+  }*/
   function getNodeElements(className, hiList, loList) {
     var el = clone(elementsArray);
     for (var j = 0; j < className.length; j++) {
