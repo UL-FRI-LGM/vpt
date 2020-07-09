@@ -64,7 +64,7 @@ _handleChange() {
     this._renderer.showBoundingBox = this._binds.showBoundingBox.isChecked();
     this._renderer.showAxes = this._binds.showAxes.isChecked();
     var rgb = CommonUtils.hex2rgb(this._binds.boundingBoxColor.getValue());
-    this._renderer.boundingBoxColor = [rgb.r, rgb.g, rgb.b]; 
+    this._renderer.setBoundingBoxColor([rgb.r, rgb.g, rgb.b]); 
 
     const removalMethod=this._binds.removalSelect.getValue()
     if( removalMethod =='depth')
