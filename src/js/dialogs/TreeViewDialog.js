@@ -644,7 +644,7 @@ function createJSONHierarchyTree(nav) {
   function getRandomHexColor()
       {
         const hsvColor = {
-          h: this._colorSeed,
+          h: _colorSeed,
           s: 0.5,
           v: 0.95
       };
@@ -652,7 +652,7 @@ function createJSONHierarchyTree(nav) {
       const hexColor = CommonUtils.rgb2hex(rgbColor);
   
       const goldenRatioInverse = 0.618033988749895;
-      _colorSeed = (this._colorSeed + goldenRatioInverse) % 1;
+      _colorSeed = (_colorSeed + goldenRatioInverse) % 1;
       return hexColor;
   }
 
