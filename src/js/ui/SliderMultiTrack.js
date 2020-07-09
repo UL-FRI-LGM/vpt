@@ -257,11 +257,12 @@ class SliderMultiTrack extends UIObject {
             var value = this.histogram[i];
             var div = hist.children[i];
             var height = 1;
-            
-            if (maxHistValue > 0) {
+                        
+            if (value > 0 && maxHistValue > 0) {
                 //height = (value / maxHistValue) * 50 + 1;
                 height = ((Math.log10(value) / maxHistValue) * 50 + 1);
             }
+            //console.log(value + " " + maxHistValue + " " + height);
             div.style.height = height + "%";
             div.style.top = (50 - height - 6) + "%";
             div.style.width = (100 / this.histColumns) + "%";
@@ -270,7 +271,7 @@ class SliderMultiTrack extends UIObject {
 
     setHistogram(histogram, lo, hi) {
 
-        if (Math.ceil(hi - lo) > this.histogram.length) {
+        if (Math.ceil(hi - lo) > this.histogram.length) {            
             var sparse = Math.ceil(Math.ceil(hi - lo) / this.histogram.length);
 
             var counter = 0;
@@ -283,10 +284,11 @@ class SliderMultiTrack extends UIObject {
                 }
                 this.histogram[counter++] = sum;
             }
+            //console.log(this.histogram);
 
-        } else if (histogram.length < this.histogram.length) {
+        } else if (histogram.length < this.histogram.length) {            
             // TODO: implement
-        } else {
+        } else {            
             this.histogram = histogram;
         }
 

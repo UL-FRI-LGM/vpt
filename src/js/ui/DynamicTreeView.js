@@ -481,7 +481,7 @@ class DynamicTreeView extends UIObject {
         if (this._tree) {
             // generation of the tree
             this._tree._handleCreateHTreeButton();
-
+            
             // setting of colors
             if (json.colors) {
                 this._tree.setColors(json.colors);

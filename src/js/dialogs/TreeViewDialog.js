@@ -46,30 +46,24 @@ class TreeViewDialog extends AbstractDialog {
     return node.occludedInstance;
   }
 
-  computeHistograms(visibility) {
+  computeHistograms(visibility) {    
     this._computeHistogramForNode(Htree, visibility);
   }
 
   _computeHistogramForNode(node, visibility) {
     
-    if(!node.isroot) {
+    if (!node.isroot) {
       this._computeNodeHistogram(node, visibility);
     }
-    
-    if(node.children != null) {
-      node.children.forEach((item) => {
+
+    if (node.children != null) {
+      node.children.forEach((item) => {        
         this._computeHistogramForNode(item, visibility);
       });
     }
   }
 
-  _computeNodeHistogram(node, visibility) {
-    //console.log(occlusion);
-    //console.log(node);
-    //console.log(elementsArray);
-
-    //console.log(node.elements);
-
+  _computeNodeHistogram(node, visibility) {    
     var histogram = [];
 
     for (var i = node.lo; i <= node.hi; i += 1) {
@@ -78,11 +72,9 @@ class TreeViewDialog extends AbstractDialog {
     }
 
     var name = node.name.indexOf("[") > -1 ? node.parent.name : node.name;
-    //console.log(name);
 
-    //console.log(histogram);
     // select all visible instances based on [min-max] interval
-    for (var i = 0 ; i < node.elements.length; i++) {
+    for (var i = 0; i < node.elements.length; i++) {
       var elem = node.elements[i];
 
       if (visibility[elem.id] == 0) {
@@ -90,28 +82,13 @@ class TreeViewDialog extends AbstractDialog {
       }
 
       var value = elem[name];
-      
-      if (value >= node.lo && value < node.hi) {
+
+      if (value >= node.lo && value <= node.hi) {
         var index = Math.round(value);
         histogram[index] += 1;
       }
     }
-    //console.log(histogram);
 
-    //var counter = 0;
-    //console.log(node.lo);
-    //console.log(node.hi);
-    //for (var value = node.lo; value <= node.hi; value += 1) {
-    //  var index = Math.round(value);
-
-    //counter += histogram[index];
-    //console.log(histogram[index]);
-    //console.log(counter);
-    //}
-    //console.log(histogram);
-    //console.log(counter);
-
-    //console.log(histogram);
     node.sliderObj.object.setHistogram(histogram, node.lo, node.hi);
   }
 
