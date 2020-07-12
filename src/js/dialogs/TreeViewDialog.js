@@ -46,24 +46,24 @@ class TreeViewDialog extends AbstractDialog {
     return node.occludedInstance;
   }
 
-  computeHistograms(visibility) {    
+  computeHistograms(visibility) {
     this._computeHistogramForNode(Htree, visibility);
   }
 
   _computeHistogramForNode(node, visibility) {
-    
+
     if (!node.isroot) {
       this._computeNodeHistogram(node, visibility);
     }
 
     if (node.children != null) {
-      node.children.forEach((item) => {        
+      node.children.forEach((item) => {
         this._computeHistogramForNode(item, visibility);
       });
     }
   }
 
-  _computeNodeHistogram(node, visibility) {    
+  _computeNodeHistogram(node, visibility) {
     var histogram = [];
 
     for (var i = node.lo; i <= node.hi; i += 1) {
@@ -96,6 +96,7 @@ class TreeViewDialog extends AbstractDialog {
     node.sliderObj.object.setValue2(node.sliderObj.object.getMaxValue() - node.sliderObj.object.getValue());
     node.sliderObj.object.setValue3((node.occludedInstance / node.nInstances) * 100);
   }
+
   _getGroupOfRules() {
     //console.log(Htree);
     this.rules = [];
@@ -508,20 +509,20 @@ function createJSONHierarchyTree(nav) {
     node.sliderObj.binds.sliderChange.addEventListener('change', handleSliderChange);
     //--------------------------------------------------------
 
+    node.colorObj = UI.create({
+      "type": "color-chooser",
+      "bind": "colorChange",
+      "value": '#dddddd' //getRandomHexColor()
+    });
+    node.colorObj.object._element.classList.toggle('color-chooser-small', true); 
+    node.colorObj.object.showOverlay();
 
-    node.color = getRandomHexColor();
-    const div_colorChooser = createElement('div', {
-      className: 'treeColor'
-    });
-    const div4 = createElement('input', {
-      className: 'primary_color'
-    });
-    div4.setAttribute('type', "color");
-    div4.setAttribute('data-bind', "input");
-    div4.setAttribute('value', node.color);
+    node.color = node.colorObj.object.getValue();
+    
+    const div_colorChooser = node.colorObj.object._element;
     const handleColorChange = node.ColorChange.bind(node);
-    div4.addEventListener('change', handleColorChange);
-    div_colorChooser.appendChild(div4);
+    node.colorObj.binds.colorChange.addEventListener('change', handleColorChange);
+    
     let lineChildren;
     if (node.isroot == true)//|| node.parent.isroot==true)
     {
@@ -588,22 +589,22 @@ function createJSONHierarchyTree(nav) {
     updateSliderTracks(node);
     const handleSliderChange = node.sliderChange.bind(node);
     node.sliderObj.binds.sliderChange.addEventListener('change', handleSliderChange);
-    //--------------------------------------------------------
-    node.color = getRandomHexColor();
-    const div_colorChooser = createElement('div', {
-      className: 'treeColor'
+    //--------------------------------------------------------    
+    node.colorObj = UI.create({
+      "type": "color-chooser",
+      "bind": "colorChange",
+      "value": getRandomHexColor()
     });
-    const div4 = createElement('input', {
-      className: 'primary_color'
-    });
-    div4.setAttribute('type', "color");
-    div4.setAttribute('value', node.color);
+    node.colorObj.object._element.classList.toggle('color-chooser-small', true); 
+    //node.colorObj.object.showOverlay();
+
+    node.color = node.colorObj.object.getValue();
+    
+    const div_colorChooser = node.colorObj.object._element;
     const handleColorChange = node.ColorChange.bind(node);
-    div4.addEventListener('change', handleColorChange);
-    div4.setAttribute('data-bind', "input");
-    //const handleLockChange = node.LockChange.bind(node);
-    //div4.addEventListener('click', handleLockChange);
-    div_colorChooser.appendChild(div4);
+    node.colorObj.binds.colorChange.addEventListener('change', handleColorChange);
+
+    
     var arr = [caretElem, propertyElem, div_slider, div_colorChooser, div_Lock];
     const lineElem = createElement('div', {
       className: 'line',
@@ -618,19 +619,18 @@ function createJSONHierarchyTree(nav) {
   }
 
   var _colorSeed = Math.random();
-  function getRandomHexColor()
-      {
-        const hsvColor = {
-          h: _colorSeed,
-          s: 0.5,
-          v: 0.95
-      };
-      const rgbColor = CommonUtils.hsv2rgb(hsvColor);
-      const hexColor = CommonUtils.rgb2hex(rgbColor);
-  
-      const goldenRatioInverse = 0.618033988749895;
-      _colorSeed = (_colorSeed + goldenRatioInverse) % 1;
-      return hexColor;
+  function getRandomHexColor() {
+    const hsvColor = {
+      h: _colorSeed,
+      s: 0.5,
+      v: 0.95
+    };
+    const rgbColor = CommonUtils.hsv2rgb(hsvColor);
+    const hexColor = CommonUtils.rgb2hex(rgbColor);
+
+    const goldenRatioInverse = 0.618033988749895;
+    _colorSeed = (_colorSeed + goldenRatioInverse) % 1;
+    return hexColor;
   }
 
   function createNode() {
@@ -729,9 +729,14 @@ function createJSONHierarchyTree(nav) {
       },
 
       ColorChange: function () {
-        this.color = (getColor(this)).value;
+        this.color = this.colorObj.object.getValue(); // (getColor(this)).value;
+        this.colorObj.object.hideOverlay();
         updateChildrenColorValue(this, this.color);
         TVDClass.trigger('treeSliderChange');
+      },
+
+      ColorOverlayClicked: function() {
+        this.style.visibility = 'hidden';
       },
 
       LockChange: function () {
@@ -841,7 +846,7 @@ function createJSONHierarchyTree(nav) {
     }
   }
   function getColor(node) {
-    return node.elem.children[3].children[0];
+    return node.colorObj.object.getValue(); // elem.children[3].children[0];
   }
   function getLockElement(node) {
     return node.elem.children[4].children[0];
@@ -966,9 +971,9 @@ function createJSONHierarchyTree(nav) {
     }
   }
 
-  function setColorValue(obj, newValue) {
-    getColor(obj).value = newValue;
-    obj.color = newValue;
+  function setColorValue(node, newValue) {        
+    node.colorObj.object.setValue(newValue);
+    node.color = newValue;
   }
 
   function setSliderValue(node, newValue) {

@@ -401,6 +401,10 @@ class DOSRenderer extends AbstractRenderer {
         
     }
     _sortAscending(array, key) {
+        if(array == null) {
+            return null;
+        }
+
         return array.sort(function (a, b) {
             var x = a[key];
             var y = b[key];
@@ -604,6 +608,10 @@ class DOSRenderer extends AbstractRenderer {
     }
 
     _getRuleElements(className, hiList, loList) {
+        if(this._elements == null) {
+            return null;
+        }
+
         var el = this.clone(this._elements);
         for (var j = 0; j < className.length; j++) {
             if (hiList[j] == null)
