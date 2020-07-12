@@ -45,7 +45,7 @@ static trigger(event, element) {
 }
 
 // TODO: a Color clas for handling formats and conversions
-static hex2rgb(str) {
+static hex2rgb(str) {    
     return {
         r: parseInt(str.substring(1, 3), 16) / 255,
         g: parseInt(str.substring(3, 5), 16) / 255,

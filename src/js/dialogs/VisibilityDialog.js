@@ -63,7 +63,7 @@ _handleGroupChange(group) {
     var  className = group.binds.attribute.getValue();
     var range = group.binds.range.getValue();
     group.object.elements = this._getGroupElements([className], [range.y], [range.x]);
-    console.log(group.object.elements);
+    //console.log(group.object.elements);
     this.trigger('change');
 }
 _handleColorChange() {

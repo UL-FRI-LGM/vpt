@@ -79,6 +79,7 @@ class DOSRenderer extends AbstractRenderer {
             z: 1,
         };
         this._bbLinesVerticesArray = [];
+        this._bbColorUpdated = false;        
         this._bblinesBuffer = gl.createBuffer();
         this._axesVerticesArray = [];
         this._axesBuffer = gl.createBuffer();
@@ -218,7 +219,7 @@ class DOSRenderer extends AbstractRenderer {
         this._rulesOutInfo.length = 0;
         this.clearIsOccupiedArray();
         this._nRules = rules.length;
-        this._rules = '';
+        this._rules = '';        
         var _x = rules.map((rule, index) => {
             var ruleObj = new Object();
 
@@ -264,6 +265,11 @@ class DOSRenderer extends AbstractRenderer {
 
             this._rules += `if (${rangeCondition}) { if (${visibilityCondition}) {  ${groupStatement} } else { ${backgroundStatement} } }`;
         });
+
+        if (this._GUIObject != null) {
+            this._GUIObject.computeHistograms(this._visStatusArray);
+        }
+
         this._recomputeTransferFunction(rules);
         this._createVisibilityStatusBuffer();
         this._rebuildAttribCompute();
@@ -390,14 +396,15 @@ class DOSRenderer extends AbstractRenderer {
             }
 
 
-        }
+        }        
 
-        if (this._GUIObject != null) {
-            this._GUIObject.computeHistograms(this._visStatusArray);
-        }
-
+        
     }
     _sortAscending(array, key) {
+        if(array == null) {
+            return null;
+        }
+
         return array.sort(function (a, b) {
             var x = a[key];
             var y = b[key];
@@ -601,6 +608,10 @@ class DOSRenderer extends AbstractRenderer {
     }
 
     _getRuleElements(className, hiList, loList) {
+        if(this._elements == null) {
+            return null;
+        }
+
         var el = this.clone(this._elements);
         for (var j = 0; j < className.length; j++) {
             if (hiList[j] == null)
@@ -782,61 +793,67 @@ class DOSRenderer extends AbstractRenderer {
         }
     }
 
+    setBoundingBoxColor(color) {
+        this.boundingBoxColor = color;
+        this._bbColorUpdated = true;
+    }
+
     _renderBBGizmo() {
         const gl = this._gl;
+        const c = { r: this.boundingBoxColor[0], g: this.boundingBoxColor[1], b: this.boundingBoxColor[2] };
 
-        if (this._bbLinesVerticesArray.length == 0) {
+        if (this._bbLinesVerticesArray.length == 0 || this._bbColorUpdated) {
             this._bbLinesVerticesArray = [
                 0.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 0.0, 0.0,
-                1.0, 0.0, 0.0,
-                1.0, 0.0, 0.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 0.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 0.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 0.0, 0.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 0.0, 0.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 0.0, 0.0, 0.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
 
                 0.0, 1.0, 0.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 1.0, 0.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 1.0, 0.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 1.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 1.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 0.0, 1.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 0.0, 1.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 0.0, 1.0, 0.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
 
                 0.0, 0.0, 0.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 0.0, 1.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 0.0, 0.0,
-                1.0, 0.0, 0.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 1.0, 0.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 0.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 1.0, 1.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 0.0, 0.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
                 0.0, 1.0, 1.0,
-                1.0, 0.0, 0.0,
+                c.r, c.g, c.b,
             ];
 
             // Bind appropriate array buffer to it
@@ -847,8 +864,10 @@ class DOSRenderer extends AbstractRenderer {
 
             // Bind appropriate array buffer to it
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        }
 
+            this._bbColorUpdated = false;
+        }
+        
         this._drawLines(this._bblinesBuffer);
     }
 
@@ -890,17 +909,17 @@ class DOSRenderer extends AbstractRenderer {
             this._axesVerticesArray = [
                 0.0, 0.0, 0.0,
                 1.0, 0.0, 0.0,
-                1.0, 0.0, 0.0,
+                0.1, 0.0, 0.0,
                 1.0, 0.0, 0.0,
 
                 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0,
-                0.0, 1.0, 0.0,
+                0.0, 0.1, 0.0,
                 0.0, 1.0, 0.0,
 
                 0.0, 0.0, 0.0,
                 0.0, 0.0, 1.0,
-                0.0, 0.0, 1.0,
+                0.0, 0.0, 0.1,
                 0.0, 0.0, 1.0
             ];
 
