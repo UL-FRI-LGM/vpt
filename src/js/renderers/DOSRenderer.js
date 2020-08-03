@@ -230,7 +230,9 @@ class DOSRenderer extends AbstractRenderer {
 
 
             var instancesStRule = this._getRuleElements(attribute, hi, lo);
-            this._sortAscending(instancesStRule, 'avgProb');
+            instancesStRule = this._shuffleArray(instancesStRule);
+            instancesStRule = this._sortAscending(instancesStRule, 'avgProb');
+            
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
             ruleObj.nInstances = instancesStRule.length;
             ruleObj.isLocked = rule.isLocked;
@@ -300,6 +302,18 @@ class DOSRenderer extends AbstractRenderer {
             this._isOccupied[i] = false;
         }
     }
+    _shuffleArray(array) { 
+        var currentIndex = array.length, temporaryValue, randomIndex; 
+        // While there remain elements to shuffle... 
+        while (0 !== currentIndex) { // Pick a remaining element... 
+            randomIndex = Math.floor(Math.random() * currentIndex);
+             currentIndex -= 1; // And swap it with the current element. 
+             temporaryValue = array[currentIndex]; 
+             array[currentIndex] = array[randomIndex]; 
+             array[randomIndex] = temporaryValue; 
+            } 
+        return array;
+    }
     setRules(rules, GUIObject) {
         this._GUIObject = GUIObject;
         this._rulesInInfo = rules;
@@ -314,7 +328,8 @@ class DOSRenderer extends AbstractRenderer {
             const hi = rule.range.y.toFixed(4);
             const visibility = (rule.visibility / 100).toFixed(4);
             var instancesStRule = this._getRuleElements([attribute], [hi], [lo]);
-            this._sortAscending(instancesStRule, 'avgProb');
+            instancesStRule = this._shuffleArray(instancesStRule);
+            instancesStRule = this._sortAscending(instancesStRule, 'avgProb');
             //console.log(instancesStRule);
             ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
             ruleObj.nInstances = instancesStRule.length;

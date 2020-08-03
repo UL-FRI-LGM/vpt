@@ -62,7 +62,6 @@ void main() {
         if(uRemovalSelect == 0) // based on depth
         {
             prob = distance(pos,uCameraPos); 
-            //prob = getMvpPosition3D(voxel).z; 
         }
         else if(uRemovalSelect == 1) // based on context preserved formula
         {
@@ -71,13 +70,8 @@ void main() {
         }
         else //if(uRemovalSelect == 2) // random
         {
-           prob = (rand(vec2(float(id))).x);
+           prob = 1.0;//(rand(vec2(float(id))).x);
         }
-        /*else  // if(uRemovalSelect == 2) random + CPF
-        {  
-            float r = (rand(vec2(float(id))).x);
-            prob = computeCPF(pos,voxel) * r;
-        }*/
         uint p = convertProbToInt(prob); 
         int index=(int(id))*2;
         atomicAdd(counter[index], p);            
