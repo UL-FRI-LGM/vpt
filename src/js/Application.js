@@ -67,6 +67,7 @@ class Application {
         this._treeViewDialog.appendTo(this._mainDialog.getTreeViewContainer());
         this._treeViewDialog.addEventListener('treeSliderChange', this._handleTreeSliderChange);
         this._treeViewDialog.addEventListener('treeTopologyChange', this._handleTreeSliderChange);
+       
 
         this._visibilityDialog = new VisibilityDialog();
         this._visibilityDialog.appendTo(this._mainDialog.getVisibility_container());
@@ -93,6 +94,7 @@ class Application {
         this._mainDialog.addEventListener('tonemapperchange', this._handleToneMapperChange);
         this._mainDialog.trigger('rendererchange', this._mainDialog.getSelectedRenderer());
         this._mainDialog.trigger('tonemapperchange', this._mainDialog.getSelectedToneMapper());
+        
     }
     _handleFileDrop(e) {
         e.preventDefault();
@@ -123,6 +125,9 @@ class Application {
         const dialogClass = this._getDialogForRenderer(which);
         this._rendererDialog = new dialogClass(renderer);
         this._rendererDialog.appendTo(container);
+        
+        this._treeViewDialog._setRenderer(renderer);
+        this._visibilityDialog._setRenderer(renderer);
     }
 
     _handleToneMapperChange(which) {

@@ -23,12 +23,39 @@ _registerEventListeners() {
     this._handleGroupChange = this._handleGroupChange.bind(this);
     this._handleVisChange = this._handleVisChange.bind(this);
     this._handleColorChange =  this._handleColorChange.bind(this);
+    this._handleChange =  this._handleChange.bind(this);
 }
 
 _addEventListeners() {
     this._binds.addGroupButton.addEventListener('click', this._handleAddGroupClick);
+    this._binds.removalSelect.addEventListener('change', this._handleChange);
+    this._binds.ks.addEventListener('change', this._handleChange);
+    this._binds.kt.addEventListener('change', this._handleChange);
+    this._binds.removalAutoUpdate.addEventListener('change', this._handleChange);
 }
+_setRenderer(renderer){
+    this._renderer=renderer;
+}
+  _handleChange() {    
+    this._renderer._ks = this._binds.ks.getValue();
+    this._renderer._kt = this._binds.kt.getValue();
 
+    const removalMethod=this._binds.removalSelect.getValue()
+    if( removalMethod =='depth')
+    {
+      this._renderer._removalSelect = 0;
+    }
+    else if( removalMethod =='CPF')
+    {
+      this._renderer._removalSelect = 1;
+    }
+    else //if( removalMethod =='Random')
+    {
+      this._renderer._removalSelect = 2;
+    }
+    this._renderer._removalAutoUpdate = this._binds.removalAutoUpdate.isChecked();
+    this._renderer.reset(); 
+}
 reset() {
     for (const group of this.groups) {
         group.object.destroy();

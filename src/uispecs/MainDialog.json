@@ -125,7 +125,7 @@
             }
           ]
         },
-        "Visibility": {
+        "ListView": {
           "type": "panel",
           "bind": "visibility_container"
         },

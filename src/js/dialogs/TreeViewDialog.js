@@ -10,16 +10,75 @@ class TreeViewDialog extends AbstractDialog {
 
   constructor(options) {
     super(UISPECS.TreeViewDialog, options);
-    this._handleCreateHTreeButton = this._handleCreateHTreeButton.bind(this);
-    this._binds.createTreeButton.addEventListener('click', this._handleCreateHTreeButton);
     TVDClass = this;
     this.rules = [];
-    this._createAbstractTree = this._createAbstractTree.bind(this);
-    this._binds.resetTreeButton.addEventListener('click', this._createAbstractTree);
     this._colo
-    this._binds.dynamicTree.setGeneratedTree(this);
-  }
 
+    this._handleCreateHTreeButton = this._handleCreateHTreeButton.bind(this);
+    this._handleChange =  this._handleChange.bind(this);
+    this._createAbstractTree = this._createAbstractTree.bind(this);
+
+    this._binds.createTreeButton.addEventListener('click', this._handleCreateHTreeButton);
+    this._binds.resetTreeButton.addEventListener('click', this._createAbstractTree);
+    this._binds.dynamicTree.setGeneratedTree(this);
+    this._binds.removalSelect.addEventListener('change', this._handleChange);
+    this._binds.ks.addEventListener('change', this._handleChange);
+    this._binds.kt.addEventListener('change', this._handleChange);
+    this._binds.removalAutoUpdate.addEventListener('change', this._handleChange);
+    // this._binds.useCameraAsMS.addEventListener('change', this._handleChange);
+    //this._binds.meltingPos.addEventListener('change', this._handleChange);
+    //this._binds.useShadingTerm.addEventListener('change', this._handleChange);
+    //this._binds.useAccOpacityTerm.addEventListener('change', this._handleChange);
+    // this._binds.useDistTerm.addEventListener('change', this._handleChange);
+   // this._binds.useDistTerm.addEventListener('change', this._handleChange);
+   // this._binds.Ca.addEventListener('change', this._handleChange);
+   // this._binds.Cd.addEventListener('change', this._handleChange);
+   // this._binds.Cs.addEventListener('change', this._handleChange);
+   // this._binds.Ce.addEventListener('change', this._handleChange);
+  
+  }
+  _setRenderer(renderer)
+  {
+    this._renderer=renderer;
+    console.log(this._renderer);
+    console.log(this._binds);
+  }
+  _handleChange() {    
+    console.log(this._renderer);
+    console.log(this._binds);
+    this._renderer._ks = this._binds.ks.getValue();
+    this._renderer._kt = this._binds.kt.getValue();
+
+    const removalMethod=this._binds.removalSelect.getValue()
+    if( removalMethod =='depth')
+    {
+      this._renderer._removalSelect = 0;
+    }
+    else if( removalMethod =='CPF')
+    {
+      this._renderer._removalSelect = 1;
+    }
+    else //if( removalMethod =='Random')
+    {
+      this._renderer._removalSelect = 2;
+    }
+    
+    this._renderer._removalAutoUpdate = this._binds.removalAutoUpdate.isChecked();
+    //this._renderer._useCameraAsMS = this._binds.useCameraAsMS.isChecked();
+    //this._renderer._useShadingTerm = this._binds.useShadingTerm.isChecked()? 1:0 ;
+    //this._renderer._useAccOpacityTerm = this._binds.useAccOpacityTerm.isChecked()? 1:0 ;
+    /*this._renderer._useDistTerm = this._binds.useDistTerm.isChecked()? 1:0 ;
+    this._renderer._Ca = this._binds.Ca.getValue();
+    this._renderer._Cd = this._binds.Cd .getValue();
+    this._renderer._Cs = this._binds.Cs.getValue();
+    this._renderer._Ce = this._binds.Ce.getValue();
+
+    const position = this._binds.meltingPos.getValue();
+    this._renderer._meltingSourcePos[0] = position.x;
+    this._renderer._meltingSourcePos[1] = position.y;
+    this._renderer._meltingSourcePos[2] = position.z;*/
+    this._renderer.reset(); 
+}
   _updateOccludedInstance(_rulesInfo) {
     var index = 0;
     for (var index = 0; index < this.rules.length; index++) {
@@ -292,6 +351,8 @@ class TreeViewDialog extends AbstractDialog {
 
   reset() {
     this._createAbstractTree();
+    console.log(this._renderer);
+    console.log(this._binds);
   }
 
 
@@ -306,6 +367,8 @@ class TreeViewDialog extends AbstractDialog {
 
     this._binds.dynamicTree.reset();
     this._binds.dynamicTree.createHeader(propertyList);
+
+
   }
 
   _handleCreateHTreeButton = function () {

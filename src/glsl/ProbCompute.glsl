@@ -70,7 +70,7 @@ void main() {
         }
         else //if(uRemovalSelect == 2) // random
         {
-           prob = 1.0;//(rand(vec2(float(id))).x);
+           prob = (rand(vec2(float(id))).x);
         }
         uint p = convertProbToInt(prob); 
         int index=(int(id))*2;
