@@ -241,6 +241,7 @@ class DynamicTreeView extends UIObject {
 
         var min = _this.createElement("input", "property-range-min");
         min.type = "number";
+        min.step = ".01";
         min.value = minValue;
         min.addEventListener("mousemove", (e) => {
             e.preventDefault();
@@ -249,6 +250,7 @@ class DynamicTreeView extends UIObject {
 
         var max = _this.createElement("input", "property-range-max");
         max.type = "number";
+        max.step = ".01";
         max.value = Math.ceil(maxValue);
         max.addEventListener("mousemove", (e) => {
             e.preventDefault();
@@ -257,6 +259,9 @@ class DynamicTreeView extends UIObject {
 
         var addButton = _this.createElement("div", "property-range-add-button add-button");
         addButton.onclick = function () {
+            let maxInput = addButton.parentNode.querySelector('.property-range-max');
+            minValue = maxInput.value;
+
             _this.addRange(node, minValue, maxValue);
         };
         range.appendChild(addButton);
@@ -401,10 +406,10 @@ class DynamicTreeView extends UIObject {
                 var options = child.querySelector('.property-enum-values');
 
                 if (min != null) { // 'float property'
-                    group.lo = parseInt(min.value);
+                    group.lo = parseFloat(min.value);
                     gmin = Math.min(group.lo, gmin);
                     var max = child.querySelector('.property-range-max');
-                    group.hi = parseInt(max.value);
+                    group.hi = parseFloat(max.value);
                     group.name = "[" + group.lo + "~" + group.hi + "]";
                     gmax = Math.max(group.hi, gmax);
                     json.groups.push(group);

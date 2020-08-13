@@ -152,8 +152,8 @@ _addHandle(index) {
 
     new Draggable($handle, $handle.querySelector('.bump-handle'));
     $handle.addEventListener('draggable', e => {
-        const x = e.currentTarget.offsetLeft / this._width;
-        const y = 1 - (e.currentTarget.offsetTop / this._height);
+        const x = Math.max(0, Math.min(e.currentTarget.offsetLeft / this._width, 1));
+        const y = Math.min(1, Math.max(0, 1 - (e.currentTarget.offsetTop / this._height)));
         const i = parseInt(DOMUtils.data(e.currentTarget, 'index'));
         this._bumps[i].position.x = x;
         this._bumps[i].position.y = y;

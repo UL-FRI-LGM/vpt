@@ -15,7 +15,7 @@ class TreeViewDialog extends AbstractDialog {
     this._colo
 
     this._handleCreateHTreeButton = this._handleCreateHTreeButton.bind(this);
-    this._handleChange =  this._handleChange.bind(this);
+    this._handleChange = this._handleChange.bind(this);
     this._createAbstractTree = this._createAbstractTree.bind(this);
 
     this._binds.createTreeButton.addEventListener('click', this._handleCreateHTreeButton);
@@ -30,39 +30,36 @@ class TreeViewDialog extends AbstractDialog {
     //this._binds.useShadingTerm.addEventListener('change', this._handleChange);
     //this._binds.useAccOpacityTerm.addEventListener('change', this._handleChange);
     // this._binds.useDistTerm.addEventListener('change', this._handleChange);
-   // this._binds.useDistTerm.addEventListener('change', this._handleChange);
-   // this._binds.Ca.addEventListener('change', this._handleChange);
-   // this._binds.Cd.addEventListener('change', this._handleChange);
-   // this._binds.Cs.addEventListener('change', this._handleChange);
-   // this._binds.Ce.addEventListener('change', this._handleChange);
-  
+    // this._binds.useDistTerm.addEventListener('change', this._handleChange);
+    // this._binds.Ca.addEventListener('change', this._handleChange);
+    // this._binds.Cd.addEventListener('change', this._handleChange);
+    // this._binds.Cs.addEventListener('change', this._handleChange);
+    // this._binds.Ce.addEventListener('change', this._handleChange);
+
   }
-  _setRenderer(renderer)
-  {
-    this._renderer=renderer;
+  _setRenderer(renderer) {
+    this._renderer = renderer;
     console.log(this._renderer);
     console.log(this._binds);
   }
-  _handleChange() {    
+  _handleChange() {
     console.log(this._renderer);
     console.log(this._binds);
     this._renderer._ks = this._binds.ks.getValue();
     this._renderer._kt = this._binds.kt.getValue();
 
-    const removalMethod=this._binds.removalSelect.getValue()
-    if( removalMethod =='depth')
-    {
+    const removalMethod = this._binds.removalSelect.getValue()
+    if (removalMethod == 'depth') {
       this._renderer._removalSelect = 0;
     }
-    else if( removalMethod =='CPF')
-    {
+    else if (removalMethod == 'CPF') {
       this._renderer._removalSelect = 1;
     }
     else //if( removalMethod =='Random')
     {
       this._renderer._removalSelect = 2;
     }
-    
+
     this._renderer._removalAutoUpdate = this._binds.removalAutoUpdate.isChecked();
     //this._renderer._useCameraAsMS = this._binds.useCameraAsMS.isChecked();
     //this._renderer._useShadingTerm = this._binds.useShadingTerm.isChecked()? 1:0 ;
@@ -77,8 +74,8 @@ class TreeViewDialog extends AbstractDialog {
     this._renderer._meltingSourcePos[0] = position.x;
     this._renderer._meltingSourcePos[1] = position.y;
     this._renderer._meltingSourcePos[2] = position.z;*/
-    this._renderer.reset(); 
-}
+    this._renderer.reset();
+  }
   _updateOccludedInstance(_rulesInfo) {
     var index = 0;
     for (var index = 0; index < this.rules.length; index++) {
@@ -125,11 +122,17 @@ class TreeViewDialog extends AbstractDialog {
   _computeNodeHistogram(node, visibility) {
     var histogram = [];
 
-    for (var i = node.lo; i <= node.hi; i += 1) {
+    var scale = 1;
+
+    while((node.hi - node.lo) * scale < node.sliderObj.object.histColumns) {
+        scale *= 10;
+    }
+
+    for (var i = node.lo * scale; i <= node.hi * scale; i += 1) {
       var index = Math.round(i);
       histogram[index] = 0;
     }
-
+    
     var name = node.name.indexOf("[") > -1 ? node.parent.name : node.name;
 
     // select all visible instances based on [min-max] interval
@@ -140,15 +143,20 @@ class TreeViewDialog extends AbstractDialog {
         continue;
       }
 
-      var value = elem[name];
+      var value = elem[name] * scale;
 
-      if (value >= node.lo && value <= node.hi) {
+      if (value >= node.lo * scale && value <= node.hi * scale) {
         var index = Math.round(value);
+        
+        if(isNaN(histogram[index])) {
+          histogram[index] = 0;
+        }
+
         histogram[index] += 1;
       }
     }
-
-    node.sliderObj.object.setHistogram(histogram, node.lo, node.hi);
+    
+    node.sliderObj.object.setHistogram(histogram, node.lo * scale, node.hi * scale);
   }
 
   updateSliderTracks(node) {
@@ -577,15 +585,15 @@ function createJSONHierarchyTree(nav) {
       "bind": "colorChange",
       "value": '#dddddd' //getRandomHexColor()
     });
-    node.colorObj.object._element.classList.toggle('color-chooser-small', true); 
+    node.colorObj.object._element.classList.toggle('color-chooser-small', true);
     node.colorObj.object.showOverlay();
 
     node.color = node.colorObj.object.getValue();
-    
+
     const div_colorChooser = node.colorObj.object._element;
     const handleColorChange = node.ColorChange.bind(node);
     node.colorObj.binds.colorChange.addEventListener('change', handleColorChange);
-    
+
     let lineChildren;
     if (node.isroot == true)//|| node.parent.isroot==true)
     {
@@ -658,16 +666,16 @@ function createJSONHierarchyTree(nav) {
       "bind": "colorChange",
       "value": getRandomHexColor()
     });
-    node.colorObj.object._element.classList.toggle('color-chooser-small', true); 
+    node.colorObj.object._element.classList.toggle('color-chooser-small', true);
     //node.colorObj.object.showOverlay();
 
     node.color = node.colorObj.object.getValue();
-    
+
     const div_colorChooser = node.colorObj.object._element;
     const handleColorChange = node.ColorChange.bind(node);
     node.colorObj.binds.colorChange.addEventListener('change', handleColorChange);
 
-    
+
     var arr = [caretElem, propertyElem, div_slider, div_colorChooser, div_Lock];
     const lineElem = createElement('div', {
       className: 'line',
@@ -798,7 +806,7 @@ function createJSONHierarchyTree(nav) {
         TVDClass.trigger('treeSliderChange');
       },
 
-      ColorOverlayClicked: function() {
+      ColorOverlayClicked: function () {
         this.style.visibility = 'hidden';
       },
 
@@ -1034,7 +1042,7 @@ function createJSONHierarchyTree(nav) {
     }
   }
 
-  function setColorValue(node, newValue) {        
+  function setColorValue(node, newValue) {
     node.colorObj.object.setValue(newValue);
     node.color = newValue;
   }
