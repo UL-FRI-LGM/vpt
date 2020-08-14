@@ -37,14 +37,11 @@ class TreeViewDialog extends AbstractDialog {
     // this._binds.Ce.addEventListener('change', this._handleChange);
 
   }
-  _setRenderer(renderer) {
-    this._renderer = renderer;
-    console.log(this._renderer);
-    console.log(this._binds);
+  _setRenderer(renderer)
+  {
+    this._renderer=renderer;
   }
-  _handleChange() {
-    console.log(this._renderer);
-    console.log(this._binds);
+  _handleChange() {    
     this._renderer._ks = this._binds.ks.getValue();
     this._renderer._kt = this._binds.kt.getValue();
 

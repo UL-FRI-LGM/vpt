@@ -35,7 +35,6 @@ class DOSRenderer extends AbstractRenderer {
             _Cs: 0.2,
             _Ce: 50,
             //_useAccOpacityTerm: 1,
-            _useDistTerm: 1,
             showBoundingBox: false,
             showAxes: true,
             boundingBoxColor: [1.0, 0.0, 0.0],
@@ -213,9 +212,13 @@ class DOSRenderer extends AbstractRenderer {
     }
 
     setHtreeRules(rules, GUIObject) {
+        if(this._isTreeRules==false)// so the prevoius rules were list rules
+        {
+            this.updateVisSettings(GUIObject);
+        }
+        this._isTreeRules = true;
         this._GUIObject = GUIObject;
         this._rulesInInfo = rules;
-        this._isTreeRules = true;
         this._rulesOutInfo.length = 0;
         this.clearIsOccupiedArray();
         this._nRules = rules.length;
@@ -282,7 +285,6 @@ class DOSRenderer extends AbstractRenderer {
         this._visMembership = new Uint32Array(this._numberInstance);
         this._isOccupied = new Boolean(this._numberInstance);
     }
-
     clearVisStatusArray() {
         for (var i = 0; i < this._numberInstance; i++) {
             if (this._rulesOutInfo.length > 0) {
@@ -314,10 +316,35 @@ class DOSRenderer extends AbstractRenderer {
             } 
         return array;
     }
+    updateVisSettings(GUIObject)
+    {
+        this._ks = GUIObject._binds.ks.getValue();
+        this._kt = GUIObject._binds.kt.getValue();
+    
+        const removalMethod=GUIObject._binds.removalSelect.getValue()
+        if( removalMethod =='depth')
+        {
+          this._removalSelect = 0;
+        }
+        else if( removalMethod =='CPF')
+        {
+          this._removalSelect = 1;
+        }
+        else //if( removalMethod =='Random')
+        {
+          this._removalSelect = 2;
+        }
+        this._removalAutoUpdate = GUIObject._binds.removalAutoUpdate.isChecked();
+        this.clearVisStatusArray();
+    }
     setRules(rules, GUIObject) {
+        if(this._isTreeRules==true)// so the prevoius rules were tree rules
+        {
+            this.updateVisSettings(GUIObject);
+        }
+        this._isTreeRules = false;
         this._GUIObject = GUIObject;
         this._rulesInInfo = rules;
-        this._isTreeRules = false;
         this._nRules = rules.length;
         this._rulesOutInfo.length = 0;
         this.clearIsOccupiedArray();
