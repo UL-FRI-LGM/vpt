@@ -20,7 +20,7 @@ class Camera {
         this.transformationMatrix = new Matrix();
         this.isDirty = false;
 
-        this.createOnScreenHandles();
+        this.createOnScreenControls();
     }
 
     updateViewMatrix() {
@@ -40,7 +40,7 @@ class Camera {
     get3DPosition() {
         //var pos = { x: 0, y: 0, z: 1.5, w: 0 };
         //this.transformationMatrix.transform(pos);
-        return [this.position.x + 0.5, this.position.y + 0.5, this.position.z + 0.5]; 
+        return [this.position.x + 0.5, this.position.y + 0.5, this.position.z + 0.5];
         //var pos = [this.viewMatrix.m[12], this.viewMatrix.m[13], this.viewMatrix.m[14]];
         //return [pos.x, pos.y, pos.z];
     }
@@ -64,7 +64,7 @@ class Camera {
         this.isDirty = true;
     }
 
-    createOnScreenHandles() {
+    createOnScreenControls() {
         var wrapper = document.createElement("div");
         wrapper.className = "camera-controls-wrapper";
         document.body.appendChild(wrapper);
@@ -73,49 +73,67 @@ class Camera {
 
         // zoom-in
         var btn = this.addButton(wrapper, 'camera-zoom-in');
-        btn.onclick = function() {
-            _this.zoom(10);
+        btn.onclick = function () {
+            _this.zoom(-0.1);
         };
         // zoom-out
         var btn = this.addButton(wrapper, 'camera-zoom-out');
-        btn.onclick = function() {
-            _this.zoom(1);
+        btn.onclick = function () {
+            _this.zoom(0.1);
         };
 
         // x+
         var btn = this.addButton(wrapper, 'camera-x-possitive');
-        btn.onclick = function() {
-            _this.startTransition(this.position, new Vector(1.5, 0.0, 0.0));
+        btn.onclick = function () {
+            _this.startTransition(_this.position,
+                new Vector(1.5, 0.0, 0.0),
+                _this.rotation,
+                new Quaternion(0, -0.707, 0, 0.707));
         };
 
         // x-
         var btn = this.addButton(wrapper, 'camera-x-negative');
-        btn.onclick = function() {
-            _this.startTransition(this.position, new Vector(-1.5, 0.0, 0.0));
+        btn.onclick = function () {
+            _this.startTransition(_this.position,
+                new Vector(-1.5, 0.0, 0.0),
+                _this.rotation,
+                new Quaternion(0, -0.707, 0, -0.707));
         };
 
         // y+
         var btn = this.addButton(wrapper, 'camera-y-possitive');
-        btn.onclick = function() {
-            _this.startTransition(this.position, new Vector(0.0, 1.5, 0.0));
+        btn.onclick = function () {
+            _this.startTransition(_this.position,
+                new Vector(0.0, 1.5, 0.0),
+                _this.rotation,
+                new Quaternion(0.707, 0, 0, 0.707));
         };
 
         // y-
         var btn = this.addButton(wrapper, 'camera-y-negative');
-        btn.onclick = function() {
-            _this.startTransition(this.position, new Vector(0.0, -1.5, 0.0));
+        btn.onclick = function () {
+            _this.startTransition(_this.position,
+                new Vector(0.0, -1.5, 0.0),
+                _this.rotation,
+                new Quaternion(-0.707, 0, 0, 0.707));
         };
 
         // z+
         var btn = this.addButton(wrapper, 'camera-z-possitive');
-        btn.onclick = function() {
-            _this.startTransition(this.position, new Vector(0.0, 0.0, 1.5));
+        btn.onclick = function () {
+            _this.startTransition(_this.position,
+                new Vector(0.0, 0.0, 1.5),
+                _this.rotation,
+                new Quaternion(0, 0, 0, 1));
         };
 
         // z-
         var btn = this.addButton(wrapper, 'camera-z-negative');
-        btn.onclick = function() {
-            _this.startTransition(this.position, new Vector(0.0, 0.0, -1.5));
+        btn.onclick = function () {
+            _this.startTransition(_this.position,
+                new Vector(0.0, 0.0, -1.5),
+                _this.rotation,
+                new Quaternion(0, -1, 0, 0));
         };
 
     }
@@ -128,23 +146,31 @@ class Camera {
         return btn;
     }
 
-    startTransition(from, to) {
+    startTransition(fromPos, toPos, fromRot, toRot) {
         var time = 0;
-        var timer = setTimeout(function(){
-            this.position = lerp(from, to, time);
-            this.updateViewMatrix();
+        var _this = this;
 
-            time += 40 / 2000; // the whole transition takes 2 seconds
+        var timer = setInterval(function () {
+            _this.position = _this.lerp(fromPos, toPos, time);
+            _this.rotation = Quaternion.slerp(fromRot, toRot, time);
+            _this.isDirty = true;
 
-            if(time >= 1) {
-                clearTimeout(timer);
+            if (time >= 1) {
+                // just to be sure that the correct position and rotation is set
+                _this.position = toPos;
+                _this.rotation = toRot;
+                _this.isDirty = true;
+
+                clearInterval(timer);
             }
-        }, 40);
+
+            time += 0.1;            
+        }, 10);
     }
 
     lerp(from, to, time) {
         return new Vector((to.x - from.x) * time + from.x,
-                          (to.y - from.y) * time + from.y,
-                          (to.z - from.z) * time + from.z);        
+            (to.y - from.y) * time + from.y,
+            (to.z - from.z) * time + from.z);
     }
 }
