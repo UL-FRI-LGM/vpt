@@ -1,0 +1,30 @@
+/* #package css/main */
+
+.camera-controls-wrapper {
+    width: 40px;
+    height: 285px;
+    background-color: transparent;
+    margin: 4px;
+    position: absolute;
+    right: 0px;
+    bottom: 18px;
+}
+
+.camera-button {
+    width: 30px;
+    height: 30px;
+    margin: 5px;
+    border: 1px solid gray;
+    background-color: white;
+    background-size: 20px;
+    background-position: 2px 5%;
+    cursor: pointer;
+}
+
+.camera-button.camera-zoom-in {
+    background: url("../images/icons/addition-sign.svg") no-repeat;    
+}
+
+.camera-button.camera-zoom-out {
+    
+}
