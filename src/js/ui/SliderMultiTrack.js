@@ -227,7 +227,7 @@ class SliderMultiTrack extends UIObject {
         this.histogram = [];
         for (var i = 0; i < this.histColumns; i++) {
             this.histogram.push(0);
-        }     
+        }
     }
 
     createHistogramElements() {
@@ -257,7 +257,7 @@ class SliderMultiTrack extends UIObject {
             var value = this.histogram[i];
             var div = hist.children[i];
             var height = 1;
-                        
+
             if (value > 0 && maxHistValue > 0) {
                 //height = (value / maxHistValue) * 50 + 1;
                 height = ((Math.log10(value) / maxHistValue) * 50 + 1);
@@ -271,27 +271,25 @@ class SliderMultiTrack extends UIObject {
 
     setHistogram(histogram, lo, hi) {
 
-        if (Math.ceil(hi - lo) > this.histogram.length) {            
-            var sparse = Math.ceil(Math.ceil(hi - lo) / this.histogram.length);
-
-            var counter = 0;
-            for (var i = lo; i < hi; i += sparse) {
-                var sum = 0;
-                for (var j = 0; j < sparse; j++) {
-                    if (i + j < histogram.length) {
-                        sum += histogram[Math.ceil(i) + j];
-                    }
+        var sparse = Math.round(Math.ceil(hi - lo) / this.histogram.length);
+        //console.log(sparse);
+        //console.log(histogram);
+        var counter = 0;
+        for (var i = lo; i <= hi; i += sparse) {
+            var sum = 0;
+            for (var j = 0; j < sparse; j++) {
+                if (Math.ceil(i) + j < histogram.length) {
+                    sum += histogram[Math.ceil(i) + j];
                 }
-                this.histogram[counter++] = sum;
             }
-            //console.log(this.histogram);
+            this.histogram[counter++] = sum;
 
-        } else if (histogram.length < this.histogram.length) {            
-            // TODO: implement
-        } else {            
-            this.histogram = histogram;
+            if (counter == this.histogram.length) {
+                break;
+            }
         }
 
+        //console.log(this.histogram);
         this.updateHistogram();
     }
 

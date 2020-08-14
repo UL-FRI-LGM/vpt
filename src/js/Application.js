@@ -94,6 +94,7 @@ class Application {
         this._mainDialog.addEventListener('tonemapperchange', this._handleToneMapperChange);
         this._mainDialog.trigger('rendererchange', this._mainDialog.getSelectedRenderer());
         this._mainDialog.trigger('tonemapperchange', this._mainDialog.getSelectedToneMapper());
+       
         
     }
     _handleFileDrop(e) {

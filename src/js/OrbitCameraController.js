@@ -153,6 +153,9 @@ _rotateAroundFocus(dx, dy) {
     this._camera.position.set(positionQuat.x, positionQuat.y, positionQuat.z, 1);
     this._camera.position.add(new Vector(cp.x + f.x, cp.y + f.y, cp.z + f.z, 0));
 
+    console.log(this._camera.position);
+    console.log(this._camera.rotation);
+
     this._camera.isDirty = true;
 }
 

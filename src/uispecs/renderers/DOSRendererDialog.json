@@ -151,7 +151,7 @@
                 {
                   "type": "checkbox",
                   "bind": "showAxes",
-                  "checked": false
+                  "checked": true
                 }
               ]
             }
