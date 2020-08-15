@@ -94,7 +94,7 @@ class Application {
         this._mainDialog.addEventListener('tonemapperchange', this._handleToneMapperChange);
         this._mainDialog.trigger('rendererchange', this._mainDialog.getSelectedRenderer());
         this._mainDialog.trigger('tonemapperchange', this._mainDialog.getSelectedToneMapper());
-       
+        
         
     }
     _handleFileDrop(e) {
@@ -129,6 +129,7 @@ class Application {
         
         this._treeViewDialog._setRenderer(renderer);
         this._visibilityDialog._setRenderer(renderer);
+        renderer.setGUIObjs( this._treeViewDialog, this._visibilityDialog);
     }
 
     _handleToneMapperChange(which) {

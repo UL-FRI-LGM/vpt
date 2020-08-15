@@ -41,7 +41,8 @@ class DOSRenderer extends AbstractRenderer {
             _useShadingTerm: 1,
             _useDistTerm: 1
         }, options);
-        this._GUIObject = null;
+        this._ListGUIObject = null;
+        this._TreeGUIObject = null;
         this._idVolume = idVolume;
         this._dataVolume = dataVolume;
         this._maskVolume = null;
@@ -66,7 +67,7 @@ class DOSRenderer extends AbstractRenderer {
         this._maxDist = 0;
         this._minGm = 0;
         this._maxGm = 0;
-        this._isTreeRules = false;
+        this._isTreeGUI = false;
         this._attrib = gl.createBuffer();
         this._groupMembership = gl.createBuffer();
         this._visibilityStatus = gl.createBuffer();
@@ -111,7 +112,35 @@ class DOSRenderer extends AbstractRenderer {
 
         super.destroy();
     }
-
+    setGUIObjs(treeGUIObj,listGUIObj)
+    {
+        this._ListGUIObject = listGUIObj;
+        this._TreeGUIObject = treeGUIObj;
+    }
+    GUIChanged(isTree)
+    {
+        if(isTree)
+        {
+            this._isTreeGUI=true;
+        }
+        else
+        {
+            this._isTreeGUI=false;
+        }
+        this.getVisSettings();
+        this.clearVisStatusArray2();
+    }
+    getGUIObj()
+    {
+        if(this._isTreeGUI)
+        {
+            return this._TreeGUIObject;
+        }
+        else
+        {
+            return this._ListGUIObject;
+        }
+    }
     calculateDepth() {
         const vertices = [
             new Vector(0, 0, 0),
@@ -211,13 +240,11 @@ class DOSRenderer extends AbstractRenderer {
         a.click();
     }
 
-    setHtreeRules(rules, GUIObject) {
-        if(this._isTreeRules==false)// so the prevoius rules were list rules
+    setHtreeRules(rules) {
+        if(this._isTreeGUI == false)
         {
-            this.updateVisSettings(GUIObject);
+            this.GUIChanged(true);
         }
-        this._isTreeRules = true;
-        this._GUIObject = GUIObject;
         this._rulesInInfo = rules;
         this._rulesOutInfo.length = 0;
         this.clearIsOccupiedArray();
@@ -271,8 +298,8 @@ class DOSRenderer extends AbstractRenderer {
             this._rules += `if (${rangeCondition}) { if (${visibilityCondition}) {  ${groupStatement} } else { ${backgroundStatement} } }`;
         });
 
-        if (this._GUIObject != null) {
-            this._GUIObject.computeHistograms(this._visStatusArray);
+        if (this.getGUIObj() != null) {
+            this.getGUIObj().computeHistograms(this._visStatusArray);
         }
 
         this._recomputeTransferFunction(rules);
@@ -297,6 +324,18 @@ class DOSRenderer extends AbstractRenderer {
                     this._isOccupied[i] = false;
                 }
             }
+            else {
+                this._visStatusArray[i] = 1;
+                this._visMembership[i] = 0;
+                this._isOccupied[i] = false;
+            }
+        }
+    }
+    clearVisStatusArray2() {
+        for (var i = 0; i < this._numberInstance; i++) {
+            this._visStatusArray[i] = 1;
+            this._visMembership[i] = 0;
+            this._isOccupied[i] = false;
         }
     }
     clearIsOccupiedArray() {
@@ -316,12 +355,12 @@ class DOSRenderer extends AbstractRenderer {
             } 
         return array;
     }
-    updateVisSettings(GUIObject)
+    getVisSettings()
     {
-        this._ks = GUIObject._binds.ks.getValue();
-        this._kt = GUIObject._binds.kt.getValue();
+        this._ks = this.getGUIObj()._binds.ks.getValue();
+        this._kt = this.getGUIObj()._binds.kt.getValue();
     
-        const removalMethod=GUIObject._binds.removalSelect.getValue()
+        const removalMethod=this.getGUIObj()._binds.removalSelect.getValue()
         if( removalMethod =='depth')
         {
           this._removalSelect = 0;
@@ -334,16 +373,14 @@ class DOSRenderer extends AbstractRenderer {
         {
           this._removalSelect = 2;
         }
-        this._removalAutoUpdate = GUIObject._binds.removalAutoUpdate.isChecked();
-        this.clearVisStatusArray();
+        this._removalAutoUpdate = this.getGUIObj()._binds.removalAutoUpdate.isChecked();
+        
     }
-    setRules(rules, GUIObject) {
-        if(this._isTreeRules==true)// so the prevoius rules were tree rules
+    setRules(rules) {
+        if(this._isTreeGUI == true)
         {
-            this.updateVisSettings(GUIObject);
+            this.GUIChanged(false);
         }
-        this._isTreeRules = false;
-        this._GUIObject = GUIObject;
         this._rulesInInfo = rules;
         this._nRules = rules.length;
         this._rulesOutInfo.length = 0;
@@ -387,7 +424,6 @@ class DOSRenderer extends AbstractRenderer {
         this._createVisibilityStatusBuffer();
         this._rebuildAttribCompute();
     }
-
     updateVisStatusArray(instancesStRule, numberRemoved, index) {
         var count = 0;
         for (var i = 0; i < instancesStRule.length; i++) {
@@ -709,17 +745,18 @@ class DOSRenderer extends AbstractRenderer {
         gl.useProgram(program.program);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-        //-----------------------------------------------------
+        //----------------------------------------------------
         //========= recompute avgProb ==========
+        this.getVisSettings();
         this._recomputeMinMaxDistance();
         this._rebuildProbCompute();
         //==== removal Automatic Update =========
         if (this._removalAutoUpdate == true && this._rulesInInfo != null) {
             this.clearVisStatusArray();
-            if (this._isTreeRules == false)
-                this.setRules(this._rulesInInfo, this._GUIObject);
+            if (this._isTreeGUI == false)
+                this.setRules(this._rulesInInfo, this.getGUIObj());
             else
-                this.setHtreeRules(this._rulesInInfo, this._GUIObject);
+                this.setHtreeRules(this._rulesInInfo, this.getGUIObj());
         }
         //-------------------------------------------------------
     }
@@ -1076,8 +1113,8 @@ class DOSRenderer extends AbstractRenderer {
                 this._rulesOutInfo[index].nSeen = this._computeSum(count);
             }
 
-            if (this._GUIObject != null) {
-                this._GUIObject._updateOccludedInstance(this._rulesOutInfo);
+            if (this.getGUIObj() != null) {
+                this.getGUIObj()._updateOccludedInstance(this._rulesOutInfo);
             }
         }
     }

@@ -356,8 +356,8 @@ class TreeViewDialog extends AbstractDialog {
 
   reset() {
     this._createAbstractTree();
-    console.log(this._renderer);
-    console.log(this._binds);
+    //console.log(this._renderer);
+    //console.log(this._binds);
   }
 
 
