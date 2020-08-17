@@ -41,6 +41,7 @@ class DOSRenderer extends AbstractRenderer {
             _useShadingTerm: 1,
             _useDistTerm: 1
         }, options);
+        this._renderStartTime = null;
         this._ListGUIObject = null;
         this._TreeGUIObject = null;
         this._idVolume = idVolume;
@@ -499,6 +500,8 @@ class DOSRenderer extends AbstractRenderer {
     _rebuildAttribCompute() {
         const gl = this._gl;
 
+        console.time('rebuild attrib');
+
         if (this._programs.compute) {
             gl.deleteProgram(this._programs.compute.program);
         }
@@ -523,6 +526,8 @@ class DOSRenderer extends AbstractRenderer {
             localSizeY: this._localSize.y,
             localSizeZ: this._localSize.z,
         }).compute;
+
+        console.timeEnd('rebuild attrib');
 
         this._recomputeMask();
     }
@@ -551,6 +556,8 @@ class DOSRenderer extends AbstractRenderer {
     _rebuildProbCompute() {
         const gl = this._gl;
 
+        console.time('rebuild probability');
+
         if (this._programs.compute) {
             gl.deleteProgram(this._programs.compute.program);
         }
@@ -564,11 +571,14 @@ class DOSRenderer extends AbstractRenderer {
             localSizeY: this._localSize.y,
             localSizeZ: this._localSize.z,
         }).compute;
+
+        console.timeEnd('rebuild probability');
         //this._createAccColorTexture();
         this._recomputeProbability();
     }
 
     _recomputeProbability() {
+        console.time('probability');
 
         //var t0 = performance.now();
         const gl = this._gl;
@@ -641,7 +651,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.deleteBuffer(ssbo);
         //var t1 = performance.now();
         //console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
-
+        console.timeEnd('probability');
     }
 
     _recomputeTransferFunction(rules) {
@@ -815,7 +825,16 @@ class DOSRenderer extends AbstractRenderer {
         const depthStep = (this._maxDepth - this._minDepth) / this.slices;
 
         for (let step = 0; step < this.steps; step++) {
+            if (this._depth == this._minDepth + this.cutDepth * (this._maxDepth - this._minDepth)) {
+                this._renderStartTime = performance.now();
+            }
             if (this._depth > this._maxDepth) {
+                if (this._renderStartTime !== null) {
+                    const renderEndTime = performance.now();
+                    const dtime = renderEndTime - this._renderStartTime;
+                    this._renderStartTime = null;
+                    console.log('render: ' + dtime + ' ms');
+                }
                 break;
             }
 

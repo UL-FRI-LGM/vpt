@@ -241,16 +241,16 @@ class RenderingContext extends EventEmitter {
         const volumeScale = new Matrix().fromScale(
             this._scale.x, this._scale.y, this._scale.z);
 
-        const mvp = new Matrix();
-        mvp.multiply(volumeScale, centerTranslation);
-        mvp.multiply(volumeTranslation, mvp);
-        mvp.multiply(this._camera.transformationMatrix, mvp);
-        mvp.transpose();
-        const mvpit = mvp.clone().inverse();
+        this.mvp = new Matrix();
+        this.mvp.multiply(volumeScale, centerTranslation);
+        this.mvp.multiply(volumeTranslation, this.mvp);
+        this.mvp.multiply(this._camera.transformationMatrix, this.mvp);
+        this.mvp.transpose();
+        this.mvpit = this.mvp.clone().inverse();
 
         if (this._renderer) {
-            this._renderer.setMvpMatrix(mvp);
-            this._renderer.setMvpInverseMatrix(mvpit);
+            this._renderer.setMvpMatrix(this.mvp);
+            this._renderer.setMvpInverseMatrix(this.mvpit);
             this._renderer.reset();
         }
     }

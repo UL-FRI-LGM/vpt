@@ -409,4 +409,23 @@ class Application {
         return res;
     }
 
+    getMVP() {
+        return [
+            Array.from(this._renderingContext.mvp.m),
+            Array.from(this._renderingContext.mvpit.m)
+        ];
+    }
+
+    setMVP(m) {
+        const rc = this._renderingContext;
+        rc.mvp.m.set(m[0]);
+        rc.mvpit.m.set(m[1]);
+        const renderer = rc._renderer;
+        if (renderer) {
+            renderer.setMvpMatrix(rc.mvp);
+            renderer.setMvpInverseMatrix(rc.mvpit);
+            renderer.reset();
+        }
+    }
+
 }
