@@ -42,8 +42,10 @@ uniform mediump sampler2D uDirection;
 uniform mediump sampler2D uTransmittance;
 uniform mediump sampler2D uRadiance;
 
-uniform mediump sampler3D uVolume;
-uniform mediump sampler2D uTransferFunction;
+uniform mediump sampler3D uMaskVolume;
+uniform mediump sampler3D uDataVolume;
+uniform mediump sampler2D uMaskTransferFunction;
+uniform mediump sampler2D uDataTransferFunction;
 uniform mediump sampler2D uEnvironment;
 
 uniform mat4 uMvpInverseMatrix;
@@ -57,6 +59,11 @@ uniform float uScatteringBias;
 uniform float uMajorant;
 uniform uint uMaxBounces;
 uniform uint uSteps;
+
+uniform float uColorBias;
+uniform float uAlphaBias;
+uniform float uAlphaTransfer;
+uniform float uCutDepth;
 
 in vec2 vPosition;
 
@@ -85,9 +92,22 @@ vec4 sampleEnvironmentMap(vec3 d) {
 }
 
 vec4 sampleVolumeColor(vec3 position) {
-    vec2 volumeSample = texture(uVolume, position).rg;
-    vec4 transferSample = texture(uTransferFunction, volumeSample);
-    return transferSample;
+    //vec2 volumeSample = texture(uVolume, position).rg;
+    //vec4 transferSample = texture(uTransferFunction, volumeSample);
+    //return transferSample;
+
+    vec4 maskVolumeSample = texture(uMaskVolume, position);
+    vec4 dataVolumeSample = texture(uDataVolume, position);
+    vec4 maskTransferSample = texture(uMaskTransferFunction, maskVolumeSample.rg);
+    //vec4 dataTransferSample = texture(uDataTransferFunction, dataVolumeSample.rg);
+    float gm = length(dataVolumeSample.gba);
+    vec4 dataTransferSample = texture(uDataTransferFunction, vec2(dataVolumeSample.r,gm));
+    //vec3 mixedColor = mix(maskTransferSample.rgb, dataTransferSample.rgb, dataTransferSample.a);
+    //vec4 finalColor = vec4(mixedColor, maskTransferSample.a);
+    vec3 finalColor = mix(maskTransferSample.rgb, dataTransferSample.rgb, uColorBias);
+    float maskAlpha = maskTransferSample.a * mix(1.0, dataTransferSample.a, uAlphaTransfer);
+    float finalAlpha = mix(maskAlpha, dataTransferSample.a, uAlphaBias);
+    return vec4(finalColor, finalAlpha);
 }
 
 vec3 randomDirection(vec2 U) {
@@ -226,6 +246,7 @@ uniform mat4 uMvpInverseMatrix;
 uniform vec2 uInverseResolution;
 uniform float uRandSeed;
 uniform float uBlur;
+uniform float uCutDepth;
 
 in vec2 vPosition;
 

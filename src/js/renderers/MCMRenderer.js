@@ -912,6 +912,7 @@ _resetFrame() {
     gl.uniform2f(program.uniforms.uInverseResolution, 1 / this._bufferSize, 1 / this._bufferSize);
     gl.uniform1f(program.uniforms.uRandSeed, Math.random());
     gl.uniform1f(program.uniforms.uBlur, 0);
+    gl.uniform1f(program.uniforms.uCutDepth, this.cutDepth);
 
     gl.drawBuffers([
         gl.COLOR_ATTACHMENT0,
@@ -959,18 +960,24 @@ _integrateFrame() {
     gl.activeTexture(gl.TEXTURE4);
     gl.bindTexture(gl.TEXTURE_3D, this._maskVolume);
     gl.activeTexture(gl.TEXTURE5);
-    gl.bindTexture(gl.TEXTURE_2D, this._environmentTexture);
+    gl.bindTexture(gl.TEXTURE_3D, this._dataVolume.getTexture());
     gl.activeTexture(gl.TEXTURE6);
     gl.bindTexture(gl.TEXTURE_2D, this._maskTransferFunction);
+    gl.activeTexture(gl.TEXTURE7);
+    gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
+    gl.activeTexture(gl.TEXTURE8);
+    gl.bindTexture(gl.TEXTURE_2D, this._environmentTexture);
 
     gl.uniform1i(program.uniforms.uPosition, 0);
     gl.uniform1i(program.uniforms.uDirection, 1);
     gl.uniform1i(program.uniforms.uTransmittance, 2);
     gl.uniform1i(program.uniforms.uRadiance, 3);
 
-    gl.uniform1i(program.uniforms.uVolume, 4);
-    gl.uniform1i(program.uniforms.uEnvironment, 5);
-    gl.uniform1i(program.uniforms.uTransferFunction, 6);
+    gl.uniform1i(program.uniforms.uMaskVolume, 4);
+    gl.uniform1i(program.uniforms.uDataVolume, 5);
+    gl.uniform1i(program.uniforms.uMaskTransferFunction, 6);
+    gl.uniform1i(program.uniforms.uDataTransferFunction, 7);
+    gl.uniform1i(program.uniforms.uEnvironment, 8);
 
     gl.uniformMatrix4fv(program.uniforms.uMvpInverseMatrix, false, this._mvpInverseMatrix.m);
     gl.uniform2f(program.uniforms.uInverseResolution, 1 / this._bufferSize, 1 / this._bufferSize);
@@ -983,6 +990,10 @@ _integrateFrame() {
     gl.uniform1f(program.uniforms.uMajorant, this.majorant);
     gl.uniform1ui(program.uniforms.uMaxBounces, this.maxBounces);
     gl.uniform1ui(program.uniforms.uSteps, this.steps);
+
+    gl.uniform1f(program.uniforms.uColorBias, this.colorBias);
+    gl.uniform1f(program.uniforms.uAlphaBias, this.alphaBias);
+    gl.uniform1f(program.uniforms.uAlphaTransfer, this.alphaTransfer);
 
     gl.drawBuffers([
         gl.COLOR_ATTACHMENT0,
