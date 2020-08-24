@@ -44,6 +44,8 @@ public:
                 this->_radius = 0.25f;
             break;
         }
+
+        this->_size = QVector3D(this->_radius, this->_radius, this->_radius);
     }
     inline float getRadius() { return _radius; }
 
