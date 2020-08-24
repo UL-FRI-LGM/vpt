@@ -9,8 +9,7 @@
 #include "Object.h"
 
 class Ellipsoid : public Object {
-private:
-    QVector3D _size;
+
 public:
     Ellipsoid(uchar id, QVector3D position, uchar value, uchar size, uchar orientation)
         : Object(id, "Ellipsoid", 2, position, value, size, orientation) {

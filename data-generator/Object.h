@@ -10,11 +10,12 @@ class Object {
 protected:
     QVector3D _position;
     QQuaternion _rotation;
+    QVector3D _size;
 
     uchar _id;
     uchar _value;
     uchar _type; // 0=undefined, 1=sphere, 2=ellipsoid, 3=box
-    uchar _size; // 8 size classes
+    uchar _sizeT; // 8 size classes
     uchar _orientation; // 8 possible orientations
 
     QString _name;
@@ -25,7 +26,7 @@ public:
         this->_value = value;
         this->_type = type;
         this->_orientation = orientation;
-        this->_size = size;
+        this->_sizeT = size;
         this->_name = name;
 
         switch(orientation) {
@@ -59,12 +60,13 @@ public:
 
     inline QVector3D getPosition() { return _position; }
     inline QQuaternion getRotation() { return _rotation; } // probably not useful
+    inline QVector3D getSize3D() { return _size; }
 
     // for volumetric data
     inline uchar getId() { return _id; }
     inline uchar getValue() { return _value; }
     inline uchar getType() { return _type; }
-    inline uchar getSize() { return _size; }
+    inline uchar getSize() { return _sizeT; }
     inline uchar getOrientation() { return _orientation; }
     inline QString getName() { return this->_name; }
 
