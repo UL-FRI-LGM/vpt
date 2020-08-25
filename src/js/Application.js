@@ -135,12 +135,14 @@ class Application {
         this._treeViewDialog._setRenderer(renderer);
         this._visibilityDialog._setRenderer(renderer);
         renderer.setGUIObjs(this._treeViewDialog,this._visibilityDialog);
-
-        //------------------ reload data and rules -----------
-        if(this.attributes!=null)
+         //------------------ reload data and rules -----------
+        if(this._renderingContext._idVolume.ready && this._renderingContext._dataVolume.ready)
         {
-            renderer.setAttributes(this.attributes, this.layout.map(function (x) { var v = new Object(); v.name = x.name; v.type = x.type; return v; }), this.elementsJSON);
+            renderer.setDataVolume(this._renderingContext._dataVolume);
+            renderer.setIDVolume(this._renderingContext._idVolume);
+            //this._renderingContext.startRendering();
             renderer.setMinMaxGM(this._renderingContext._minGm, this._renderingContext._maxGm) ;
+            renderer.setAttributes(this.attributes, this.layout.map(function (x) { var v = new Object(); v.name = x.name; v.type = x.type; return v; }), this.elementsJSON);
             if(this.isTreeTheActiveGUI==true)
             {
                 this._throttleTreeVisibility();
