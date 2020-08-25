@@ -155,6 +155,8 @@ class RenderingContext extends EventEmitter {
                         this._dataVolume.setFilter(this._filter);
                         if (this._renderer) {
                             this._renderer.setDataVolume(this._dataVolume);
+                            this._renderer._recomputeMinMaxGM();
+                            this.setMinMaxGM(this._renderer._minGm,this._renderer._maxGm);
                             if (this._idVolume.ready && this._dataVolume.ready) {
                                 this.startRendering();
                             }
@@ -164,7 +166,11 @@ class RenderingContext extends EventEmitter {
             }
         });
     }
-
+    setMinMaxGM(min,max)
+    {
+        this._minGm = min;
+        this._maxGm = max;
+    }
     setEnvironmentMap(image) {
         WebGL.createTexture(this._gl, {
             texture: this._environmentTexture,

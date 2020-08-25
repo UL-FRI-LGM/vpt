@@ -22,6 +22,11 @@ constructor(renderer, options) {
     this._binds.bounces.addEventListener('input', this._handleChange);
     this._binds.steps.addEventListener('input', this._handleChange);
 
+    this._binds.colorBias.addEventListener('change', this._handleChange);
+    this._binds.alphaBias.addEventListener('change', this._handleChange);
+    this._binds.alphaTransfer.addEventListener('change', this._handleChange);
+    this._binds.cutDepth.addEventListener('change', this._handleChange);
+
     this._tfwidget = new TransferFunctionWidget();
     this._binds.tf_container.add(this._tfwidget);
     this._tfwidget.addEventListener('change', this._handleTFChange);
@@ -33,12 +38,12 @@ destroy() {
 }
 
 _handleChange() {
-    const extinction = this._binds.extinction.getValue();
-    const albedo     = this._binds.albedo.getValue();
-    const bias       = this._binds.bias.getValue();
-    const ratio      = this._binds.ratio.getValue();
-    const bounces    = this._binds.bounces.getValue();
-    const steps      = this._binds.steps.getValue();
+    const extinction     = this._binds.extinction.getValue();
+    const albedo         = this._binds.albedo.getValue();
+    const bias           = this._binds.bias.getValue();
+    const ratio          = this._binds.ratio.getValue();
+    const bounces        = this._binds.bounces.getValue();
+    const steps          = this._binds.steps.getValue();
 
     this._renderer.absorptionCoefficient = extinction * (1 - albedo);
     this._renderer.scatteringCoefficient = extinction * albedo;
@@ -46,6 +51,16 @@ _handleChange() {
     this._renderer.majorant = extinction * ratio;
     this._renderer.maxBounces = bounces;
     this._renderer.steps = steps;
+
+    const colorBias      = this._binds.colorBias.getValue();
+    const alphaBias      = this._binds.alphaBias.getValue();
+    const alphaTransfer  = this._binds.alphaTransfer.getValue();
+    const cutDepth       = this._binds.cutDepth.getValue();
+
+    this._renderer.colorBias = colorBias;
+    this._renderer.alphaBias = alphaBias;
+    this._renderer.alphaTransfer = alphaTransfer;
+    this._renderer.cutDepth = cutDepth;
 
     this._renderer.reset();
 }
