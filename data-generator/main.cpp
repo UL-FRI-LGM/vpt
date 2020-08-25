@@ -1,6 +1,7 @@
 #include <QVector3D>
 #include <QVector4D>
 #include <QFile>
+#include <QDir>
 #include <QtMath>
 #include <QDebug>
 #include <QDateTime>
@@ -175,7 +176,7 @@ QList<int> getNeighbors(QList<int>* neighs, Settings* set, int x, int y, int z)
 
 float shortestDistanceToEmptyVoxel(QList<int>* data, Settings* set, int i) {
     if ((*data)[i] == 0) {
-        return (rand() % 1000) / 1000000.0f; // TODO: add some noise
+        return (rand() % 1000) / 10000000.0f; // TODO: add some noise
     }
 
     int x, y, z;
@@ -192,7 +193,9 @@ float shortestDistanceToEmptyVoxel(QList<int>* data, Settings* set, int i) {
     QList<int> neighs;
     neighs.append(i);
     
-    for (auto n : neighs) {
+    for (int i = 0; i < neighs.size(); i++) {
+        auto n = neighs[i];
+
         posFromIndex(n, set, x, y, z);
 
         auto indices = getNeighbors(&neighs, set, x, y, z);
@@ -354,11 +357,13 @@ void generateData(QList<Object*> objects, Settings* set, QByteArray* data, QByte
     out2.setByteOrder(QDataStream::LittleEndian);
 
     qDebug() << "shortest distance computation";
+    QList<int> dump;
     for (int i = 0; i < array.size(); i++) {
         
         float dist = shortestDistanceToEmptyVoxel(&array, set, i);
 
-        out2 << dist;
+        dump.append((int)(dist * 100000));
+        out2 << (int)(dist * 100000);
 
         if (i % (int)(array.size() * 0.1) == 0) {
             qDebug() << i << " voxels done";
@@ -524,7 +529,8 @@ void generateCSV(QList<Object*> objects, Settings* set)
         out << "Orientation" << separator;
         out << "X" << separator;
         out << "Y" << separator;
-        out << "Z";
+        out << "Z" << separator;
+        out << "Volume";
         out << "\r\n";
 
 
@@ -537,7 +543,8 @@ void generateCSV(QList<Object*> objects, Settings* set)
             out << o->getOrientation() << separator;
             out << o->getPosition().x() << separator;
             out << o->getPosition().y() << separator;
-            out << o->getPosition().z();
+            out << o->getPosition().z() << separator;
+            out << o->getVolume() * 1000;
             out << "\r\n";
         }
 
@@ -562,6 +569,7 @@ void generateCSV(QList<Object*> objects, Settings* set)
             out << (float)(o->getPosition().x());
             out << (float)(o->getPosition().y());
             out << (float)(o->getPosition().z());
+            out << (float)(o->getVolume() * 1000);
         }
 
         csvFile.close();
@@ -639,6 +647,10 @@ QByteArray generateMeta(QList<Object*> objects, Settings* set)
     layout.append(value);
 
     value["name"] = "Z";
+    value["type"] = "float";
+    layout.append(value);
+
+    value["name"] = "Volume";
     value["type"] = "float";
     layout.append(value);
 
@@ -806,10 +818,10 @@ int main(int argc, char *argv[])
     /*set.w = 128;
     set.h = 128;
     set.d = 128;*/
-    set.x = 256;
-    set.y = 256;
-    set.z = 256;
-    set.targetCount = 1000;
+    set.x = 128;
+    set.y = 128;
+    set.z = 128;
+    set.targetCount = 100;
     //set.outputType = 3;
 
     // main data generator
@@ -817,6 +829,12 @@ int main(int argc, char *argv[])
     //QList<Object*> objects = generateObjectsGrid(&set);
     qDebug() << objects.size();
     
+    auto current = QDir::current();
+    QDir dir(current.absolutePath() + "/output");
+    if (!dir.exists()) {
+        dir.mkdir(current.absolutePath() + "/output");
+    }
+
     QByteArray volume1, volume2;
     generateData(objects, &set, &volume1, &volume2);
     set.targetFile = "output/data.raw";

@@ -68,6 +68,10 @@ public:
 
         return list;
     }
+
+    inline float getVolume() override {
+        return (4.0 / 3.0) * M_PI * (this->_radius * this->_radius * this->_radius);
+    }
 };
 
 #endif // SPHERE_H

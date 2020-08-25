@@ -67,6 +67,10 @@ public:
 
         return list;
     }
+
+    inline float getVolume() override {
+        return (4.0 / 3.0) * M_PI * (this->_size.x() * this->_size.y() * this->_size.z());
+    }
 };
 
 #endif // ELLIPSOID_H

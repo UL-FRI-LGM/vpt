@@ -5,3 +5,4 @@ settings
 data-generator/debug/
 data-generator/.vs/
 data-generator/release/
+data-generator/output/

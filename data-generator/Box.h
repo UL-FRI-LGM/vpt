@@ -85,6 +85,10 @@ public:
 
         return list;
     }
+
+    inline float getVolume() override {
+        return this->_size.x() * this->_size.y() * this->_size.z();
+    }
 };
 
 #endif // BOX_H

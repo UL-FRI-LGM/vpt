@@ -69,9 +69,10 @@ public:
     inline uchar getSize() { return _sizeT; }
     inline uchar getOrientation() { return _orientation; }
     inline QString getName() { return this->_name; }
-
+    
     virtual bool contains(QVector3D point) = 0;
     virtual QList<QVector3D> getBoundingBox() = 0;
+    virtual float getVolume() = 0;
 };
 // ===================================
 
