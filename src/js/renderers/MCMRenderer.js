@@ -200,9 +200,13 @@ setDataVolume(volume) {
     const dimensions = volume._currentModality.dimensions;
 
     this._dataVolume = volume;
-    this._recomputeMinMaxGM();
+    //this._recomputeMinMaxGM();
 }
-
+setMinMaxGM(min,max)
+{
+    this._minGm = min;
+    this._maxGm = max;
+}
 setAttributes(attributes, layout, elements) {
     const gl = this._gl;
 
@@ -384,7 +388,7 @@ setRules(rules) {
         var instancesStRule = this._getRuleElements([attribute], [hi], [lo]);
         instancesStRule = this._shuffleArray(instancesStRule);
         instancesStRule = this._sortAscending(instancesStRule, 'avgProb');
-        //console.log(instancesStRule);
+
         ruleObj.nRemoved = instancesStRule.length - (Math.floor(instancesStRule.length * visibility));
         ruleObj.nInstances = instancesStRule.length;
         ruleObj.isLocked = rule.isLocked;
@@ -878,7 +882,7 @@ _recomputeMinMaxGM() {
     const program = this._programs.compute;
     gl.useProgram(program.program);
 
-    const dimensions = this._idVolume._currentModality.dimensions;
+    const dimensions = this._dataVolume._currentModality.dimensions;
     gl.bindImageTexture(1, this._dataVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.RGBA8);
 
     const gm_ssbo = gl.createBuffer();
@@ -1003,6 +1007,7 @@ _integrateFrame() {
     ]);
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+    this._countOccludedInstance();
 }
 
 _renderFrame() {

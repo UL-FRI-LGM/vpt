@@ -113,6 +113,11 @@ class DOSRenderer extends AbstractRenderer {
 
         super.destroy();
     }
+    setMinMaxGM(min,max)
+    {
+        this._minGm = min;
+        this._maxGm = max;
+    }
     setGUIObjs(treeGUIObj,listGUIObj)
     {
         this._ListGUIObject = listGUIObj;
@@ -195,7 +200,7 @@ class DOSRenderer extends AbstractRenderer {
         const dimensions = volume._currentModality.dimensions;
 
         this._dataVolume = volume;
-        this._recomputeMinMaxGM();
+        //this._recomputeMinMaxGM();
 
     }
 
@@ -1096,25 +1101,6 @@ class DOSRenderer extends AbstractRenderer {
             groupIDBuffer
         ];
     }
-
-    /*_getIDFramebufferSpec() {
-        const gl = this._gl;
- 
-        const spec = {
-            width: this._bufferSize,
-            height: this._bufferSize,
-            min: gl.NEAREST,
-            mag: gl.NEAREST,
-            format: gl.RED_INTEGER,
-            internalFormat: gl.R32UI,
-            type: gl.UNSIGNED_INT
-        };
- 
-        return [
-            spec, // instance ID
-            spec  // group ID
-        ];
-    }*/
     _countOccludedInstance() {
 
         if (this._nRules >= 1) {
@@ -1269,7 +1255,7 @@ class DOSRenderer extends AbstractRenderer {
         const program = this._programs.compute;
         gl.useProgram(program.program);
 
-        const dimensions = this._idVolume._currentModality.dimensions;
+        const dimensions = this._dataVolume._currentModality.dimensions;
         gl.bindImageTexture(1, this._dataVolume.getTexture(), 0, true, 0, gl.READ_ONLY, gl.RGBA8);
 
         const gm_ssbo = gl.createBuffer();

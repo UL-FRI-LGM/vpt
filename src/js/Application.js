@@ -95,7 +95,12 @@ class Application {
         this._mainDialog.trigger('rendererchange', this._mainDialog.getSelectedRenderer());
         this._mainDialog.trigger('tonemapperchange', this._mainDialog.getSelectedToneMapper());
        
-        
+        //--------------------
+        this.attributes=null;
+        this.layout=null;
+        this.elementsJSON=[];
+        this.isTreeTheActiveGUI=false;
+
     }
     _handleFileDrop(e) {
         e.preventDefault();
@@ -130,6 +135,21 @@ class Application {
         this._treeViewDialog._setRenderer(renderer);
         this._visibilityDialog._setRenderer(renderer);
         renderer.setGUIObjs(this._treeViewDialog,this._visibilityDialog);
+
+        //------------------ reload data and rules -----------
+        if(this.attributes!=null)
+        {
+            renderer.setAttributes(this.attributes, this.layout.map(function (x) { var v = new Object(); v.name = x.name; v.type = x.type; return v; }), this.elementsJSON);
+            renderer.setMinMaxGM(this._renderingContext._minGm, this._renderingContext._maxGm) ;
+            if(this.isTreeTheActiveGUI==true)
+            {
+                this._throttleTreeVisibility();
+            }
+            else{
+                this._throttleVisibility();
+            }
+            
+        }
     }
 
     _handleToneMapperChange(which) {
@@ -170,6 +190,10 @@ class Application {
                                     this._renderingContext.getRenderer().setAttributes(attributes, layout, elementsJSON);
                                     this._visibilityDialog.setAttributes(layout.map(x => x.name), elementsJSON);
                                     this._treeViewDialog.setAttributes(layout, elementsJSON);
+                                    //-------------------------------
+                                    this.elementsJSON=elementsJSON;
+                                    this.attributes=attributes;
+                                    this.layout=layout;
                                 }
                             });
                         }
@@ -211,11 +235,15 @@ class Application {
         });
 
         Promise.all([attrib, layout]).then(([attrib, layout]) => {
-            const elementsJSON = this.getElementsAttribJSON(attrib, layout);//get also min/max
+            var elementsJSON = this.getElementsAttribJSON(attrib, layout);//get also min/max
             const renderer = this._renderingContext.getRenderer();
             renderer.setAttributes(attrib, layout.map(function (x) { var v = new Object(); v.name = x.name; v.type = x.type; return v; }), elementsJSON);
             this._visibilityDialog.setAttributes(layout.map(x => x.name), elementsJSON);//layout.map(function(x) { var v=new Object();v.name=x.name;v.lowerBound=x.lowerBound;v.upperBound=x.upperBound; return v;}));
             this._treeViewDialog.setAttributes(layout, elementsJSON);
+            //-------------------------------
+            this.elementsJSON=elementsJSON;
+            this.attributes=attrib;
+            this.layout=layout;
         });
     }
 
@@ -239,12 +267,13 @@ class Application {
     }
 
     _updateVisibility() {   
+        
         if (this._visibilityUpdateTimeout) {
             return;
             //clearTimeout(this._visibilityUpdateTimeout);
             //this._visibilityUpdateTimeout = null;
         }
-
+        this.isTreeTheActiveGUI=false;
         const renderer = this._renderingContext.getRenderer();        
         var _this = this;
 
@@ -329,10 +358,11 @@ class Application {
         }
     }
     _updateTreeVisibility() {
+
         if (this._visibilityUpdateTimeout) {
             return;            
         }
-        
+        this.isTreeTheActiveGUI=true;
         const renderer = this._renderingContext.getRenderer();        
         var _this = this;
 
