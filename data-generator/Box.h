@@ -11,7 +11,7 @@
 class Box : public Object {
 
 public:
-    Box(uchar id, QVector3D position, uchar value, uchar size, uchar orientation)
+    Box(int id, QVector3D position, uchar value, uchar size, uchar orientation)
         : Object(id, "Box", 3, position, value, size, orientation) {
 
         switch(size) {

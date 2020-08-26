@@ -11,7 +11,7 @@
 class Ellipsoid : public Object {
 
 public:
-    Ellipsoid(uchar id, QVector3D position, uchar value, uchar size, uchar orientation)
+    Ellipsoid(int id, QVector3D position, uchar value, uchar size, uchar orientation)
         : Object(id, "Ellipsoid", 2, position, value, size, orientation) {
         switch(size) {
             case 0:

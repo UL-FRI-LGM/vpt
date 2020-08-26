@@ -13,7 +13,7 @@ class Sphere : public Object {
 private:
     float _radius;
 public:
-    Sphere(uchar id, QVector3D position, uchar value, uchar size, uchar orientation)
+    Sphere(int id, QVector3D position, uchar value, uchar size, uchar orientation)
         : Object(id, "Sphere", 1, position, value, size, orientation) {
         switch(size) {
             case 0:

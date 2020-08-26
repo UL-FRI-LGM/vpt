@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDataStream>
+#include <stdint.h>
 
 #include "Object.h"
 #include "Sphere.h"
@@ -88,7 +89,7 @@ QList<Object*> generateObjects(Settings* set)
         uchar type = set->allowedTypes[qrand() % set->allowedTypes.size()];
         uchar size = qrand() % 8; // 8 possible size classes
         uchar orientation = qrand() % 8; // 8 possible orientations        
-        uchar id = objects.size() + 1;
+        int id = objects.size() + 1;
         uchar value = id;
 
         Object* obj = nullptr;
@@ -165,20 +166,10 @@ QList<int> getNeighbors(QList<int>* neighs, Settings* set, int x, int y, int z)
         }
     }
 
-    for (auto i : *neighs) {
-        if (indices.contains(i)) {
-            indices.removeAll(i);
-        }
-    }
-
     return indices;
 }
 
 float shortestDistanceToEmptyVoxel(QList<int>* data, Settings* set, int i) {
-    if ((*data)[i] == 0) {
-        return (rand() % 1000) / 10000000.0f; // TODO: add some noise
-    }
-
     int x, y, z;
     posFromIndex(i, set, x, y, z);
 
@@ -188,47 +179,21 @@ float shortestDistanceToEmptyVoxel(QList<int>* data, Settings* set, int i) {
 
     auto center = QVector3D(x * partX + partX * 0.5f, y * partY + partY * 0.5f, z * partZ + partZ * 0.5f);
 
-    float dist = 1000;
-    bool found = false;
-    QList<int> neighs;
-    neighs.append(i);
-    
-    for (int i = 0; i < neighs.size(); i++) {
-        auto n = neighs[i];
-
-        posFromIndex(n, set, x, y, z);
-
-        auto indices = getNeighbors(&neighs, set, x, y, z);
-
-        for (auto ni : indices) {
-            if ((*data)[ni] == 0) {
-                found = true;
-
-                int nx, ny, nz;
-                posFromIndex(ni, set, nx, ny, nz);
-
-                auto nc = QVector3D(nx * partX + partX * 0.5f, ny * partY + partY * 0.5f, nz * partZ + partZ * 0.5f);
-
-                float nd = center.distanceToPoint(nc);
-
-                if (nd < dist) {
-                    dist = nd;
-                }
-            }
-        }
-
-        if (indices.isEmpty() || found) {
-            break;
-        }
-
-        for (auto i : indices) {
-            if (neighs.contains(i)) {
-                neighs.append(i);
-            }
-        }        
+    float frequency1 = 30.0;
+    float frequency2 = 13.3;
+    float value = 0;
+    if ((*data)[i] != 0) {
+        value += (qSin(center.x() * frequency1) * qSin(center.y() * frequency1) * qSin(center.z() * frequency1)) * 0.5 + 0.5;
+        value += (qSin(center.x() * frequency2) * qSin(center.y() * frequency2) * qSin(center.z() * frequency2)) * 0.5 + 0.5;
     }
-    
-    return dist;
+    value = value * 0.5;
+
+    float noise = 0;//(rand() % RAND_MAX) / (float)RAND_MAX;
+
+    //float final = (value * 0.8 + noise * 0.2) * 256;
+    float final = value * 256;
+    //qDebug() << final;
+    return final;
 }
 
 void generateData(QList<Object*> objects, Settings* set, QByteArray* data, QByteArray* data2)
@@ -362,8 +327,8 @@ void generateData(QList<Object*> objects, Settings* set, QByteArray* data, QByte
         
         float dist = shortestDistanceToEmptyVoxel(&array, set, i);
 
-        dump.append((int)(dist * 100000));
-        out2 << (int)(dist * 100000);
+        dump.append((uint8_t)(dist));
+        out2 << (uint8_t)(dist);
 
         if (i % (int)(array.size() * 0.1) == 0) {
             qDebug() << i << " voxels done";
@@ -558,6 +523,11 @@ void generateCSV(QList<Object*> objects, Settings* set)
         QDataStream out(&rawFile);
         out.setFloatingPointPrecision(QDataStream::FloatingPointPrecision::SinglePrecision);
         out.setByteOrder(QDataStream::LittleEndian);
+
+        // output attributes for background
+        for (int i = 0; i < 10; i++) {
+            out << (float)0;
+        }
 
         for(auto o : objects) {
             out << (float)o->getId();
@@ -818,10 +788,10 @@ int main(int argc, char *argv[])
     /*set.w = 128;
     set.h = 128;
     set.d = 128;*/
-    set.x = 128;
-    set.y = 128;
-    set.z = 128;
-    set.targetCount = 100;
+    set.x = 256;
+    set.y = 256;
+    set.z = 256;
+    set.targetCount = 1000;
     //set.outputType = 3;
 
     // main data generator
