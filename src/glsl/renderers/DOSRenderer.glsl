@@ -160,14 +160,29 @@ void main() {
 #version 310 es
 precision mediump float;
 
-uniform mediump sampler2D uAccumulator;
+// uniform mediump sampler2D uAccumulator;
+uniform mediump usampler2D uInstanceID;
+uniform mediump usampler2D uGroupID;
 
 in vec2 vPosition;
 out vec4 oColor;
 
+@rand
+@hue
+
 void main() {
-    vec4 color = texture(uAccumulator, vPosition);
-    oColor = mix(vec4(1), vec4(color.rgb, 1), color.a);
+    // vec4 color = texture(uAccumulator, vPosition);
+    // oColor = mix(vec4(1), vec4(color.rgb, 1), color.a);
+    uint instanceID = texture(uInstanceID, vPosition).r;
+    uint groupID = texture(uGroupID, vPosition).r;
+
+    vec2 rgroup = rand(vec2(groupID));
+    vec2 rinstance = rand(vec2(instanceID));
+    if (instanceID == 0u) {
+        oColor = vec4(1);
+    } else {
+        oColor = hue(rgroup.x) * mix(0.2, 1.0, rinstance.y);
+    }
 }
 
 // #section DOSReset/vertex

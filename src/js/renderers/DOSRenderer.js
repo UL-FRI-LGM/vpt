@@ -874,10 +874,15 @@ class DOSRenderer extends AbstractRenderer {
         const program = this._programs.render;
         gl.useProgram(program.program);
 
+        // gl.activeTexture(gl.TEXTURE0);
+        // gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[0]);
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[0]);
+        gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[2]);
+        gl.uniform1i(program.uniforms.uInstanceID, 0);
 
-        gl.uniform1i(program.uniforms.uAccumulator, 0);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[3]);
+        gl.uniform1i(program.uniforms.uGroupID, 1);
 
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
