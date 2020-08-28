@@ -12,7 +12,7 @@ class TreeViewDialog extends AbstractDialog {
     super(UISPECS.TreeViewDialog, options);
     TVDClass = this;
     this.rules = [];
-    this._colo
+    this.colors;
 
     this._handleCreateHTreeButton = this._handleCreateHTreeButton.bind(this);
     this._handleChange = this._handleChange.bind(this);
@@ -37,11 +37,10 @@ class TreeViewDialog extends AbstractDialog {
     // this._binds.Ce.addEventListener('change', this._handleChange);
 
   }
-  _setRenderer(renderer)
-  {
-    this._renderer=renderer;
+  _setRenderer(renderer) {
+    this._renderer = renderer;
   }
-  _handleChange() {    
+  _handleChange() {
     this._renderer._ks = this._binds.ks.getValue();
     this._renderer._kt = this._binds.kt.getValue();
 
@@ -121,15 +120,15 @@ class TreeViewDialog extends AbstractDialog {
 
     var scale = 1;
 
-    while((node.hi - node.lo) * scale < node.sliderObj.object.histColumns) {
-        scale *= 10;
+    while ((node.hi - node.lo) * scale < node.sliderObj.object.histColumns) {
+      scale *= 10;
     }
 
     for (var i = node.lo * scale; i <= node.hi * scale; i += 1) {
       var index = Math.round(i);
       histogram[index] = 0;
     }
-    
+
     var name = node.name.indexOf("[") > -1 ? node.parent.name : node.name;
 
     // select all visible instances based on [min-max] interval
@@ -144,15 +143,15 @@ class TreeViewDialog extends AbstractDialog {
 
       if (value >= node.lo * scale && value <= node.hi * scale) {
         var index = Math.round(value);
-        
-        if(isNaN(histogram[index])) {
+
+        if (isNaN(histogram[index])) {
           histogram[index] = 0;
         }
 
         histogram[index] += 1;
       }
     }
-    
+
     node.sliderObj.object.setHistogram(histogram, node.lo * scale, node.hi * scale);
   }
 
@@ -215,41 +214,7 @@ class TreeViewDialog extends AbstractDialog {
     }
   }
 
-  getColors() {
-    var root = document.getElementsByClassName("root")[0];
 
-    var colors = [];
-    for (var i = 0; i < root.childElementCount; i++) {
-      var line = root.children[i];
-      var color = line.querySelector('.primary_color');
-
-      if (color == null) {
-        colors.push("#808080");
-      } else {
-        colors.push(color.value);
-      }
-    }
-
-    return colors;
-  }
-
-  setColors(colors) {
-    var root = document.getElementsByClassName("root")[0];
-
-    for (var i = 0; i < root.childElementCount && i < colors.length; i++) {
-      var line = root.children[i];
-      var color = line.querySelector('.primary_color');
-
-      if (color != null) {
-        color.value = colors[i];
-
-        var event = document.createEvent('Event');
-        event.initEvent('change', true, true);
-
-        color.dispatchEvent(event);
-      }
-    }
-  }
 
   /* NEEDS TO BE REWORKED!
   getValues() {
@@ -394,11 +359,58 @@ class TreeViewDialog extends AbstractDialog {
     jsonView.format(jsonHArr, '.root');
     TVDClass.trigger('treeTopologyChange');
   }
+
+  getAllTreeNodes(parent) {
+    var array = [];
+
+    if (parent == null) {
+      return array;
+    }
+
+    array.push(parent);
+
+    if (parent.children != null) {
+      for (var i = 0; i < parent.children.length; i++) {
+        var sub = this.getAllTreeNodes(parent.children[i]);
+
+        for (var j = 0; j < sub.length; j++) {
+          array.push(sub[j]);
+        }
+      }
+    }
+
+    return array;
+  }
+
+  getColors() {
+    var nodes = this.getAllTreeNodes(Htree);
+
+    var colors = [];
+    for (var i = 0; i < nodes.length; i++) {
+      colors.push(nodes[i].color);
+    }
+
+    return colors;
+  }
+
+  setColors(colors) {
+    var nodes = this.getAllTreeNodes(Htree);
+
+    console.log(nodes);
+    console.log(colors);
+    for (var i = 0; i < Math.min(colors.length, nodes.length); i++) {  
+      if(colors[i] != "#ffffffff") {
+        nodes[i].colorObj.object.setValue(colors[i]);
+        nodes[i].color = colors[i];   
+      }   
+    }
+  }
 }
 
 //======================================================================================
 var TVDClass;
 var Htree;
+var colorsToSet;
 let propertyList = new Array();
 let elementsArray = new Array();
 var nbProperty = 0;
@@ -497,6 +509,7 @@ function createJSONHierarchyTree(nav) {
   }
   return null;
 }
+
 //================================================================================================
 (function () {
   'use strict';
@@ -580,12 +593,12 @@ function createJSONHierarchyTree(nav) {
     node.colorObj = UI.create({
       "type": "color-chooser",
       "bind": "colorChange",
-      "value": '#dddddd' //getRandomHexColor()
+      "value": '#ffffffff' //getRandomHexColor()
     });
     node.colorObj.object._element.classList.toggle('color-chooser-small', true);
     node.colorObj.object.showOverlay();
 
-    node.color = node.colorObj.object.getValue();
+    node.color = "#ffffffff"; //node.colorObj.object.getValue();
 
     const div_colorChooser = node.colorObj.object._element;
     const handleColorChange = node.ColorChange.bind(node);
@@ -1165,6 +1178,12 @@ function createJSONHierarchyTree(nav) {
       Htree = createTree(parsedData, false);
       Htree.nInstances = elementsArray.length;
       Htree.visInstances = Htree.nInstances;
+
+      if (colorsToSet != null) {
+        setColors(Htree, colorsToSet);
+        colorsToSet = null;
+      }
+
       render(Htree, targetElem, 0);
       countElementsOfthisClass(Htree, [], [], []);
       countElementsBasedOnTree(Htree);

@@ -251,7 +251,7 @@ class DynamicTreeView extends UIObject {
         var max = _this.createElement("input", "property-range-max");
         max.type = "number";
         max.step = ".01";
-        max.value = Math.ceil(maxValue);
+        max.value = maxValue;
         max.addEventListener("mousemove", (e) => {
             e.preventDefault();
         });
@@ -483,15 +483,18 @@ class DynamicTreeView extends UIObject {
             this.createNodeFromJSON(node);
         }
 
-        if (this._tree) {
+        if (this._tree) {            
             // generation of the tree
             this._tree._handleCreateHTreeButton();
-            
+
             // setting of colors
             if (json.colors) {
+                this._tree.colors = json.colors;
                 this._tree.setColors(json.colors);
             }
 
+            console.log(this._tree);
+            
             // setting of slider values
             if (json.values) {
                 //this._tree.setValues(json.values);

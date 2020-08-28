@@ -51,6 +51,8 @@ class ColorChooser extends UIObject {
     setValue(value) {        
         this._binds.input.value = value;
         this._updateColorBar();
+
+        this.trigger('change');
     }
    
     showOverlay() {
