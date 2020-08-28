@@ -134,7 +134,7 @@ class DOSRenderer extends AbstractRenderer {
             this._isTreeGUI=false;
         }
         this.getVisSettings();
-        this.clearVisStatusArray2();
+        this.clearHardVisStatusArray();
     }
     getGUIObj()
     {
@@ -337,7 +337,7 @@ class DOSRenderer extends AbstractRenderer {
             }
         }
     }
-    clearVisStatusArray2() {
+    clearHardVisStatusArray() {
         for (var i = 0; i < this._numberInstance; i++) {
             this._visStatusArray[i] = 1;
             this._visMembership[i] = 0;
@@ -426,9 +426,19 @@ class DOSRenderer extends AbstractRenderer {
         });
         //console.log(this._elements);
         this._rules = _rules.join('\n');
+        //this._printNumberOfHiddenInstances();
         this._recomputeTransferFunction(rules);
         this._createVisibilityStatusBuffer();
         this._rebuildAttribCompute();
+    }
+    _printNumberOfHiddenInstances()
+    {
+        var count=0;
+        for (var i = 0; i < this._numberInstance; i++) {
+            if (this._visStatusArray[i] == 0)
+                count++; 
+        }
+        console.log("nHiddenInstances="+ count);
     }
     updateVisStatusArray(instancesStRule, numberRemoved, index) {
         var count = 0;
@@ -445,7 +455,7 @@ class DOSRenderer extends AbstractRenderer {
 
 
         for (var i = 0; i < instancesStRule.length; i++) {
-            if (count <= numberRemoved) // make this instance invisible if possible
+            if (count < numberRemoved) // make this instance invisible if possible
             {
                 if (this._isOccupied[instancesStRule[i]['id']] == false) {
                     this._visStatusArray[instancesStRule[i]['id']] = 0;

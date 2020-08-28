@@ -134,7 +134,7 @@ GUIChanged(isTree)
         this._isTreeGUI=false;
     }
     this.getVisSettings();
-    this.clearVisStatusArray2();
+    this.clearHardVisStatusArray();
 }
 
 getGUIObj()
@@ -295,7 +295,7 @@ setHtreeRules(rules) {
     if (this.getGUIObj() != null) {
         this.getGUIObj().computeHistograms(this._visStatusArray);
     }
-
+   // this._printNumberOfHiddenInstances();
     this._recomputeTransferFunction(rules);
     this._createVisibilityStatusBuffer();
     this._rebuildAttribCompute();
@@ -325,12 +325,22 @@ clearVisStatusArray() {
         }
     }
 }
-clearVisStatusArray2() {
+clearHardVisStatusArray() {
     for (var i = 0; i < this._numberInstance; i++) {
         this._visStatusArray[i] = 1;
         this._visMembership[i] = 0;
         this._isOccupied[i] = false;
     }
+}
+_printNumberOfHiddenInstances()
+{
+    var count=0;
+    for (var i = 0; i < this._numberInstance; i++) {
+        if (this._visStatusArray[i] == 0)
+            count++;
+              
+    }
+    console.log("nHiddenInstances="+ count);
 }
 clearIsOccupiedArray() {
     for (var i = 0; i < this._numberInstance; i++) {
@@ -433,7 +443,7 @@ updateVisStatusArray(instancesStRule, numberRemoved, index) {
 
 
     for (var i = 0; i < instancesStRule.length; i++) {
-        if (count <= numberRemoved) // make this instance invisible if possible
+        if (count < numberRemoved) // make this instance invisible if possible
         {
             if (this._isOccupied[instancesStRule[i]['id']] == false) {
                 this._visStatusArray[instancesStRule[i]['id']] = 0;
