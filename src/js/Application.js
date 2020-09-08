@@ -320,11 +320,11 @@ class Application {
     _handleTreeSliderChange(options) {
         this._throttleTreeVisibility();
     }
-    _throttleTreeVisibility() {
+    _throttleTreeVisibility() {        
         if (this._loadingDiv) {
             return;
         }
-
+        
         this._updateTreeVisibility();
         //if (!this._visibilityUpdateTimeout) {
         //    this._updateTreeVisibility();
@@ -364,12 +364,14 @@ class Application {
         if (this._visibilityUpdateTimeout) {
             return;            
         }
+        
         this.isTreeTheActiveGUI=true;
         const renderer = this._renderingContext.getRenderer();        
         var _this = this;
 
         this._visibilityUpdateTimeout = setTimeout(() => {
             var tree_rules = _this._treeViewDialog._getGroupOfRules();
+            
             renderer.setHtreeRules(tree_rules, _this._treeViewDialog);            
             renderer.reset();
 

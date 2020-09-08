@@ -60,7 +60,12 @@ class SliderMultiTrack extends UIObject {
 
         super.destroy();
     }
+    
     setValue(value) {
+        this.setValue(value, false);
+    }
+
+    setValue(value, force) {
         if (!this.enabled) {
             return;
         }
@@ -74,7 +79,7 @@ class SliderMultiTrack extends UIObject {
 
         this._updateUI();
 
-        if (this.focused) {
+        if (this.focused || force) {
             this.trigger('change');
         }
     }

@@ -381,7 +381,7 @@ class DynamicTreeView extends UIObject {
             if (this._tree) {
                 // colors specification
                 json.colors = this._tree.getColors();
-
+                json.values = this._tree.getValues();
                 // values specification
                 //json.values = this._tree.getValues();
             }
@@ -486,18 +486,16 @@ class DynamicTreeView extends UIObject {
         if (this._tree) {            
             // generation of the tree
             this._tree._handleCreateHTreeButton();
-
+            
             // setting of colors
             if (json.colors) {
                 this._tree.colors = json.colors;
                 this._tree.setColors(json.colors);
             }
-
-            console.log(this._tree);
             
             // setting of slider values
             if (json.values) {
-                //this._tree.setValues(json.values);
+                this._tree.setValues(json.values);
             }
         }
     }

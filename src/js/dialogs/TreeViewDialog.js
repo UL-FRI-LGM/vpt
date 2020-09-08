@@ -214,49 +214,6 @@ class TreeViewDialog extends AbstractDialog {
     }
   }
 
-
-
-  /* NEEDS TO BE REWORKED!
-  getValues() {
-    var root = document.getElementsByClassName("root")[0];
-
-    var values = [];
-    for (var i = 0; i < root.childElementCount; i++) {
-      var line = root.children[i];
-      var value = line.querySelector('.value');
-
-      if (value == null) {
-        values.push(0);
-      } else {
-        values.push(value.value);
-      }
-    }
-
-    return values;
-  }
-
-  setValues(values) {
-    var root = document.getElementsByClassName("root")[0];
-    console.log(values);
-    
-    console.log(Htree);
-
-    for (var i = 0; i < root.childElementCount && i < values.length; i++) {
-      var line = root.children[i];
-      var value = line.querySelector('.value');
-
-      if (value != null) {        
-        value.value = values[i];
-
-        var event = document.createEvent('Event');
-        event.initEvent('change', true, true);
-
-        value.dispatchEvent(event);        
-      }
-    }
-  }
-  */
-
   //instance.sort((a, b) => parseFloat(a.avgProb) - parseFloat(b.avgProb));
   setAttributes(layout, elementsData) {
 
@@ -395,9 +352,7 @@ class TreeViewDialog extends AbstractDialog {
 
   setColors(colors) {
     var nodes = this.getAllTreeNodes(Htree);
-
-    console.log(nodes);
-    console.log(colors);
+        
     for (var i = 0; i < Math.min(colors.length, nodes.length); i++) {  
       if(colors[i] != "#ffffffff") {
         nodes[i].colorObj.object.setValue(colors[i]);
@@ -405,12 +360,37 @@ class TreeViewDialog extends AbstractDialog {
       }   
     }
   }
+
+  getValues() {
+    var nodes = this.getAllTreeNodes(Htree);
+    
+    var values = [];
+    for (var i = 0; i < nodes.length; i++) {
+      values.push(nodes[i].sliderObj.object.value);
+    }
+
+    return values;
+  }
+
+  setValues(values) {
+    var nodes = this.getAllTreeNodes(Htree);
+    
+    for (var i = 0; i < Math.min(values.length, nodes.length); i++) {  
+      if(nodes[i].children == null || nodes[i].children.length == 0) {      
+        nodes[i].sliderValue = values[i];   
+        nodes[i].sliderObj.object.setValue(values[i], true);                
+      }    
+    }
+
+    TVDClass.trigger('treeSliderChange');    
+  }
 }
 
 //======================================================================================
 var TVDClass;
 var Htree;
 var colorsToSet;
+var valuesToSet;
 let propertyList = new Array();
 let elementsArray = new Array();
 var nbProperty = 0;
@@ -1178,11 +1158,18 @@ function createJSONHierarchyTree(nav) {
       Htree = createTree(parsedData, false);
       Htree.nInstances = elementsArray.length;
       Htree.visInstances = Htree.nInstances;
-
+      
+      /*
       if (colorsToSet != null) {
-        setColors(Htree, colorsToSet);
+        setColors(Htree, colorsToSet);        
         colorsToSet = null;
       }
+
+      if(valuesToSet != null) {
+        setValues(Htree, valuesToSet);        
+        valuesToSet = null;
+      }
+      */
 
       render(Htree, targetElem, 0);
       countElementsOfthisClass(Htree, [], [], []);
