@@ -3,6 +3,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const url = require('url');
 
 const basedir = 'build';
 const port = process.env.PORT || 3000;
@@ -15,12 +16,12 @@ http.createServer(function(request, response) {
         console.log(request.method, request.url);
     }
 
-    let filePath = request.url;
-    if (request.url === '/') {
-        filePath = '/index.html';
+    let filePath = new URL(request.url, 'file:');
+    if (filePath.pathname === '/') {
+        filePath.pathname = '/index.html';
     }
 
-    const extname = String(path.extname(filePath)).toLowerCase();
+    const extname = String(path.extname(filePath.pathname)).toLowerCase();
     let contentType = 'text/html';
     const mimeTypes = {
         '.html': 'text/html',
@@ -41,14 +42,14 @@ http.createServer(function(request, response) {
     contentType = mimeTypes[extname] || 'application/octet-stream';
 
     if (request.method === 'GET') {
-        fs.readFile(basedir + filePath, function(error, content) {
+        fs.readFile(basedir + filePath.pathname, function(error, content) {
             if (error) {
                 if (error.code == 'ENOENT') {
-                    console.log('404: ' + filePath);
+                    console.log('404: ' + filePath.pathname);
                     response.writeHead(404);
                     response.end();
                 } else {
-                    console.log('500: ' + filePath);
+                    console.log('500: ' + filePath.pathname);
                     response.writeHead(500);
                     response.end('Server error: ' + error.code);
                 }
@@ -73,14 +74,14 @@ http.createServer(function(request, response) {
             }
         });
     } else if (request.method === 'HEAD' || request.method === 'OPTIONS') {
-        fs.lstat(basedir + filePath, function(error, stat) {
+        fs.lstat(basedir + filePath.pathname, function(error, stat) {
             if (error) {
                 if (error.code == 'ENOENT') {
-                    console.log('404: ' + filePath);
+                    console.log('404: ' + filePath.pathname);
                     response.writeHead(404);
                     response.end();
                 } else {
-                    console.log('500: ' + filePath);
+                    console.log('500: ' + filePath.pathname);
                     response.writeHead(500);
                     response.end('Server error: ' + error.code);
                 }
