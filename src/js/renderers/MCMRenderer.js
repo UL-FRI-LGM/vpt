@@ -9,12 +9,12 @@ constructor(gl, idVolume, dataVolume, environmentTexture, camera, options) {
     super(gl, idVolume, environmentTexture, options);
 
     Object.assign(this, {
-        absorptionCoefficient : 1,
-        scatteringCoefficient : 1,
+        absorptionCoefficient : 0,
+        scatteringCoefficient : 200,
         scatteringBias        : 0,
-        majorant              : 2,
+        majorant              : 200,
         maxBounces            : 8,
-        steps                 : 1
+        steps                 : 8
     }, options);
 
     this._programs = WebGL.buildPrograms(gl, {
