@@ -16,8 +16,8 @@
     "static": {
         "src/images": "build/images",
         "src/index.html": "build/index.html",
-        "src/tf.json": "build/tf.json",
-        "src/tree.json": "build/tree.json"
+        "src/tfs": "build/tfs",
+        "src/trees": "build/trees"
     },
     "packages": {
         "js/main": {
