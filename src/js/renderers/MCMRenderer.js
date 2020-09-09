@@ -503,7 +503,7 @@ _sortDescending(array, key) {
 _rebuildAttribCompute() {
     const gl = this._gl;
 
-    console.time('rebuild attrib');
+    //console.time('rebuild attrib');
 
     if (this._programs.compute) {
         gl.deleteProgram(this._programs.compute.program);
@@ -530,7 +530,7 @@ _rebuildAttribCompute() {
         localSizeZ: this._localSize.z,
     }).compute;
 
-    console.timeEnd('rebuild attrib');
+    //console.timeEnd('rebuild attrib');
 
     this._recomputeMask();
 }
@@ -559,7 +559,7 @@ _recomputeMask() {
 _rebuildProbCompute() {
     const gl = this._gl;
 
-    console.time('rebuild probability');
+    //console.time('rebuild probability');
 
     if (this._programs.compute) {
         gl.deleteProgram(this._programs.compute.program);
@@ -575,13 +575,13 @@ _rebuildProbCompute() {
         localSizeZ: this._localSize.z,
     }).compute;
 
-    console.timeEnd('rebuild probability');
+    //console.timeEnd('rebuild probability');
     //this._createAccColorTexture();
     this._recomputeProbability();
 }
 
 _recomputeProbability() {
-    console.time('probability');
+    //console.time('probability');
 
     //var t0 = performance.now();
     const gl = this._gl;
@@ -654,7 +654,7 @@ _recomputeProbability() {
     gl.deleteBuffer(ssbo);
     //var t1 = performance.now();
     //console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
-    console.timeEnd('probability');
+    //console.timeEnd('probability');
 }
 
 _recomputeTransferFunction(rules) {
@@ -740,25 +740,7 @@ _createVisibilityStatusBuffer() {
 }
 
 _countOccludedInstance() {
-    if (this._nRules >= 1) {
-        const InstanceID = this._getInstanceIDFramebuffer();
-        const ruleID = this._getGroupIDFramebuffer();
-
-        var frameBufferSize = this._bufferSize * this._bufferSize;
-
-        for (var index = 0; index < this._nRules; index++) {
-            var count = new Uint32Array(this._numberInstance);
-            for (var j = 0; j < frameBufferSize; j++) {
-                if (ruleID[j] == index + 1)
-                    count[InstanceID[j]] = 1;
-            }
-            this._rulesOutInfo[index].nSeen = this._computeSum(count);
-        }
-
-        if (this.getGUIObj() != null) {
-            this.getGUIObj()._updateOccludedInstance(this._rulesOutInfo);
-        }
-    }
+    // removed, does not make sense in MCM
 }
 
 _getInstanceIDFramebuffer() {

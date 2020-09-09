@@ -515,7 +515,7 @@ class DOSRenderer extends AbstractRenderer {
     _rebuildAttribCompute() {
         const gl = this._gl;
 
-        console.time('rebuild attrib');
+        //console.time('rebuild attrib');
 
         if (this._programs.compute) {
             gl.deleteProgram(this._programs.compute.program);
@@ -542,7 +542,7 @@ class DOSRenderer extends AbstractRenderer {
             localSizeZ: this._localSize.z,
         }).compute;
 
-        console.timeEnd('rebuild attrib');
+        //console.timeEnd('rebuild attrib');
 
         this._recomputeMask();
     }
@@ -571,7 +571,7 @@ class DOSRenderer extends AbstractRenderer {
     _rebuildProbCompute() {
         const gl = this._gl;
 
-        console.time('rebuild probability');
+        //console.time('rebuild probability');
 
         if (this._programs.compute) {
             gl.deleteProgram(this._programs.compute.program);
@@ -587,13 +587,13 @@ class DOSRenderer extends AbstractRenderer {
             localSizeZ: this._localSize.z,
         }).compute;
 
-        console.timeEnd('rebuild probability');
+        //console.timeEnd('rebuild probability');
         //this._createAccColorTexture();
         this._recomputeProbability();
     }
 
     _recomputeProbability() {
-        console.time('probability');
+        //console.time('probability');
 
         //var t0 = performance.now();
         const gl = this._gl;
@@ -666,7 +666,7 @@ class DOSRenderer extends AbstractRenderer {
         gl.deleteBuffer(ssbo);
         //var t1 = performance.now();
         //console.log('avg Probability is computed in ' + (t1 - t0) + " milliseconds.");
-        console.timeEnd('probability');
+        //console.timeEnd('probability');
     }
 
     _recomputeTransferFunction(rules) {
@@ -848,7 +848,7 @@ class DOSRenderer extends AbstractRenderer {
                     const renderEndTime = performance.now();
                     const dtime = renderEndTime - this._renderStartTime;
                     this._renderStartTime = null;
-                    console.log('render: ' + dtime + ' ms');
+                    //console.log('render: ' + dtime + ' ms');
                 }
                 break;
             }

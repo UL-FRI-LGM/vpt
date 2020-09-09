@@ -18,7 +18,7 @@ class EnvmapLoadDialog extends AbstractDialog {
         this._demos = [];
 
         this._addEventListeners();
-        this._loadDemoJson();
+        //this._loadDemoJson();
     }
 
     _addEventListeners() {
