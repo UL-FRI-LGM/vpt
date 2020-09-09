@@ -130,6 +130,9 @@ class Application {
             return;
         }
 
+        const loadingDiv = DOMUtils.instantiate(TEMPLATES.LoadingScreen);
+        document.body.appendChild(loadingDiv);
+
         this._handleVolumeLoad({
             type: 'url',
             file: example.volume,
@@ -148,6 +151,7 @@ class Application {
                 this._rendererDialog._tfwidget.loadFromJson(tf);
                 this._treeViewDialog._binds.dynamicTree.setJSON(tree);
                 this._renderingContext.startRendering();
+                DOMUtils.remove(loadingDiv);
             });
         });
     }
