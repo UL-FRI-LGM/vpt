@@ -8,6 +8,7 @@
 // #include dialogs/tonemappers
 // #include ui
 // #include RenderingContext.js
+// #include ResourceLoader.js
 
 class Application {
 
@@ -101,7 +102,56 @@ class Application {
         this.elementsJSON=[];
         this.isTreeTheActiveGUI=false;
 
+        this._loadExample();
     }
+
+    _loadExample() {
+        const examples = {
+            1: {
+                volume: 'synthetic-bundle.bvp',
+                tf: 'tfs/tf1.json',
+                tree: 'trees/tree1.json'
+            },
+            2: {
+                volume: 'synthetic-bundle.bvp',
+                tf: 'tfs/tf1.json',
+                tree: 'trees/tree2.json'
+            },
+            3: {
+                volume: 'synthetic-bundle.bvp',
+                tf: 'tfs/tf1.json',
+                tree: 'trees/tree3.json'
+            }
+        };
+
+        const exampleID = new URL(window.location).searchParams.get('ex');
+        const example = examples[exampleID];
+        if (!example) {
+            return;
+        }
+
+        this._handleVolumeLoad({
+            type: 'url',
+            file: example.volume,
+            filetype: 'bvp',
+            dimensions: { x: 0, y: 0, z: 0 }, // doesn't matter
+            precision: 8 // doesn't matter
+        });
+
+        this._renderingContext.addEventListener('volume-loaded', () => {
+            this._renderingContext.stopRendering();
+
+            const tf = ResourceLoader.loadJson(example.tf);
+            const tree = ResourceLoader.loadJson(example.tree);
+
+            Promise.all([tf, tree]).then(([tf, tree]) => {
+                this._rendererDialog._tfwidget.loadFromJson(tf);
+                this._treeViewDialog._binds.dynamicTree.setJSON(tree);
+                this._renderingContext.startRendering();
+            });
+        });
+    }
+
     _handleFileDrop(e) {
         e.preventDefault();
         const files = e.dataTransfer.files;
@@ -167,54 +217,42 @@ class Application {
     }
 
     _handleVolumeLoad(options) {
-        if (options.type === 'file') {
-            const readerClass = this._getReaderForFileType(options.filetype);
-            if (readerClass) {
-                const loader = new BlobLoader(options.file);
-                const reader = new readerClass(loader, {
-                    width: options.dimensions.x,
-                    height: options.dimensions.y,
-                    depth: options.dimensions.z,
-                    bits: options.precision
-                });
-                this._renderingContext.stopRendering();
-                this._renderingContext.setIDVolume(reader);
-                this._renderingContext.setDataVolume(reader);
-                this._renderingContext.getRenderer().setAttributes(null, null);
-                this._visibilityDialog.reset();
-                this._treeViewDialog.reset();
-                if (reader.readAttributes) {
-                    reader.readAttributes({
-                        onData: attributes => {
-                            reader.readLayout({
-                                onData: layout => {
-                                    const elementsJSON = this.getElementsAttribJSON(attributes, layout);
-                                    this._renderingContext.getRenderer().setAttributes(attributes, layout, elementsJSON);
-                                    this._visibilityDialog.setAttributes(layout.map(x => x.name), elementsJSON);
-                                    this._treeViewDialog.setAttributes(layout, elementsJSON);
-                                    //-------------------------------
-                                    this.elementsJSON=elementsJSON;
-                                    this.attributes=attributes;
-                                    this.layout=layout;
-                                }
-                            });
+        const loaderClass = this._getLoaderForFileTypoe(options.type);
+        const readerClass = this._getReaderForFileType(options.filetype);
+        if (!loaderClass || !readerClass) {
+            return;
+        }
+
+        const loader = new loaderClass(options.file);
+        const reader = new readerClass(loader, {
+            width: options.dimensions.x,
+            height: options.dimensions.y,
+            depth: options.dimensions.z,
+            bits: options.precision
+        });
+        this._renderingContext.stopRendering();
+        this._renderingContext.setIDVolume(reader);
+        this._renderingContext.setDataVolume(reader);
+        this._renderingContext.getRenderer().setAttributes(null, null);
+        this._visibilityDialog.reset();
+        this._treeViewDialog.reset();
+        if (reader.readAttributes) {
+            reader.readAttributes({
+                onData: attributes => {
+                    reader.readLayout({
+                        onData: layout => {
+                            const elementsJSON = this.getElementsAttribJSON(attributes, layout);
+                            this._renderingContext.getRenderer().setAttributes(attributes, layout, elementsJSON);
+                            this._visibilityDialog.setAttributes(layout.map(x => x.name), elementsJSON);
+                            this._treeViewDialog.setAttributes(layout, elementsJSON);
+                            //-------------------------------
+                            this.elementsJSON=elementsJSON;
+                            this.attributes=attributes;
+                            this.layout=layout;
                         }
                     });
                 }
-            }
-        } else if (options.type === 'url') {
-            const readerClass = this._getReaderForFileType(options.filetype);
-            if (readerClass) {
-                const loader = new AjaxLoader(options.url);
-                const reader = new readerClass(loader, {
-                    width: options.dimensions.x,
-                    height: options.dimensions.y,
-                    depth: options.dimensions.z,
-                    bits: options.precision
-                });
-                this._renderingContext.stopRendering();
-                this._renderingContext.setVolume(reader);
-            }
+            });
         }
     }
 
@@ -332,6 +370,14 @@ class Application {
         //    this._visibilityUpdatePending = true;
         //}
     }
+
+    _getLoaderForFileTypoe(type) {
+        switch (type) {
+            case 'file': return BlobLoader;
+            case 'url' : return AjaxLoader;
+        }
+    }
+
     _getReaderForFileType(type) {
         switch (type) {
             case 'bvp': return BVPReader;

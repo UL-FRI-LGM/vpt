@@ -67,10 +67,7 @@ constructor(options) {
 
     this._$loadButton.addEventListener('click', () => {
         CommonUtils.readTextFile(data => {
-            this._bumps = JSON.parse(data);
-            this.render();
-            this._rebuildHandles();
-            this.trigger('change');
+            this.loadFromJson(JSON.parse(data));
         });
     });
 
@@ -113,6 +110,13 @@ render() {
         gl.uniform4f(program.uniforms['uColor'], bump.color.r, bump.color.g, bump.color.b, bump.color.a);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     });
+}
+
+loadFromJson(json) {
+    this._bumps = json;
+    this.render();
+    this._rebuildHandles();
+    this.trigger('change');
 }
 
 addBump(options) {

@@ -134,6 +134,7 @@ class RenderingContext extends EventEmitter {
                             this._renderer.setIDVolume(this._idVolume);
                             if (this._idVolume.ready && this._dataVolume.ready) {
                                 this.startRendering();
+                                this.trigger('volume-loaded');
                             }
                         }
                     }
@@ -159,6 +160,7 @@ class RenderingContext extends EventEmitter {
                             this.setMinMaxGM(this._renderer._minGm,this._renderer._maxGm);
                             if (this._idVolume.ready && this._dataVolume.ready) {
                                 this.startRendering();
+                                this.trigger('volume-loaded');
                             }
                         }
                     }

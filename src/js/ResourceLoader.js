@@ -75,11 +75,11 @@ get(name) {
 
 get loaders() {
     return {
-        'image'  : this.loadImage,
-        'script' : this.loadScript,
-        'style'  : this.loadStyle,
-        'json'   : this.loadJson,
-        'html'   : this.loadHtml
+        'image'  : ResourceLoader.loadImage,
+        'script' : ResourceLoader.loadScript,
+        'style'  : ResourceLoader.loadStyle,
+        'json'   : ResourceLoader.loadJson,
+        'html'   : ResourceLoader.loadHtml
     };
 }
 
@@ -103,7 +103,7 @@ loadResource(name) {
     return resource.promise;
 }
 
-loadImage(url) {
+static loadImage(url) {
     return new Promise((resolve, reject) => {
         const image = new Image();
         image.addEventListener('load', () => resolve(image));
@@ -112,7 +112,7 @@ loadImage(url) {
     });
 }
 
-loadScript(url) {
+static loadScript(url) {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.addEventListener('load', () => {
@@ -126,7 +126,7 @@ loadScript(url) {
     });
 }
 
-loadStyle(url) {
+static loadStyle(url) {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.addEventListener('load', () => {
@@ -140,7 +140,7 @@ loadStyle(url) {
     });
 }
 
-loadJson(url) {
+static loadJson(url) {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.responseType = 'json';
@@ -151,7 +151,7 @@ loadJson(url) {
     });
 }
 
-loadHtml(url) {
+static loadHtml(url) {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.responseType = 'document';
