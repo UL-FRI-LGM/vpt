@@ -9,10 +9,9 @@
 #include "Object.h"
 
 class Ellipsoid : public Object {
-private:
-    QVector3D _size;
+
 public:
-    Ellipsoid(uchar id, QVector3D position, uchar value, uchar size, uchar orientation)
+    Ellipsoid(int id, QVector3D position, uchar value, uchar size, uchar orientation)
         : Object(id, "Ellipsoid", 2, position, value, size, orientation) {
         switch(size) {
             case 0:
@@ -67,6 +66,10 @@ public:
         list.append(this->_position - QVector3D(0, 0, this->_size.z()));
 
         return list;
+    }
+
+    inline float getVolume() override {
+        return (4.0 / 3.0) * M_PI * (this->_size.x() * this->_size.y() * this->_size.z());
     }
 };
 

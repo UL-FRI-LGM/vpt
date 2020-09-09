@@ -9,10 +9,9 @@
 #include "Object.h"
 
 class Box : public Object {
-private:
-    QVector3D _size;
+
 public:
-    Box(uchar id, QVector3D position, uchar value, uchar size, uchar orientation)
+    Box(int id, QVector3D position, uchar value, uchar size, uchar orientation)
         : Object(id, "Box", 3, position, value, size, orientation) {
 
         switch(size) {
@@ -39,6 +38,9 @@ public:
                 break;
             case 7:
                 this->_size = QVector3D(0.05f, 0.12f, 0.2f);
+                break;
+            case 8:
+                this->_size = QVector3D(0.33f, 0.33f, 0.33f);
                 break;
         }
     }
@@ -82,6 +84,10 @@ public:
         list.append(this->_rotation.rotatedVector(QVector3D(xmin, ymax, zmax)));
 
         return list;
+    }
+
+    inline float getVolume() override {
+        return this->_size.x() * this->_size.y() * this->_size.z();
     }
 };
 

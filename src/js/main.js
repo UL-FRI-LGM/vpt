@@ -49,5 +49,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (const name in UISPECS) {
         UISPECS[name] = JSON.parse(UISPECS[name]);
     }
-    const application = new Application();
+    window.application = new Application();
 });

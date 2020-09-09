@@ -54,6 +54,7 @@ setValue(value) {
     if (this.logarithmic) {
         this._binds.input.step = this.value * this.step;
     }
+    this._binds.input.value = this.value;
 }
 
 getValue() {

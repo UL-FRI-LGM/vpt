@@ -9,7 +9,3 @@ ul, #TreeView {
     padding: 0;
 }
 
-.TreeNode::before {
-    color: black;
-    display: block;
-}

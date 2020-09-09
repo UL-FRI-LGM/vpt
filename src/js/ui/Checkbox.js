@@ -21,11 +21,11 @@ isChecked() {
     return this.checked;
 }
 
-setChecked(checked) {
+setChecked(checked) {    
     if (this.checked !== checked) {
         this.checked = checked;
         this._element.classList.toggle('checked', checked);
-        this.trigger('change');
+        this.trigger('change');        
     }
 }
 

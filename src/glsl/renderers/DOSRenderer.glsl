@@ -2,7 +2,7 @@
 
 // #section DOSIntegrate/vertex
 
-#version 300 es
+#version 310 es
 precision mediump float;
 
 uniform mat4 uMvpInverseMatrix;
@@ -12,7 +12,6 @@ layout (location = 0) in vec2 aPosition;
 
 out vec2 vPosition2D;
 out vec3 vPosition3D;
-
 void main() {
     vec4 dirty = uMvpInverseMatrix * vec4(aPosition, uDepth, 1);
     vPosition3D = dirty.xyz / dirty.w;
@@ -22,58 +21,64 @@ void main() {
 
 // #section DOSIntegrate/fragment
 
-#version 300 es
+#version 310 es
 precision mediump float;
 precision mediump sampler2D;
+precision mediump sampler3D;
+precision mediump usampler2D;
 precision mediump usampler3D;
 
-uniform usampler3D uVolume;
-uniform sampler2D uTransferFunction;
+uniform sampler3D uMaskVolume;
+uniform usampler3D uIDVolume;
+uniform sampler3D uDataVolume;
+uniform sampler3D uAccOpacityVolume;
+uniform sampler2D uMaskTransferFunction;
+uniform sampler2D uDataTransferFunction;
 
 uniform sampler2D uColor;
 uniform sampler2D uOcclusion;
-
-uniform vec4 uVisibility1;
-uniform vec4 uVisibility2;
-uniform float uDepth;
+uniform usampler2D uInstanceID;
+uniform usampler2D uGroupID;
 
 uniform vec2 uOcclusionScale;
 uniform float uOcclusionDecay;
+uniform float uColorBias;
+uniform float uAlphaBias;
+uniform float uAlphaTransfer;
 
 in vec2 vPosition2D;
 in vec3 vPosition3D;
 
 layout (location = 0) out vec4 oColor;
 layout (location = 1) out float oOcclusion;
+layout (location = 2) out uint oInstanceID;
+layout (location = 3) out uint oGroupID;
 
-vec4 getSample(vec3 position) {
-    uvec4 volumeSample = texture(uVolume, position);
-    uint header = volumeSample.b;
-    uint id = volumeSample.a;
-    uint value = volumeSample.g;
+layout (std430, binding = 0) buffer bGroupMembership {
+    uint sGroupMembership[];
+};
+layout (rgba8, binding = 1) restrict writeonly highp uniform image3D oAccColorVolume;
 
-    uint type = (header >> 6) & 0x3u;
-    uint size = (header >> 3) & 0x7u;
-    uint orientation = header & 0x7u;
-
-    float visibility = orientation < 4u
-        ? uVisibility1[orientation]
-        : uVisibility2[orientation & 0x3u];
-    //uint offset = type * 73u;
-    //visibility *= visibilities[offset];
-    //offset += size * 9u + 1u;
-    //visibility *= visibilities[offset];
-    //offset += orientation + 1u;
-    //visibility *= visibilities[offset];
-
-    if (float(id) / 255.0 < visibility && id > 0u) {
-        return texture(uTransferFunction, vec2(float(value) / 255.0, 0));
-    } else {
-        return vec4(0);
-    }
+float computeGradientMagnitude(vec3 g) {
+	return sqrt(g.x*g.x + g.y*g.y + g.z*g.z);
 }
 
-void main() {
+vec4 getSample(vec3 position) {
+    vec4 maskVolumeSample = texture(uMaskVolume, position);
+    vec4 dataVolumeSample = texture(uDataVolume, position);
+    vec4 maskTransferSample = texture(uMaskTransferFunction, maskVolumeSample.rg);
+    //vec4 dataTransferSample = texture(uDataTransferFunction, dataVolumeSample.rg);
+    float gm = computeGradientMagnitude(dataVolumeSample.gba);
+    vec4 dataTransferSample = texture(uDataTransferFunction, vec2(dataVolumeSample.r,gm));
+    //vec3 mixedColor = mix(maskTransferSample.rgb, dataTransferSample.rgb, dataTransferSample.a);
+    //vec4 finalColor = vec4(mixedColor, maskTransferSample.a);
+    vec3 finalColor = mix(maskTransferSample.rgb, dataTransferSample.rgb, uColorBias);
+    float maskAlpha = maskTransferSample.a * mix(1.0, dataTransferSample.a, uAlphaTransfer);
+    float finalAlpha = mix(maskAlpha, dataTransferSample.a, uAlphaBias);
+    return vec4(finalColor, finalAlpha);
+}
+
+float getOcclusion() {
     const vec2 offsets[9] = vec2[](
         vec2(-1, -1),
         vec2( 0, -1),
@@ -98,24 +103,48 @@ void main() {
         occlusion += texture(uOcclusion, occlusionPos).r * weights[i];
     }
 
-    vec4 prevColor = texture(uColor, vPosition2D);
+    return occlusion;
+}
+void main() {
+    float occlusion = getOcclusion();
+    vec4 color = texture(uColor, vPosition2D);
+    uint instanceID = texture(uInstanceID, vPosition2D).r;
+    uint groupID = texture(uGroupID, vPosition2D).r;
 
     if (any(greaterThan(vPosition3D, vec3(1))) || any(lessThan(vPosition3D, vec3(0)))) {
-        oColor = prevColor;
+        oColor = color;
         oOcclusion = occlusion;
-    } else {
-        vec4 transferSample = getSample(vPosition3D);
-        transferSample.rgb *= transferSample.a * occlusion;
-
-        oColor = prevColor + transferSample * (1.0 - prevColor.a);
-        // TODO: do this calculation right
-        oOcclusion = 1.0 - ((1.0 - (occlusion - transferSample.a)) * uOcclusionDecay);
+        oInstanceID = instanceID;
+        oGroupID = groupID;
+        return;
     }
+
+    if (groupID == 0u) {
+        uint newInstanceID = texture(uIDVolume, vPosition3D).r;
+        uint newGroupID = sGroupMembership[newInstanceID];
+        if (newGroupID != 0u) {
+            oInstanceID = newInstanceID;
+            oGroupID = newGroupID;
+        } else {
+            oInstanceID = instanceID;
+            oGroupID = groupID;
+        }
+    } else {
+        oInstanceID = instanceID;
+        oGroupID = groupID;
+    }
+
+    vec4 transferSample = getSample(vPosition3D);
+    
+    transferSample.rgb *= (transferSample.a * occlusion) ;
+    oColor = color + transferSample * (1.0 - color.a);
+    // TODO: do this calculation right
+    oOcclusion = 1.0 - ((1.0 - (occlusion - transferSample.a)) * uOcclusionDecay);
 }
 
 // #section DOSRender/vertex
 
-#version 300 es
+#version 310 es
 precision mediump float;
 
 layout (location = 0) in vec2 aPosition;
@@ -128,7 +157,7 @@ void main() {
 
 // #section DOSRender/fragment
 
-#version 300 es
+#version 310 es
 precision mediump float;
 
 uniform mediump sampler2D uAccumulator;
@@ -143,7 +172,7 @@ void main() {
 
 // #section DOSReset/vertex
 
-#version 300 es
+#version 310 es
 precision mediump float;
 
 layout (location = 0) in vec2 aPosition;
@@ -154,13 +183,17 @@ void main() {
 
 // #section DOSReset/fragment
 
-#version 300 es
+#version 310 es
 precision mediump float;
 
 layout (location = 0) out vec4 oColor;
 layout (location = 1) out float oOcclusion;
+layout (location = 2) out uint oInstanceID;
+layout (location = 3) out uint oGroupID;
 
 void main() {
     oColor = vec4(0, 0, 0, 0);
     oOcclusion = 1.0;
+    oInstanceID = 0u;
+    oGroupID = 0u;
 }

@@ -22,28 +22,35 @@ constructor(options) {
     this._binds.about._element.appendChild(about);
 }
 
-getVolumeLoadContainer() {
-    return this._binds.volumeLoadContainer;
+getVolumeLoad_container() {
+    return this._binds.volumeLoad_container;
 }
-
 getTreeViewContainer() {
     return this._binds.TreeViewContainer;
 }
 
-getEnvmapLoadContainer() {
-    return this._binds.envmapLoadContainer;
+getAttribLoad_container() {
+    return this._binds.attribLoad_container;
 }
 
-getRendererSettingsContainer() {
-    return this._binds.rendererSettingsContainer;
+getEnvmapLoad_container() {
+    return this._binds.envmapLoad_container;
 }
 
-getToneMapperSettingsContainer() {
-    return this._binds.toneMapperSettingsContainer;
+getVisibility_container() {
+    return this._binds.visibility_container;
 }
 
-getRenderingContextSettingsContainer() {
-    return this._binds.renderingContextSettingsContainer;
+getRendererSettings_container() {
+    return this._binds.rendererSettings_container;
+}
+
+getToneMapperSettings_container() {
+    return this._binds.toneMapperSettings_container;
+}
+
+getRenderingContextSettings_container() {
+    return this._binds.renderingContextSettings_container;
 }
 
 getSelectedRenderer() {

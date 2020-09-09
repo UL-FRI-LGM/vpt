@@ -13,7 +13,7 @@ class Sphere : public Object {
 private:
     float _radius;
 public:
-    Sphere(uchar id, QVector3D position, uchar value, uchar size, uchar orientation)
+    Sphere(int id, QVector3D position, uchar value, uchar size, uchar orientation)
         : Object(id, "Sphere", 1, position, value, size, orientation) {
         switch(size) {
             case 0:
@@ -40,7 +40,12 @@ public:
             case 7:
                 this->_radius = 0.12f;
                 break;
+            case 8:
+                this->_radius = 0.25f;
+            break;
         }
+
+        this->_size = QVector3D(this->_radius, this->_radius, this->_radius);
     }
     inline float getRadius() { return _radius; }
 
@@ -62,6 +67,10 @@ public:
         list.append(this->_position - QVector3D(0, 0, this->_radius));
 
         return list;
+    }
+
+    inline float getVolume() override {
+        return (4.0 / 3.0) * M_PI * (this->_radius * this->_radius * this->_radius);
     }
 };
 

@@ -19,23 +19,19 @@ constructor(renderer, options) {
     this._binds.slices.addEventListener('input', this._handleChange);
     this._binds.occlusionScale.addEventListener('input', this._handleChange);
     this._binds.occlusionDecay.addEventListener('change', this._handleChange);
-    this._binds.visibility0.addEventListener('change', this._handleChange);
-    this._binds.visibility1.addEventListener('change', this._handleChange);
-    this._binds.visibility2.addEventListener('change', this._handleChange);
-    this._binds.visibility3.addEventListener('change', this._handleChange);
-    this._binds.visibility4.addEventListener('change', this._handleChange);
-    this._binds.visibility5.addEventListener('change', this._handleChange);
-    this._binds.visibility6.addEventListener('change', this._handleChange);
-    this._binds.visibility7.addEventListener('change', this._handleChange);
+    this._binds.colorBias.addEventListener('change', this._handleChange);
+    this._binds.alphaBias.addEventListener('change', this._handleChange);
+    this._binds.alphaTransfer.addEventListener('change', this._handleChange);
+    this._binds.cutDepth.addEventListener('change', this._handleChange);
+
+    this._binds.showBoundingBox.addEventListener('change', this._handleChange);
+    this._binds.showAxes.addEventListener('change', this._handleChange);
+    this._binds.boundingBoxColor.addEventListener('change', this._handleChange);
+
 
     this._tfwidget = new TransferFunctionWidget();
-    this._binds.tfcontainer.add(this._tfwidget);
+    this._binds.tfContainer.add(this._tfwidget);
     this._tfwidget.addEventListener('change', this._handleTFChange);
-}
-
-destroy() {
-    this._tfwidget.destroy();
-    super.destroy();
 }
 
 _handleChange() {
@@ -43,15 +39,16 @@ _handleChange() {
     this._renderer.slices = this._binds.slices.getValue();
     this._renderer.occlusionScale = this._binds.occlusionScale.getValue();
     this._renderer.occlusionDecay = this._binds.occlusionDecay.getValue();
-    this._renderer.visibility0 = this._binds.visibility0.getValue();
-    this._renderer.visibility1 = this._binds.visibility1.getValue();
-    this._renderer.visibility2 = this._binds.visibility2.getValue();
-    this._renderer.visibility3 = this._binds.visibility3.getValue();
-    this._renderer.visibility4 = this._binds.visibility4.getValue();
-    this._renderer.visibility5 = this._binds.visibility5.getValue();
-    this._renderer.visibility6 = this._binds.visibility6.getValue();
-    this._renderer.visibility7 = this._binds.visibility7.getValue();
-    this._renderer.reset();
+    this._renderer.colorBias = this._binds.colorBias.getValue();
+    this._renderer.alphaBias = this._binds.alphaBias.getValue();
+    this._renderer.alphaTransfer = this._binds.alphaTransfer.getValue();
+    this._renderer.cutDepth = this._binds.cutDepth.getValue();
+
+    this._renderer.showBoundingBox = this._binds.showBoundingBox.isChecked();
+    this._renderer.showAxes = this._binds.showAxes.isChecked();
+    var rgb = CommonUtils.hex2rgb(this._binds.boundingBoxColor.getValue());
+    this._renderer.setBoundingBoxColor([rgb.r, rgb.g, rgb.b]); 
+    this._renderer.reset(); 
 }
 
 _handleTFChange() {

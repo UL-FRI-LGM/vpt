@@ -1,6 +1,7 @@
 #include <QVector3D>
 #include <QVector4D>
 #include <QFile>
+#include <QDir>
 #include <QtMath>
 #include <QDebug>
 #include <QDateTime>
@@ -9,41 +10,63 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDataStream>
+#include <stdint.h>
 
 #include "Object.h"
 #include "Sphere.h"
 #include "Box.h"
 #include "Ellipsoid.h"
-
+#include "Settings.h"
 #include "Collisions.h"
 
-struct Settings {
-public:
-    // settings
-    int w = 128;                        // grid width
-    int h = 128;                        // grid height
-    int d = 128;                        // grid depth
-    int targetCount = 150;              // how many items do we want in the scene
-    bool canOverlap = false;            // indication whether the objects can overlap
+/* test
+QList<Object*> generateObjectsGrid(Settings* set)
+{
+    QList<Object*> objects;
 
-    // 0=one byte per voxel (value of the voxel),
-    // 1=three bytes per voxel (data structure agreed with Ciril's group) + one byte for padding
-    // 2=five floats per voxel
-    int outputType = 1;
+    float partX = 1.0f / set->x;
+    float partY = 1.0f / set->y;
+    float partZ = 1.0f / set->z;
 
-    QString targetFile;    // target filename
+    //auto center = QVector3D(0.5f, 0.5f, 0.5f);
+    //Object* obj = new Sphere(objects.size(), center, objects.size(), 8, 1);
+    //objects.push_back(obj);
 
-    // what types do we want to include in the generation process (1-sphere, ...)
-    QList<uchar> allowedTypes;
+    for(int x = 0; x < set->x; x += 42) {
+        for(int y = 0; y < set->y; y += 42) {
+            for(int z = 0; z < set->z; z += 42) {
 
-    Settings::Settings() {
-        allowedTypes.append(1);
-        allowedTypes.append(2);
-        allowedTypes.append(3);
+                if(((x + y + z) % 2) == 1) {
+                    continue;
+                }
 
-        targetFile = "data.raw";
+                //if((x > set->w * 0.25 && x < set->w * 0.75) &&
+                //(y > set->h * 0.25 && y < set->h * 0.75) &&
+                //(z > set->d * 0.25 && z < set->d * 0.75)){
+                //    continue;
+                //}
+
+                auto center = QVector3D(x * partX + partX * 0.5f, y * partY + partY * 0.5f, z * partZ + partZ * 0.5f);
+                Object* obj = new Box(objects.size(), center, objects.size(), 1, 1);
+
+                bool collision = false;                
+                //for(int i = 0; i < objects.size(); i++) {
+                //    if(Collisions::intersect(obj, objects[i])) {
+                //        collision = true;
+                //        break;
+                //    }
+                //}
+
+                if(!collision) {
+                    objects.push_back(obj);
+                }
+            }
+        }
     }
-};
+
+    return objects;
+}
+*/
 
 QList<Object*> generateObjects(Settings* set)
 {
@@ -54,6 +77,9 @@ QList<Object*> generateObjects(Settings* set)
     // generate a bunch of objects
     QList<Object*> objects;
 
+    auto middle = new Sphere(1, QVector3D(0.5, 0.5, 0.5), 1, 8, 5);
+    objects.push_back(middle);
+
     while(objects.size() < set->targetCount) {
         // random position
         float x = (qrand() % 100) * 0.01f;
@@ -62,9 +88,9 @@ QList<Object*> generateObjects(Settings* set)
 
         uchar type = set->allowedTypes[qrand() % set->allowedTypes.size()];
         uchar size = qrand() % 8; // 8 possible size classes
-        uchar orientation = qrand() % 8; // 8 possible orientations
-        uchar value = size * 32;
-        uchar id = objects.size() + 1;
+        uchar orientation = qrand() % 8; // 8 possible orientations        
+        int id = objects.size() + 1;
+        uchar value = id;
 
         Object* obj = nullptr;
         switch (type) {
@@ -104,23 +130,91 @@ QList<Object*> generateObjects(Settings* set)
     return objects;
 }
 
-QByteArray generateData(QList<Object*> objects, Settings* set)
+
+int indexFromPos(Settings* set, int x, int y, int z) 
+{
+    return z + y * set->z + x * set->z * set->y;
+}
+
+void posFromIndex(int i, Settings* set, int& x, int& y, int& z)
+{
+    x = i / (set->y * set->z);
+    y = (i / set->z) % set->y;
+    z = i % set->z;
+}
+
+QList<int> getNeighbors(QList<int>* neighs, Settings* set, int x, int y, int z)
+{      
+    QList<int> indices;
+    for (int nx = x - 1; nx <= x + 1; nx++) {
+        for (int ny = y - 1; ny <= y + 1; ny++) {
+            for (int nz = z - 1; nz <= z + 1; nz++) {
+                if (nx < 0 || nx >= set->x) {
+                    continue;
+                }
+
+                if (ny < 0 || ny >= set->y) {
+                    continue;
+                }
+
+                if (nz < 0 || nz >= set->z) {
+                    continue;
+                }
+
+                indices.append(indexFromPos(set, nx, ny, nz));
+            }
+        }
+    }
+
+    return indices;
+}
+
+float shortestDistanceToEmptyVoxel(QList<int>* data, Settings* set, int i) {
+    int x, y, z;
+    posFromIndex(i, set, x, y, z);
+
+    float partX = 1.0f / set->x;
+    float partY = 1.0f / set->y;
+    float partZ = 1.0f / set->z;
+
+    auto center = QVector3D(x * partX + partX * 0.5f, y * partY + partY * 0.5f, z * partZ + partZ * 0.5f);
+
+    float frequency1 = 30.0;
+    float frequency2 = 13.3;
+    float value = 0;
+    if ((*data)[i] != 0) {
+        value += (qSin(center.x() * frequency1) * qSin(center.y() * frequency1) * qSin(center.z() * frequency1)) * 0.5 + 0.5;
+        value += (qSin(center.x() * frequency2) * qSin(center.y() * frequency2) * qSin(center.z() * frequency2)) * 0.5 + 0.5;
+    }
+    value = value * 0.5;
+
+    float noise = 0;//(rand() % RAND_MAX) / (float)RAND_MAX;
+
+    //float final = (value * 0.8 + noise * 0.2) * 256;
+    float final = value * 256;
+    //qDebug() << final;
+    return final;
+}
+
+void generateData(QList<Object*> objects, Settings* set, QByteArray* data, QByteArray* data2)
 {
     // generate the data as a byte array
-    float partX = 1.0f / set->w;
-    float partY = 1.0f / set->h;
-    float partZ = 1.0f / set->d;
+    float partX = 1.0f / set->x;
+    float partY = 1.0f / set->y;
+    float partZ = 1.0f / set->z;
 
-    QByteArray data;
-    QDataStream out(&data, QIODevice::OpenModeFlag::ReadWrite);
+    QDataStream out(data, QIODevice::OpenModeFlag::WriteOnly);    
     out.setFloatingPointPrecision(QDataStream::SinglePrecision);
-    int counter = 0;
+    out.setByteOrder(QDataStream::LittleEndian);       
 
     // rasterizing grid
+    int count = set->z * set->x * set->y;
+    QList<int> array;    
+    
     Object* latest = nullptr;
-    for(int z = 0; z < set->d; z++) {
-        for(int x = 0; x < set->w; x++) {
-            for(int y = 0; y < set->h; y++) {
+    for(int z = 0; z < set->z; z++) {
+        for(int x = 0; x < set->x; x++) {
+            for(int y = 0; y < set->y; y++) {
                 auto center = QVector3D(x * partX + partX * 0.5f, y * partY + partY * 0.5f, z * partZ + partZ * 0.5f);
 
                 Object* obj = latest;
@@ -138,8 +232,19 @@ QByteArray generateData(QList<Object*> objects, Settings* set)
                     latest = obj;
                 }
 
-                uchar meta = 0;
+                
+                if (obj != nullptr) {
+                    out << (int)obj->getId();
+                    array.append((int)obj->getId());
+                }
+                else {
+                    out << (int)0;
+                    array.append(0);                    
+                }                
 
+                /*
+                * OBSOLETE: ONLY ONE OUTPUT TYPE REMAINED
+                * uchar meta = 0;
                 if(obj != nullptr) {
 
                     //qDebug() << "type: " << obj->getType();
@@ -176,6 +281,9 @@ QByteArray generateData(QList<Object*> objects, Settings* set)
                             out << (float)obj->getId();
                             out << (float)obj->getValue();
                             break;
+                        case 3:
+                            out << (int)obj->getId();
+                            break;
                     }
                 } else {
                     switch(set->outputType) {
@@ -196,17 +304,40 @@ QByteArray generateData(QList<Object*> objects, Settings* set)
                                 out << (float)meta;
                             }
                             break;
+                        case 3:
+                            out << (int)meta;
+                            break;
                     }
                 }
+                */
             }
         }
+        qDebug() << "slice #" << z;
     }
 
 
+    // distance to the closest empty voxel
+    QDataStream out2(data2, QIODevice::OpenModeFlag::WriteOnly);
+    out2.setFloatingPointPrecision(QDataStream::SinglePrecision);
+    out2.setByteOrder(QDataStream::LittleEndian);
 
-    return data;
+    qDebug() << "shortest distance computation";
+    QList<int> dump;
+    for (int i = 0; i < array.size(); i++) {
+        
+        float dist = shortestDistanceToEmptyVoxel(&array, set, i);
+
+        dump.append((uint8_t)(dist));
+        out2 << (uint8_t)(dist);
+
+        if (i % (int)(array.size() * 0.1) == 0) {
+            qDebug() << i << " voxels done";
+        }
+    }
 }
 
+/*
+* OBSOLETE: not used anymore
 QJsonObject computeStats(QList<Object*> objects)
 {
     QJsonObject stats;
@@ -340,17 +471,93 @@ QJsonObject computeStats(QList<Object*> objects)
 
     return stats;
 }
+*/
+
+void generateCSV(QList<Object*> objects, Settings* set)
+{
+    qDebug() << "writing attributes\n";
+
+    set->targetFile = "output/attributes.csv";
+    QFile csvFile(set->targetFile);
+
+    QString separator = ",";
+
+    if(csvFile.open(QIODevice::WriteOnly)) {
+        QTextStream out(&csvFile);
+
+        // header
+        out << "Id" << separator;
+        out << "Type" << separator;
+        out << "Width" << separator;
+        out << "Height" << separator;
+        out << "Depth" << separator;
+        out << "Orientation" << separator;
+        out << "X" << separator;
+        out << "Y" << separator;
+        out << "Z" << separator;
+        out << "Volume";
+        out << "\r\n";
+
+
+        for(auto o : objects) {
+            out << o->getId() << separator;
+            out << o->getType() << separator;
+            out << o->getSize3D().x() << separator;
+            out << o->getSize3D().y() << separator;
+            out << o->getSize3D().z() << separator;
+            out << o->getOrientation() << separator;
+            out << o->getPosition().x() << separator;
+            out << o->getPosition().y() << separator;
+            out << o->getPosition().z() << separator;
+            out << o->getVolume() * 1000;
+            out << "\r\n";
+        }
+
+        csvFile.close();
+    }
+
+    set->targetFile = "output/attributes.raw";
+    QFile rawFile(set->targetFile);
+
+    if(rawFile.open(QIODevice::WriteOnly)) {
+        QDataStream out(&rawFile);
+        out.setFloatingPointPrecision(QDataStream::FloatingPointPrecision::SinglePrecision);
+        out.setByteOrder(QDataStream::LittleEndian);
+
+        // output attributes for background
+        for (int i = 0; i < 10; i++) {
+            out << (float)0;
+        }
+
+        for(auto o : objects) {
+            out << (float)o->getId();
+            out << (float)o->getType();
+            out << (float)o->getSize3D().x();
+            out << (float)o->getSize3D().y();
+            out << (float)o->getSize3D().z();
+            out << (float)o->getOrientation();
+            out << (float)(o->getPosition().x());
+            out << (float)(o->getPosition().y());
+            out << (float)(o->getPosition().z());
+            out << (float)(o->getVolume() * 1000);
+        }
+
+        csvFile.close();
+    }
+}
 
 QByteArray generateMeta(QList<Object*> objects, Settings* set)
 {
     QJsonObject root;
 
-    QJsonObject general;
+   /* QJsonObject general;
     general["info"] = "Binary file contains synthetic volumetric data for VPT renderer.";
-    general["width"] = set->w;
-    general["height"] = set->h;
-    general["depth"] = set->d;
+    general["width"] = set->x;
+    general["height"] = set->y;
+    general["depth"] = set->z;
+    general["bits"] = 32;*/
 
+    /* OBSOLETE, ONLY ONE TYPE REMAINED
     switch(set->outputType) {
         case 0:
             general["bits"] = 8;
@@ -361,15 +568,66 @@ QByteArray generateMeta(QList<Object*> objects, Settings* set)
         case 2:
             general["bits"] = 160;
             break;
+        case 3:
+            general["bits"] = 32;
+            break;
     }
+    */
 
-    general["particles"] = set->targetCount;
+    //general["particles"] = set->targetCount;
 
-    root["general"] = general;
-    root["stats"] = computeStats(objects);
+    //root["general"] = general;
+    //root["stats"] = computeStats(objects);
 
     QJsonArray layout, values, valuesS, valuesO, layoutH;
     QJsonObject value, header, type, size, orientation, id, padding;
+
+    //root["layout"] = layout;    
+
+    value["name"] = "Id";
+    value["type"] = "float";
+    layout.append(value);
+
+    value["name"] = "Type";
+    value["type"] = "float";
+    layout.append(value);
+
+    value["name"] = "Width";
+    value["type"] = "float";
+    layout.append(value);
+
+    value["name"] = "Height";
+    value["type"] = "float";
+    layout.append(value);
+
+    value["name"] = "Depth";
+    value["type"] = "float";
+    layout.append(value);
+
+    value["name"] = "Orientation";
+    value["type"] = "float";
+    layout.append(value);
+
+    value["name"] = "X";
+    value["type"] = "float";
+    layout.append(value);
+
+    value["name"] = "Y";
+    value["type"] = "float";
+    layout.append(value);
+
+    value["name"] = "Z";
+    value["type"] = "float";
+    layout.append(value);
+
+    value["name"] = "Volume";
+    value["type"] = "float";
+    layout.append(value);
+
+    QJsonDocument doc(layout);
+    return doc.toJson();
+
+    /*OBSOLETE: ONLY ONE OUTPUT TYPE REMAINED
     switch(set->outputType) {
         case 0:
             value["name"] = "Value";
@@ -501,13 +759,12 @@ QByteArray generateMeta(QList<Object*> objects, Settings* set)
             value["datatype"] = "float";
             value["desc"] = "Value of the element presented in the current cell.";
             layout.append(value);
-        break;
+        break;       
     }
+    */    
 
-    root["layout"] = layout;
-
-    QJsonDocument doc(root);
-    return doc.toJson();
+    //QJsonDocument doc(root);
+    //return doc.toJson();
 }
 
 void writeData(QByteArray data, Settings* set) {
@@ -518,32 +775,52 @@ void writeData(QByteArray data, Settings* set) {
 
     qDebug() << "written to: " << QFileInfo(file).absoluteFilePath();
 
-    file.open(QIODevice::WriteOnly);
-
-    file.write(data);
-
-    file.close();
+    if(file.open(QIODevice::WriteOnly)) {
+        file.write(data);
+        file.close();
+    }
 }
 
 int main(int argc, char *argv[])
 {
     // setting of the generator
     Settings set;
-    set.w = 128;
+    /*set.w = 128;
     set.h = 128;
-    set.d = 128;
-    set.targetCount = 150;
-    set.outputType = 2;
+    set.d = 128;*/
+    set.x = 256;
+    set.y = 256;
+    set.z = 256;
+    set.targetCount = 1000;
+    //set.outputType = 3;
 
     // main data generator
     QList<Object*> objects = generateObjects(&set);
-    QByteArray data = generateData(objects, &set);
-    writeData(data, &set);
+    //QList<Object*> objects = generateObjectsGrid(&set);
+    qDebug() << objects.size();
+    
+    auto current = QDir::current();
+    QDir dir(current.absolutePath() + "/output");
+    if (!dir.exists()) {
+        dir.mkdir(current.absolutePath() + "/output");
+    }
 
+    QByteArray volume1, volume2;
+    generateData(objects, &set, &volume1, &volume2);
+    set.targetFile = "output/data.raw";
+    writeData(volume1, &set);    
+    set.targetFile = "output/data_distances.raw";
+    writeData(volume2, &set);
+
+    // ONLY ONE OUTPUT TYPE REMAINED
     // meta file descriptor
-    data = generateMeta(objects, &set);
-    set.targetFile = "data.json";
-    writeData(data, &set);
+    //if(set.outputType == 3) {
+        generateCSV(objects, &set);
+    //} else {
+        auto data = generateMeta(objects, &set);
+        set.targetFile = "output/data.json";
+        writeData(data, &set);
+    //}
 
     return 0;
 }

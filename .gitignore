@@ -2,6 +2,7 @@ node_modules
 package-lock.json
 build
 settings
-.vs/
-bin/
-obj/
+data-generator/debug/
+data-generator/.vs/
+data-generator/release/
+data-generator/output/

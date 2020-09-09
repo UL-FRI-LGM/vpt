@@ -47,7 +47,7 @@
       "label": "Occlusion decay:",
       "children": [
         {
-          "type": "slider",
+          "type": "spinner",
           "bind": "occlusionDecay",
           "value": 0.9,
           "min": 0,
@@ -57,12 +57,12 @@
     },
     {
       "type": "field",
-      "label": "Visibility 0:",
+      "label": "Color bias:",
       "children": [
         {
           "type": "slider",
-          "bind": "visibility0",
-          "value": 0.9,
+          "bind": "colorBias",
+          "value": 0,
           "min": 0,
           "max": 1
         }
@@ -70,12 +70,12 @@
     },
     {
       "type": "field",
-      "label": "Visibility 1:",
+      "label": "Alpha bias:",
       "children": [
         {
           "type": "slider",
-          "bind": "visibility1",
-          "value": 0.9,
+          "bind": "alphaBias",
+          "value": 0,
           "min": 0,
           "max": 1
         }
@@ -83,12 +83,12 @@
     },
     {
       "type": "field",
-      "label": "Visibility 2:",
+      "label": "Alpha transfer:",
       "children": [
         {
           "type": "slider",
-          "bind": "visibility2",
-          "value": 0.9,
+          "bind": "alphaTransfer",
+          "value": 0,
           "min": 0,
           "max": 1
         }
@@ -96,64 +96,12 @@
     },
     {
       "type": "field",
-      "label": "Visibility 3:",
+      "label": "Cut depth:",
       "children": [
         {
           "type": "slider",
-          "bind": "visibility3",
-          "value": 0.9,
-          "min": 0,
-          "max": 1
-        }
-      ]
-    },
-    {
-      "type": "field",
-      "label": "Visibility 4:",
-      "children": [
-        {
-          "type": "slider",
-          "bind": "visibility4",
-          "value": 0.9,
-          "min": 0,
-          "max": 1
-        }
-      ]
-    },
-    {
-      "type": "field",
-      "label": "Visibility 5:",
-      "children": [
-        {
-          "type": "slider",
-          "bind": "visibility5",
-          "value": 0.9,
-          "min": 0,
-          "max": 1
-        }
-      ]
-    },
-    {
-      "type": "field",
-      "label": "Visibility 6:",
-      "children": [
-        {
-          "type": "slider",
-          "bind": "visibility6",
-          "value": 0.9,
-          "min": 0,
-          "max": 1
-        }
-      ]
-    },
-    {
-      "type": "field",
-      "label": "Visibility 7:",
-      "children": [
-        {
-          "type": "slider",
-          "bind": "visibility7",
-          "value": 0.9,
+          "bind": "cutDepth",
+          "value": 0,
           "min": 0,
           "max": 1
         }
@@ -165,9 +113,49 @@
       "children": [
         {
           "type": "panel",
-          "bind": "tfcontainer"
+          "bind": "tfContainer"
         }
       ]
-    }
+    },
+
+        {
+          "type": "accordion",
+          "label": "Gizmos",
+          "children": [
+            {
+              "type": "field",
+              "label": "Show BB:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "showBoundingBox",
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "Color:",
+              "children": [
+                {
+                  "type": "color-chooser",
+                  "bind": "boundingBoxColor",
+                  "value": "#ff0000"
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "label": "Show Axes:",
+              "children": [
+                {
+                  "type": "checkbox",
+                  "bind": "showAxes",
+                  "checked": true
+                }
+              ]
+            }
+          ]
+        }
   ]
 }

@@ -14,12 +14,17 @@
           "children": [
             {
               "type": "accordion",
-              "bind": "volumeLoadContainer",
+              "bind": "volumeLoad_container",
               "label": "Volume"
             },
             {
               "type": "accordion",
-              "bind": "envmapLoadContainer",
+              "bind": "attribLoad_container",
+              "label": "Attributes"
+            },
+            {
+              "type": "accordion",
+              "bind": "envmapLoad_container",
               "label": "Environment"
             }
           ]
@@ -57,7 +62,8 @@
                         },
                         {
                           "value": "mcm",
-                          "label": "Multiple scattering"
+                          "label": "Multiple scattering",
+                          "selected": true
                         },
                         {
                           "value": "mcc",
@@ -65,8 +71,7 @@
                         },
                         {
                           "value": "dos",
-                          "label": "Directional occlusion shading",
-                          "selected": true
+                          "label": "Directional occlusion shading"
                         }
                       ]
                     }
@@ -74,7 +79,7 @@
                 },
                 {
                   "type": "panel",
-                  "bind": "rendererSettingsContainer"
+                  "bind": "rendererSettings_container"
                 }
               ]
             },
@@ -109,16 +114,20 @@
                 },
                 {
                   "type": "panel",
-                  "bind": "toneMapperSettingsContainer"
+                  "bind": "toneMapperSettings_container"
                 }
               ]
             },
             {
               "type": "accordion",
-              "bind": "renderingContextSettingsContainer",
+              "bind": "renderingContextSettings_container",
               "label": "Context"
             }
           ]
+        },
+        "ListView": {
+          "type": "panel",
+          "bind": "visibility_container"
         },
         "TreeView": {
           "type": "panel",

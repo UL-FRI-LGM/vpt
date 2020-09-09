@@ -45,8 +45,8 @@ _addEventListeners() {
     this._domElement.addEventListener('touchstart', this._handleMouseDown);
     document.addEventListener('mouseup', this._handleMouseUp);
     document.addEventListener('touchend', this._handleMouseUp);
-    document.addEventListener('mousemove', this._handleMouseMove);
-    document.addEventListener('touchmove', this._handleMouseMove);
+    this._domElement.addEventListener('mousemove', this._handleMouseMove);
+    this._domElement.addEventListener('touchmove', this._handleMouseMove);
     this._domElement.addEventListener('mousewheel', this._handleMouseWheel);
     document.addEventListener('keydown', this._handleKeyDown);
     document.addEventListener('keyup', this._handleKeyUp);
